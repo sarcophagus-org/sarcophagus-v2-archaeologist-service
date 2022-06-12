@@ -1,15 +1,29 @@
+import { Buffer } from 'buffer'
+globalThis.Buffer = Buffer
+
 import { createLibp2p } from 'libp2p'
 import { WebRTCDirect } from "@libp2p/webrtc-direct"
 import { Noise } from '@chainsafe/libp2p-noise'
 import { Mplex } from '@libp2p/mplex'
 import { Bootstrap } from '@libp2p/bootstrap'
+import wrtc from 'wrtc'
+import { KadDHT } from "@libp2p/kad-dht";
+
+if (!import.meta.env.VITE_BOOTSTRAP_NODE_LIST) {
+  throw Error("VITE_BOOTSTRAP_NODE_LIST not set in .env")
+}
+
+console.log("nodelist", import.meta.env.VITE_BOOTSTRAP_NODE_LIST)
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const hardcodedPeerId =
-    "12D3KooWBrnHPxQMBR8ZBBPU7LsoxzkC8DSQndG2ZyGXSvetFJ3v";
+  const dht = new KadDHT({
+    protocolPrefix: "/archaeologist-service",
+    clientMode: false
+  })
+
   const libp2p = await createLibp2p({
     transports: [
-      new WebRTCDirect()
+      new WebRTCDirect({wrtc}),
     ],
     connectionEncryption: [
       new Noise()
@@ -19,15 +33,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     ],
     peerDiscovery: [
       new Bootstrap({
-        list: [
-          `/ip4/127.0.0.1/tcp/9091/http/p2p-webrtc-direct/p2p/${hardcodedPeerId}`
-        ]
-      })
+        list: [import.meta.env.VITE_BOOTSTRAP_NODE_LIST]
+      }),
     ],
+    dht,
     connectionManager: {
-      autoDial: true, // Auto connect to discovered peers (limited by ConnectionManager minConnections)
-      // The `tag` property will be searched when creating the instance of your Peer Discovery service.
-      // The associated object, will be passed to the service when it is instantiated.
+      autoDial: true
     }
   })
 
@@ -47,16 +58,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     log(`Peer ${libp2p.peerId.toString()} discovered: ${peer.id.toString()}`)
   })
 
+  libp2p.pubsub.addEventListener('message', (evt) => {
+    log(`event found: ${evt.detail.data.toString()}`)
+  })
+
   // Listen for peers connecting
   libp2p.connectionManager.addEventListener('peer:connect', (evt) => {
     const peer = evt.detail.remotePeer
-    log('Connection established to:', peer.toString())
+    log(`Connection established to: ${peer.toString()}`)
   });
 
   await libp2p.start();
   status.innerText = "libp2p started!";
   log(`libp2p id is ${libp2p.peerId.toString()}`);
-
-  const peers = libp2p.getPeers()
-  log(`open peers: ${peers}`)
 });
