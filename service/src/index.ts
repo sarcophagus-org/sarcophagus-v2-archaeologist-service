@@ -10,7 +10,8 @@ if (!process.env.PORT) {
   throw Error("PORT not set in .env")
 }
 
-// TODO: Multiple nodes setup here for testing. Eventually will be a single node
+// TODO: Multiple nodes setup here for testing.
+// Eventually this be a single node with a single port
 const LISTEN_ADDRESS_BOOTSTRAP = [`/ip4/${process.env.IP_ADDRESS}/tcp/9092/http/p2p-webrtc-direct`]
 const LISTEN_ADDRESS_ARCH1 = [`/ip4/${process.env.IP_ADDRESS}/tcp/9091/http/p2p-webrtc-direct`]
 const LISTEN_ADDRESS_ARCH2 = [`/ip4/${process.env.IP_ADDRESS}/tcp/9090/http/p2p-webrtc-direct`]
