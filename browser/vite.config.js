@@ -10,9 +10,4 @@ export default {
   define: {
     "global": {},
   },
-  // optimizeDeps: {
-  //   exclude: [
-  //     '@libp2p/pubsub-peer-discovery'
-  //   ]
-  // }
 }
