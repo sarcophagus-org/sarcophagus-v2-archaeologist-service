@@ -1,0 +1,13 @@
+diff --git a/node_modules/@libp2p/webrtc-direct/src/index.ts b/node_modules/@libp2p/webrtc-direct/src/index.ts
+index 0e412f3..b3bc977 100644
+--- a/node_modules/@libp2p/webrtc-direct/src/index.ts
++++ b/node_modules/@libp2p/webrtc-direct/src/index.ts
+@@ -136,7 +136,7 @@ export class WebRTCDirect implements Transport {
+           host = `[${host}]`
+         }
+ 
+-        const url = `http://${host}:${cOpts.port}`
++        const url = `https://${host}:${cOpts.port}`
+         const path = `/?signal=${base58btc.encode(fromString(signalStr))}`
+         const uri = url + path
+ 
