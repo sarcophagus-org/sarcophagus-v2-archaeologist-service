@@ -2,12 +2,12 @@ import { Buffer } from 'buffer'
 globalThis.Buffer = Buffer
 
 import { createLibp2p } from 'libp2p'
-import { WebRTCDirect } from "@libp2p/webrtc-direct"
 import { Noise } from '@chainsafe/libp2p-noise'
 import { Mplex } from '@libp2p/mplex'
 import { Bootstrap } from '@libp2p/bootstrap'
-import wrtc from 'wrtc'
 import { KadDHT } from "@libp2p/kad-dht";
+import { WebSockets } from "@libp2p/websockets";
+import { WebRTCStar } from '@libp2p/webrtc-star'
 
 if (!import.meta.env.VITE_BOOTSTRAP_NODE_LIST) {
   throw Error("VITE_BOOTSTRAP_NODE_LIST not set in .env")
@@ -21,9 +21,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     clientMode: false
   })
 
+  const webRtcStar = new WebRTCStar()
+
   const libp2p = await createLibp2p({
+    addresses: {
+      // Add the signaling server address, along with our PeerId to our multiaddrs list
+      // libp2p will automatically attempt to dial to the signaling server so that it can
+      // receive inbound connections from other peers
+      listen: [
+        '/ip4/127.0.0.1/tcp/24642/wss/p2p-webrtc-star',
+      ]
+    },
     transports: [
-      new WebRTCDirect({wrtc}),
+      new WebSockets(),
+      webRtcStar
     ],
     connectionEncryption: [
       new Noise()
@@ -32,8 +43,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       new Mplex()
     ],
     peerDiscovery: [
+      webRtcStar.discovery,
       new Bootstrap({
-        list: [import.meta.env.VITE_BOOTSTRAP_NODE_LIST]
+        list: [
+          '/ip4/127.0.0.1/tcp/10000/ws/p2p/12D3KooWAsxUbeyiTv8zr7iURBh2ugajHK2ZsS8Js4Vu3Q3SrLpA'
+        ]
       }),
     ],
     dht,
@@ -68,7 +82,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     log(`Connection established to: ${peer.toString()}`)
   });
 
+
   await libp2p.start();
-  status.innerText = "libp2p started!";
   log(`libp2p id is ${libp2p.peerId.toString()}`);
 });
