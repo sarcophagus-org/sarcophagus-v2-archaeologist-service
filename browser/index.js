@@ -13,8 +13,8 @@ if (!import.meta.env.VITE_BOOTSTRAP_NODE_LIST) {
   throw Error("VITE_BOOTSTRAP_NODE_LIST not set in .env")
 }
 
-if (!import.meta.env.SIGNAL_SERVER_LIST) {
-  throw Error("SIGNAL_SERVER_LIST not set in .env")
+if (!import.meta.env.VITE_SIGNAL_SERVER_LIST) {
+  throw Error("VITE_SIGNAL_SERVER_LIST not set in .env")
 }
 
 document.addEventListener("DOMContentLoaded", async () => {

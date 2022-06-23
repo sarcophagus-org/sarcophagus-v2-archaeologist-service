@@ -49,5 +49,7 @@ const [arch] = await Promise.all([
   )
 ])
 
+console.log("node listening on: ", LISTEN_ADDRESSES)
+
 
 

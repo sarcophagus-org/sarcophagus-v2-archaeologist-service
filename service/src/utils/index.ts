@@ -36,6 +36,6 @@ export async function getPeerId() {
     const peerIdJson = await jsonfile.readFile(peerIdFile)
     return createFromJSON(peerIdJson)
   } catch (err) {
-    throw Error(`Error loading peer id: ${err}`)
+    throw Error(`Error loading peer id: ${err}. Try running "npm run peer-id-gen" first`)
   }
 }
