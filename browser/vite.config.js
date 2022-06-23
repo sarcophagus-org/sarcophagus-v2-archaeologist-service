@@ -10,4 +10,7 @@ export default {
   define: {
     "global": {},
   },
+  server: {
+    port: 3001
+  }
 }
