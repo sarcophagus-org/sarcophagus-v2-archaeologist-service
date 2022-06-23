@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     peerDiscovery: [
       webRtcStar.discovery,
       new Bootstrap({
-        list: process.env.VITE_BOOTSTRAP_NODE_LIST.split(", ")
+        list: import.meta.env.VITE_BOOTSTRAP_NODE_LIST.split(", ")
       }),
     ],
     dht,
