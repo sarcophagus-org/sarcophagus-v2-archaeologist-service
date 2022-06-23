@@ -16,8 +16,8 @@ if (!peerId) {
 const webRtcStar = new WebRTCStar({wrtc})
 
 const LISTEN_ADDRESSES = [
-  `/ip4/${process.env.IP_ADDRESS}/tcp/${process.env.PORT}`,
-  `/ip4/${process.env.IP_ADDRESS}/tcp/${process.env.PORT}/ws`
+  `/ip4/${process.env.IP_ADDRESS}/tcp/${process.env.TCP_PORT}`,
+  `/ip4/${process.env.IP_ADDRESS}/tcp/${process.env.WS_PORT}/ws`
 ].concat(
   process.env.SIGNAL_SERVER_LIST!.split(", ").map(server => {
     return `/dns4/${server}/tcp/443/wss/p2p-webrtc-star/p2p/${peerId.toString()}`

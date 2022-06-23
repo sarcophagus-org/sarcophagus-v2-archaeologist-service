@@ -2,7 +2,6 @@ import 'dotenv/config'
 import { Libp2p } from "libp2p";
 import jsonfile from "jsonfile"
 import { createFromJSON } from "@libp2p/peer-id-factory";
-import PeerId from "peer-id";
 
 export function getMultiAddresses(node: Libp2p): string[] {
   return node.getMultiaddrs().map((m) => m.toString())
@@ -13,8 +12,12 @@ export function validateEnvVars() {
     throw Error("IP_ADDRESS not set in .env")
   }
 
-  if (!process.env.PORT) {
-    throw Error("PORT not set in .env")
+  if (!process.env.TCP_PORT) {
+    throw Error("TCP_PORT not set in .env")
+  }
+
+  if (!process.env.WS_PORT) {
+    throw Error("WS_PORT not set in .env")
   }
 
   if (!process.env.SIGNAL_SERVER_LIST) {
@@ -31,11 +34,7 @@ export async function getPeerId() {
 
   try {
     const peerIdJson = await jsonfile.readFile(peerIdFile)
-    console.log(peerIdJson)
-    // @ts-ignore
-    const test = await createFromJSON(peerIdJson)
-    console.log(test)
-    return test
+    return createFromJSON(peerIdJson)
   } catch (err) {
     throw Error(`Error loading peer id: ${err}`)
   }
