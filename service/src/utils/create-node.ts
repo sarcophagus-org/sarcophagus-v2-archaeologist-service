@@ -42,8 +42,7 @@ export async function createNode(
     ],
     streamMuxers: [
       new Mplex()
-    ],
-    dht
+    ]
   }
 
   /*
@@ -76,6 +75,7 @@ export async function createNode(
         new Bootstrap({
           list: configOptions.bootstrapList
         }),
+        dht
       ],
     })
   } else {

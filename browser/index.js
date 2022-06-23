@@ -13,7 +13,9 @@ if (!import.meta.env.VITE_BOOTSTRAP_NODE_LIST) {
   throw Error("VITE_BOOTSTRAP_NODE_LIST not set in .env")
 }
 
-console.log("nodelist", import.meta.env.VITE_BOOTSTRAP_NODE_LIST)
+if (!import.meta.env.SIGNAL_SERVER_LIST) {
+  throw Error("SIGNAL_SERVER_LIST not set in .env")
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   const dht = new KadDHT({
@@ -28,9 +30,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Add the signaling server address, along with our PeerId to our multiaddrs list
       // libp2p will automatically attempt to dial to the signaling server so that it can
       // receive inbound connections from other peers
-      listen: [
-        '/ip4/127.0.0.1/tcp/24642/wss/p2p-webrtc-star',
-      ]
+      listen: import.meta.env.SIGNAL_SERVER_LIST.split(", ").map(server => {
+        return `/dns4/${server}/tcp/443/wss/p2p-webrtc-star`
+      })
     },
     transports: [
       new WebSockets(),
@@ -45,9 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     peerDiscovery: [
       webRtcStar.discovery,
       new Bootstrap({
-        list: [
-          '/ip4/127.0.0.1/tcp/10000/ws/p2p/12D3KooWAsxUbeyiTv8zr7iURBh2ugajHK2ZsS8Js4Vu3Q3SrLpA'
-        ]
+        list: process.env.VITE_BOOTSTRAP_NODE_LIST.split(", ")
       }),
     ],
     dht,

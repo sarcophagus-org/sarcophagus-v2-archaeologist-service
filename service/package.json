@@ -7,6 +7,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "NODE_ENV=production NODE_PATH=./build node build/index.js",
     "start:debug": "DEBUG=libp2p:* NODE_ENV=production NODE_PATH=./build node build/index.js",
+    "peer-id-gen": "node ./src/scripts/peer-id-gen.js",
     "test": "node ./test.js",
     "test:all": "node ./test-all.js"
   },
@@ -22,6 +23,7 @@
     "@libp2p/webrtc-star-signalling-server": "^2.0.1",
     "@libp2p/websockets": "^2.0.1",
     "dotenv": "^16.0.1",
+    "jsonfile": "^6.1.0",
     "libp2p": "0.37.2",
     "peer-id": "^0.16.0",
     "wrtc": "^0.4.7"
