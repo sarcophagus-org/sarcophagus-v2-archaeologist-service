@@ -10,9 +10,7 @@ export default {
   define: {
     "global": {},
   },
-  // optimizeDeps: {
-  //   exclude: [
-  //     '@libp2p/pubsub-peer-discovery'
-  //   ]
-  // }
+  server: {
+    port: 3001
+  }
 }

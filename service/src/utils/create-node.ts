@@ -1,15 +1,18 @@
-import { createLibp2p, Libp2p } from "libp2p";
-import { Noise } from "@chainsafe/libp2p-noise";
-import { Mplex } from "@libp2p/mplex";
-import { WebRTCDirect } from '@libp2p/webrtc-direct'
+import { createLibp2p, Libp2p } from "libp2p"
+import { Noise } from "@chainsafe/libp2p-noise"
+import { Mplex } from "@libp2p/mplex"
 import { Bootstrap } from '@libp2p/bootstrap'
+import { KadDHT } from "@libp2p/kad-dht"
+import type { PeerId } from '@libp2p/interfaces/peer-id'
+import { WebRTCStar } from '@libp2p/webrtc-star'
 import wrtc from 'wrtc'
-import { KadDHT } from "@libp2p/kad-dht";
-import type { PeerId } from '@libp2p/interfaces/peer-id';
+
+const webRtcStar = new WebRTCStar({wrtc})
 
 const PROTOCOL_PREFIX = "/archaeologist-service"
 
 interface NodeConfigOptions {
+  transports: any
   listenAddresses?: string[]
   peerId?: PeerId
   bootstrapList?: string[]
@@ -33,16 +36,13 @@ export async function createNode(
     Config Defaults
    */
   const libP2pConfig = {
-    transports: [
-      new WebRTCDirect({ wrtc }),
-    ],
+    transports: configOptions.transports,
     connectionEncryption: [
       new Noise()
     ],
     streamMuxers: [
       new Mplex()
-    ],
-    dht
+    ]
   }
 
   /*
@@ -71,9 +71,17 @@ export async function createNode(
   if (configOptions.bootstrapList) {
     Object.assign(libP2pConfig, {
       peerDiscovery: [
+        webRtcStar.discovery,
         new Bootstrap({
           list: configOptions.bootstrapList
         }),
+        dht
+      ],
+    })
+  } else {
+    Object.assign(libP2pConfig, {
+      peerDiscovery: [
+        webRtcStar.discovery
       ],
     })
   }
