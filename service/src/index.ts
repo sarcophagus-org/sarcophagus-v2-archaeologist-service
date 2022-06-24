@@ -1,55 +1,53 @@
 import 'dotenv/config'
-import { createNode } from "./utils/create-node.js";
-import { TCP } from "@libp2p/tcp";
-import { WebSockets } from "@libp2p/websockets";
-import { WebRTCStar } from '@libp2p/webrtc-star'
+import { initArchaeologist } from "./init/index.js"
+import PeerId from "peer-id"
+import { bootstrapListenAddress, genListenAddresses } from "./utils/listen-addresses.js"
+import { WebRTCStar } from "@libp2p/webrtc-star";
 import wrtc from 'wrtc'
-import { getPeerId, validateEnvVars } from "./utils/index.js";
 
-validateEnvVars()
-const peerId = await getPeerId();
+const localhost = '127.0.0.1'
+const starServer = 'sig.encryptafile.com'
 
-if (!peerId) {
-  throw Error("Could not load peer ID. Please make sure peer-id.json file exists in root directory")
-}
+const bootstrapPeerId = await PeerId.create({ bits: 1024, keyType: 'Ed25519' })
+const bootstrapWsPort = 10000
+const bootstrapLA = genListenAddresses(localhost, 9090, bootstrapWsPort, [starServer], bootstrapPeerId.toString())
+
+const archOnePeerId = await PeerId.create({ bits: 1024, keyType: 'Ed25519' })
+const archOneWsPort = 20000
+const archOneLA = genListenAddresses(localhost, 9090, archOneWsPort, [starServer], archOnePeerId.toString())
+
+const archTwoPeerId = await PeerId.create({ bits: 1024, keyType: 'Ed25519' })
+const archTwoWsPort = 30000
+const archTwoLA = genListenAddresses(localhost, 9090, archTwoWsPort, [starServer], archTwoPeerId.toString())
 
 const webRtcStar = new WebRTCStar({wrtc})
 
-const LISTEN_ADDRESSES = [
-  `/ip4/${process.env.IP_ADDRESS}/tcp/${process.env.TCP_PORT}`,
-  `/ip4/${process.env.IP_ADDRESS}/tcp/${process.env.WS_PORT}/ws`
-].concat(
-  process.env.SIGNAL_SERVER_LIST!.split(", ").map(server => {
-    return `/dns4/${server}/tcp/443/wss/p2p-webrtc-star/p2p/${peerId.toString()}`
-  })
+const bootstrap = await initArchaeologist(
+  "bootstrap",
+  webRtcStar,
+  bootstrapPeerId,
+  bootstrapLA,
+  null
 )
 
-const nodeConfig =
-  {
-    transports: [
-      new TCP(),
-      new WebSockets(),
-      webRtcStar,
-    ],
-    peerId,
-    listenAddresses: LISTEN_ADDRESSES,
-    autoDial: true
-  }
+const bootstrapList = [bootstrapListenAddress(localhost, bootstrapWsPort, bootstrapPeerId.toString())]
 
-if (process.env.BOOTSTRAP_LIST) {
-  Object.assign(nodeConfig,  {
-    bootstrapList: process.env.BOOTSTRAP_LIST!.split(", ")
-  })
-}
-
-const [arch] = await Promise.all([
-  createNode(
-    "archaeologist",
-    nodeConfig
+const [arch1, arch2] = await Promise.all([
+  initArchaeologist(
+    "arch1",
+    webRtcStar,
+    archOnePeerId,
+    archOneLA,
+    bootstrapList
+  ),
+  initArchaeologist(
+    "arch2",
+    webRtcStar,
+    archTwoPeerId,
+    archTwoLA,
+    bootstrapList
   )
 ])
-
-console.log("node listening on: ", LISTEN_ADDRESSES)
 
 
 
