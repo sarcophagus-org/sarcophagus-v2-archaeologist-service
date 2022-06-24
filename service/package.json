@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "NODE_ENV=production NODE_PATH=./build node build/index.js",
+    "start:test": "NODE_ENV=production NODE_PATH=./build node build/test.js",
     "start:debug": "DEBUG=libp2p:* NODE_ENV=production NODE_PATH=./build node build/index.js",
     "peer-id-gen": "node ./src/scripts/peer-id-gen.js",
     "test": "node ./test.js",

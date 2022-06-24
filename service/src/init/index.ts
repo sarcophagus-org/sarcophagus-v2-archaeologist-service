@@ -10,7 +10,6 @@ import { genListenAddresses } from "../utils/listen-addresses.js"
 
 export const initArchaeologist = async (
   name: string,
-  webRtcStar: any,
   peer?: any,
   addresses?: string[],
   bootstraps?: string[] | null
@@ -23,7 +22,7 @@ export const initArchaeologist = async (
     process.env.TCP_PORT!,
     process.env.WS_PORT!,
     process.env.SIGNAL_SERVER_LIST!.split(", "),
-    peerId.toString()
+    peerId.toJSON().id
   )
 
   const bootstrapList = bootstraps === null ?
@@ -38,7 +37,7 @@ export const initArchaeologist = async (
         new WebRTCStar({wrtc}),
       ],
       listenAddresses,
-      autoDial: true
+      autoDial: true,
     }
 
   if (bootstrapList) {
@@ -47,7 +46,11 @@ export const initArchaeologist = async (
     })
   }
 
-  console.log(nodeConfig)
+  if (bootstraps === null || process.env.IS_BOOTSTRAP) {
+    Object.assign(nodeConfig,  {
+      isRelay: true
+    })
+  }
 
   return createNode(
     name,

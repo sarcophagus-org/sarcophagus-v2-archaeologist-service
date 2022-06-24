@@ -3,7 +3,7 @@ export const genListenAddresses = (
   tcpPort: number | string,
   wsPort: number | string,
   servers: string[],
-  peerId: string
+  peerId?: string
 ): string[] => {
   return [
     tcpListenAddress(ipAddress, tcpPort),
@@ -29,17 +29,10 @@ export const wsListenAddress = (
 
 export const ssListenAddresses = (
   servers: string[],
-  peerId: string
+  peerId?: string
 ): string[] => {
   return servers.map(server => {
-    return `/dns4/${server}/tcp/443/wss/p2p-webrtc-star/p2p/${peerId.toString()}`
+    const ssAddress = `/dns4/${server}/tcp/443/wss/p2p-webrtc-star`
+    return peerId ? `${ssAddress}/p2p/${peerId}` : ssAddress
   })
-}
-
-export const bootstrapListenAddress = (
-  ipAddress: string,
-  port: number | string,
-  peerId: string
-): string => {
-  return `/ip4/${ipAddress}/tcp/${port}/ws/p2p/${peerId}`
 }
