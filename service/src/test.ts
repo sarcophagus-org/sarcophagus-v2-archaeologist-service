@@ -1,6 +1,6 @@
 import 'dotenv/config'
-import { initArchaeologist } from "./init/index.js"
-import { getMultiAddresses } from "./utils/index.js";
+import { initArchaeologist } from "./init"
+import { getMultiAddresses } from "./utils";
 import { randomArchVals } from "./utils/random-arch-gen.js";
 import { Libp2p } from "libp2p";
 

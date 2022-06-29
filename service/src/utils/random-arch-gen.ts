@@ -1,5 +1,5 @@
 import PeerId from "peer-id";
-import { genListenAddresses } from "./listen-addresses.js";
+import { genListenAddresses } from "./listen-addresses";
 
 const localhost = '127.0.0.1'
 const starServer = 'sig.encryptafile.com'

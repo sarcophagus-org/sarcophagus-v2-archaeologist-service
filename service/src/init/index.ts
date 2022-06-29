@@ -1,10 +1,10 @@
 import 'dotenv/config'
-import { createNode } from "../utils/create-node.js"
+import { createNode } from "../utils/create-node"
 import { TCP } from "@libp2p/tcp"
 import { WebSockets } from "@libp2p/websockets"
 import { WebRTCStar } from '@libp2p/webrtc-star'
 import wrtc from 'wrtc'
-import { getPeerId, validateEnvVars } from "../utils/index.js";
+import { getPeerId, validateEnvVars } from "../utils";
 import { Libp2p } from "libp2p";
 import { genListenAddresses } from "../utils/listen-addresses.js"
 
@@ -39,15 +39,14 @@ export const initArchaeologist = async (
 
   const nodeConfig =
     {
+      // Required
       transports: [
         new TCP(),
         new WebSockets(),
         new WebRTCStar({wrtc}),
       ],
       listenAddresses,
-      /*
-        Optional
-       */
+      // Optional
       // autoDial: true,
     }
 
