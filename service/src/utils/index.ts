@@ -34,7 +34,13 @@ export async function getPeerId() {
 
   try {
     const peerIdJson = await jsonfile.readFile(peerIdFile)
-    return createFromJSON(peerIdJson)
+    const peerId = createFromJSON(peerIdJson)
+
+    if (!peerId) {
+      throw Error("Could not load peer ID. Please make sure peer-id.json file exists in root directory")
+    }
+
+    return peerId
   } catch (err) {
     throw Error(`Error loading peer id: ${err}. Try running "npm run peer-id-gen" first`)
   }

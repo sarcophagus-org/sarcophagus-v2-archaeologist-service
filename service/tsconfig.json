@@ -2,17 +2,18 @@
   "compilerOptions": {
     "baseUrl": "./src",
     "incremental": true,
+    "allowJs": true,
+    "checkJs": true,
     "target": "esnext",
     "outDir": "./build",
     "moduleResolution": "node",
     "module": "esnext",
     "declaration": true,
-    "inlineSourceMap": true,
-    "esModuleInterop": true,
+    "inlineSourceMap": false,
     "resolveJsonModule": true,
     "noImplicitAny": false,
     "strictNullChecks": true,
-    "strictFunctionTypes": false,
+    "strictFunctionTypes": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitReturns": false,
@@ -21,6 +22,20 @@
     "listEmittedFiles": false,
     "listFiles": false,
     "pretty": true,
+    "noEmit": false,
+    "noEmitOnError": true,
+    "emitDeclarationOnly": false,
+    "declarationMap": true,
+    "composite": true,
+    "isolatedModules": true,
+    "removeComments": false,
+    // module resolution
+    "esModuleInterop": true,
+    // linter checks
+    // advanced
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "stripInternal": true,
     "lib": [
       "es2020",
       "dom"

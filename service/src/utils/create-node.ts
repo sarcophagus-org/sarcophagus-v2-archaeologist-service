@@ -42,7 +42,8 @@ export async function createNode(
     ],
     streamMuxers: [
       new Mplex()
-    ]
+    ],
+    dht
   }
 
   /*
@@ -74,11 +75,11 @@ export async function createNode(
         webRtcStar.discovery,
         new Bootstrap({
           list: configOptions.bootstrapList
-        }),
-        dht
+        })
       ],
     })
-  } else {
+  }
+  else {
     Object.assign(libP2pConfig, {
       peerDiscovery: [
         webRtcStar.discovery

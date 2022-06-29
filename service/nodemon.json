@@ -1,0 +1,13 @@
+{
+  "verbose": true,
+  "ignore": [],
+  "watch": [
+    "src/**/*.ts",
+    ".env",
+    "tsconfig.json",
+    ".eslintrc"
+  ],
+  "execMap": {
+    "ts": "eslint src --ext .ts && DEBUG=vvs:* node --inspect=0.0.0.0:9229 --nolazy -r ts-node/register"
+  }
+}
