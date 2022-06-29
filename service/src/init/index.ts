@@ -8,13 +8,21 @@ import { getPeerId, validateEnvVars } from "../utils/index.js";
 import { Libp2p } from "libp2p";
 import { genListenAddresses } from "../utils/listen-addresses.js"
 
+type BootstrapList = string[] | null | undefined
+
+const isBootstrapNode = (bootstrapList: BootstrapList) => {
+  return bootstrapList === null || process.env.IS_BOOTSTRAP
+}
+
 export const initArchaeologist = async (
   name: string,
   peer?: any,
   addresses?: string[],
-  bootstraps?: string[] | null
+  bootstraps?: BootstrapList
 ): Promise<Libp2p> => {
+
   validateEnvVars()
+
   const peerId = peer ?? await getPeerId()
 
   const listenAddresses = addresses ?? genListenAddresses(
@@ -37,7 +45,10 @@ export const initArchaeologist = async (
         new WebRTCStar({wrtc}),
       ],
       listenAddresses,
-      autoDial: true,
+      /*
+        Optional
+       */
+      // autoDial: true,
     }
 
   if (bootstrapList) {
@@ -46,7 +57,8 @@ export const initArchaeologist = async (
     })
   }
 
-  if (bootstraps === null || process.env.IS_BOOTSTRAP) {
+  // If this is a bootstrap node, turn on relay functionality
+  if (isBootstrapNode(bootstraps)) {
     Object.assign(nodeConfig,  {
       isRelay: true
     })
