@@ -29,7 +29,7 @@ export function validateEnvVars() {
   }
 }
 
-export async function getPeerId() {
+export async function loadPeerIdFromFile() {
   const peerIdFile = './peer-id.json'
 
   try {

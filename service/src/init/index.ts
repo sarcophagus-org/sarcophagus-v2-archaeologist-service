@@ -4,15 +4,15 @@ import { TCP } from "@libp2p/tcp"
 import { WebSockets } from "@libp2p/websockets"
 import { WebRTCStar } from '@libp2p/webrtc-star'
 import wrtc from 'wrtc'
-import { getPeerId, validateEnvVars } from "../utils";
+import { loadPeerIdFromFile, validateEnvVars } from "../utils";
 import { Libp2p } from "libp2p";
 import { genListenAddresses } from "../utils/listen-addresses.js"
-
-type BootstrapList = string[] | null | undefined
 
 const isBootstrapNode = (bootstrapList: BootstrapList) => {
   return bootstrapList === null || process.env.IS_BOOTSTRAP
 }
+
+type BootstrapList = string[] | null | undefined
 
 export const initArchaeologist = async (
   name: string,
@@ -23,7 +23,7 @@ export const initArchaeologist = async (
 
   validateEnvVars()
 
-  const peerId = peer ?? await getPeerId()
+  const peerId = peer ?? await loadPeerIdFromFile()
 
   const listenAddresses = addresses ?? genListenAddresses(
     process.env.IP_ADDRESS!,

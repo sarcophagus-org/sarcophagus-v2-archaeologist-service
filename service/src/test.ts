@@ -3,6 +3,7 @@ import { initArchaeologist } from "./init"
 import { getMultiAddresses } from "./utils";
 import { randomArchVals } from "./utils/random-arch-gen.js";
 import { Libp2p } from "libp2p";
+import { Archaeologist } from "./models/archaeologist";
 
 /**
  * This file is used to test multiple archaeologists locally
@@ -13,27 +14,30 @@ const numOfArchsToGenerate = 4
 const startingTcpPort = 8000
 const startingWsPort = 10000
 
-let archaeologists: Promise<Libp2p>[] = []
+let archaeologists: Promise<void>[] = []
 const { peerId, listenAddresses } = await randomArchVals(startingTcpPort, startingWsPort)
-const bootstrap = await initArchaeologist(
-  "bootstrap",
+
+const bootstrap = new Archaeologist({
+  name: "bootstrap",
   peerId,
   listenAddresses,
-  null
-)
+  isBootstrap: true
+})
 
-const bootstrapList = getMultiAddresses(bootstrap)
+await bootstrap.initNode()
+
+const bootstrapList = getMultiAddresses(bootstrap.node)
 
 for(let i = 0; i < numOfArchsToGenerate; i++) {
   const { peerId, listenAddresses } = await randomArchVals(startingTcpPort + i, startingWsPort + i)
-  archaeologists.push(
-    initArchaeologist(
-      `arch${i}`,
-      peerId,
-      listenAddresses,
-      bootstrapList
-    )
-  )
+  const arch = new Archaeologist({
+      name: `arch${i}`,
+    peerId,
+    listenAddresses,
+    bootstrapList
+  })
+
+  archaeologists.push(arch.initNode())
 }
 
 await Promise.all(archaeologists)
