@@ -1,7 +1,21 @@
 import 'dotenv/config'
-import { initArchaeologist } from "./init/index.js"
+import { Archaeologist } from "./models/archaeologist"
+import { validateEnvVars } from "./utils";
 
-const arch = await initArchaeologist("archaeologist")
+validateEnvVars()
+
+const arch = new Archaeologist({
+  name: "arch1",
+  bootstrapList: process.env.BOOTSTRAP_LIST!.split(", "),
+  listenAddressesConfig: {
+    ipAddress: process.env.IP_ADDRESS!,
+    tcpPort: process.env.TCP_PORT!,
+    wsPort: process.env.WS_PORT!,
+    signalServerList: process.env.SIGNAL_SERVER_LIST!.split(", ")
+  }
+})
+
+await arch.initNode()
 
 
 
