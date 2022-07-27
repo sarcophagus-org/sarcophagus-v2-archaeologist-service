@@ -3,7 +3,7 @@ import { createNode } from "../utils/create-node"
 import { TCP } from "@libp2p/tcp"
 import { WebSockets } from "@libp2p/websockets"
 import { WebRTCStar } from '@libp2p/webrtc-star'
-import wrtc from 'wrtc'
+import wrtc from '@koush/wrtc'
 import { loadPeerIdFromFile, validateEnvVars } from "../utils";
 import { Libp2p } from "libp2p";
 import { genListenAddresses } from "../utils/listen-addresses.js"
@@ -38,27 +38,27 @@ export const initArchaeologist = async (
     bootstraps ?? process.env.BOOTSTRAP_LIST!.split(", ")
 
   const nodeConfig =
-    {
-      // Required
-      transports: [
-        new TCP(),
-        new WebSockets(),
-        new WebRTCStar({wrtc}),
-      ],
-      listenAddresses,
-      // Optional
-      // autoDial: true,
-    }
+  {
+    // Required
+    transports: [
+      new TCP(),
+      new WebSockets(),
+      new WebRTCStar({ wrtc }),
+    ],
+    listenAddresses,
+    // Optional
+    // autoDial: true,
+  }
 
   if (bootstrapList) {
-    Object.assign(nodeConfig,  {
+    Object.assign(nodeConfig, {
       bootstrapList
     })
   }
 
   // If this is a bootstrap node, turn on relay functionality
   if (isBootstrapNode(bootstraps)) {
-    Object.assign(nodeConfig,  {
+    Object.assign(nodeConfig, {
       isRelay: true
     })
   }

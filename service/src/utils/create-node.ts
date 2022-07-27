@@ -14,9 +14,9 @@ export async function createNode(
 ): Promise<Libp2p> {
   console.log(configOptions)
   const node = await createLibp2p(configOptions)
-  setupNodeEventListeners(node, name)
+  setupNodeEventListeners(node, name);
 
-  ;console.log(`${name} starting with id: ${node.peerId.toString()}`)
+  console.log(`${name} starting with id: ${node.peerId.toString()}`)
 
   await node.start()
   return node
