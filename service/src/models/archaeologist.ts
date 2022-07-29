@@ -29,7 +29,7 @@ export class Archaeologist {
   private listenAddresses: string[] | undefined
   private listenAddressesConfig: ListenAddressesConfig | undefined
 
-  constructor (options: ArchaeologistInit) {
+  constructor(options: ArchaeologistInit) {
     if (!options.listenAddresses && !options.listenAddressesConfig) {
       throw Error("Either listenAddresses or listenAddressesConfig must be provided in archaeologist constructor")
     }
@@ -45,12 +45,12 @@ export class Archaeologist {
     this.listenAddressesConfig = options.listenAddressesConfig
   }
 
-  async initNode () {
-    this.node = await this.createLibp2pNode()
+  async initNode(idFilePath?: string) {
+    this.node = await this.createLibp2pNode(idFilePath);
   }
 
-  async createLibp2pNode(): Promise<Libp2p> {
-    this.peerId = this.peerId ?? await loadPeerIdFromFile()
+  async createLibp2pNode(idFilePath?: string): Promise<Libp2p> {
+    this.peerId = this.peerId ?? await loadPeerIdFromFile(idFilePath)
 
     if (this.listenAddressesConfig) {
       const { ipAddress, tcpPort, wsPort, signalServerList } = this.listenAddressesConfig!
@@ -60,8 +60,26 @@ export class Archaeologist {
     }
 
     this.nodeConfig.add("peerId", this.peerId)
-    this.nodeConfig.add("addresses",  { listen: this.listenAddresses })
+    this.nodeConfig.add("addresses", { listen: this.listenAddresses })
 
-    return await createNode(this.name, this.nodeConfig.configObj)
+    const node = await createNode(this.name, this.nodeConfig.configObj);
+    return node;
+  }
+
+  async subscribe(topic: string, callback: (data) => any) {
+    console.log(`subscribe ${this.name} to ${topic}`);
+    this.node.pubsub.subscribe(topic);
+
+    this.node.pubsub.addEventListener("message", (evt) => {
+      console.log(`event found: ${evt.detail.data.toString()}`)
+    });
+
+  }
+
+  async publish(topic: string, msg: string) {
+    console.log(`publish ${msg} to ${topic}`);
+    const res = await this.node.pubsub.publish(topic, new TextEncoder().encode(msg));
+    console.log("res", res);
+
   }
 }

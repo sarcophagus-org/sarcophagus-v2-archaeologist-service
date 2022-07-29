@@ -7,7 +7,9 @@ import { Mplex } from '@libp2p/mplex'
 import { Bootstrap } from '@libp2p/bootstrap'
 import { KadDHT } from "@libp2p/kad-dht";
 import { WebSockets } from "@libp2p/websockets";
-import { WebRTCStar } from '@libp2p/webrtc-star'
+import { WebRTCStar } from '@libp2p/webrtc-star';
+
+import { GossipSub } from '@chainsafe/libp2p-gossipsub';
 
 if (!import.meta.env.VITE_BOOTSTRAP_NODE_LIST) {
   throw Error("VITE_BOOTSTRAP_NODE_LIST not set in .env")
@@ -23,9 +25,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     clientMode: false
   })
 
-  const webRtcStar = new WebRTCStar()
+  const webRtcStar = new WebRTCStar();
 
-  const libp2p = await createLibp2p({
+  const config = {
     addresses: {
       // Add the signaling server address, along with our PeerId to our multiaddrs list
       // libp2p will automatically attempt to dial to the signaling server so that it can
@@ -53,8 +55,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     dht,
     connectionManager: {
       autoDial: true
-    }
-  })
+    },
+  };
+
+  const browserNode = await createLibp2p(config);
 
   const status = document.getElementById("status");
   const output = document.getElementById("output");
@@ -66,23 +70,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     output.textContent += `${txt.trim()}\n`;
   }
 
+  const discoverPeers = [];
+
   // Listen for new peers
-  libp2p.addEventListener('peer:discovery', (evt) => {
+  browserNode.addEventListener('peer:discovery', (evt) => {
     const peer = evt.detail
-    log(`Peer ${libp2p.peerId.toString()} discovered: ${peer.id.toString()}`)
+
+    if (discoverPeers.find((p) => p === peer) === undefined) {
+      discoverPeers.push(peer);
+      log(`Peer ${browserNode.peerId.toString()} discovered: ${peer.id.toString()}`)
+    }
   })
 
-  libp2p.pubsub.addEventListener('message', (evt) => {
+  browserNode.pubsub.addEventListener('message', (evt) => {
     log(`event found: ${evt.detail.data.toString()}`)
   })
 
   // Listen for peers connecting
-  libp2p.connectionManager.addEventListener('peer:connect', (evt) => {
+  browserNode.connectionManager.addEventListener('peer:connect', (evt) => {
     const peer = evt.detail.remotePeer
     log(`Connection established to: ${peer.toString()}`)
   });
 
 
-  await libp2p.start();
-  log(`libp2p id is ${libp2p.peerId.toString()}`);
+  const gsub = new GossipSub(browserNode, config);
+
+
+  await gsub.start();
+  log(`browserNode id is ${browserNode.peerId.toString()}`);
+
+  gsub.on('test_topic', (data) => {
+    console.log(data)
+    // console.log(`node1 received: ${toString(msg.data)}`)
+  })
+  gsub.subscribe('test_topic');
 });

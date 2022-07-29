@@ -1,4 +1,4 @@
-import { createLibp2p, Libp2p, Libp2pOptions } from "libp2p"
+import { createLibp2p, Libp2p, Libp2pOptions } from "libp2p";
 
 /**
  *
@@ -12,20 +12,20 @@ export async function createNode(
   // which prevent this from being typed as Libp2pOptions
   configOptions: any
 ): Promise<Libp2p> {
-  console.log(configOptions)
+  // console.log(configOptions)
   const node = await createLibp2p(configOptions)
   setupNodeEventListeners(node, name);
 
   console.log(`${name} starting with id: ${node.peerId.toString()}`)
 
-  await node.start()
-  return node
+  await node.start();
+  return node;
 }
 
 function setupNodeEventListeners(node: Libp2p, name: string) {
   node.addEventListener('peer:discovery', (evt) => {
     const peer = evt.detail
-    console.log(`${name} discovered: ${peer.id.toString()}`)
+    // console.log(`${name} discovered: ${peer.id.toString()}`)
   })
 
   node.connectionManager.addEventListener('peer:connect', (evt) => {
@@ -37,4 +37,8 @@ function setupNodeEventListeners(node: Libp2p, name: string) {
     const peer = evt.detail.remotePeer
     console.log(`${name} Connection dropped from:`, peer.toString())
   })
+
+  node.pubsub.addEventListener("message", (evt) => {
+    console.log(`event found: ${evt.detail.data.toString()}`)
+  });
 }

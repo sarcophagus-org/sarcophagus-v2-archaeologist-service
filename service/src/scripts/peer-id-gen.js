@@ -11,7 +11,7 @@ async function genPeerIdJSON() {
   return peerId.toJSON()
 }
 
-const file = './peer-id.json'
+const file = './peer-id.json2'
 const obj = await genPeerIdJSON();
 
 jsonfile.writeFile(file, obj, function (err) {

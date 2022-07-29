@@ -29,8 +29,8 @@ export function validateEnvVars() {
   }
 }
 
-export async function loadPeerIdFromFile() {
-  const peerIdFile = './peer-id.json'
+export async function loadPeerIdFromFile(idFilePath?: string) {
+  const peerIdFile = idFilePath ?? './peer-id.json'
 
   try {
     const peerIdJson = await jsonfile.readFile(peerIdFile)
