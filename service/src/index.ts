@@ -1,12 +1,13 @@
 import 'dotenv/config'
 import { Archaeologist } from "./models/archaeologist"
-import { validateEnvVars } from "./utils";
+import { getMultiAddresses, validateEnvVars } from "./utils";
 
 validateEnvVars()
 
 const arch = new Archaeologist({
   name: "arch1",
   bootstrapList: process.env.BOOTSTRAP_LIST!.split(", "),
+  isBootstrap: true,
   listenAddressesConfig: {
     ipAddress: process.env.IP_ADDRESS!,
     tcpPort: process.env.TCP_PORT!,
@@ -28,10 +29,12 @@ const arch2 = new Archaeologist({
 
 await arch.initNode()
 await arch2.initNode('./peer-id2.json')
-await arch2.subscribe("test_topic", (data) => console.log(`${arch2.name} got ${data}`));
+arch2.node.pubsub.subscribe("test_topic");
+arch2.node.pubsub.addEventListener("message", (data) => console.log(`${arch2.name} got ${data}`));
 
 console.log("1  -- ", arch.node.pubsub.getTopics());
 console.log("2  -- ", arch2.node.pubsub.getTopics());
+
 arch.publish("test_topic", "Bird bird bird, bird is the word!").catch(err => {
   console.error(err)
 })

@@ -23,6 +23,7 @@ export interface ArchaeologistInit {
 export class Archaeologist {
   public node: Libp2p
   public name: string
+  public i: number = 1
 
   private nodeConfig
   private peerId
@@ -47,9 +48,35 @@ export class Archaeologist {
 
   async initNode(idFilePath?: string) {
     this.node = await this.createLibp2pNode(idFilePath);
+
+    const topic = "wow"
+    this.node.pubsub.addEventListener("message", (evt) => {
+      // Will not receive own published messages by default
+      console.log(`${this.name} received a msg: ${new TextDecoder().decode(evt.detail.data)}`)
+    })
+    this.node.pubsub.subscribe(topic)
+
+    setInterval(() =>
+      this.publish(topic, `${this.i} -- ${this.name} says hi!`),
+      13000
+    )
+  }
+
+  async publish(topic: string, msg: string) {
+    try {
+      const data = new TextEncoder().encode(msg);
+      console.log(`${this.i} -- ${this.name} publish msg`);
+      await this.node.pubsub.publish(topic, data);
+      this.i++
+    }
+    catch (err) {
+      console.log(err);
+    }
   }
 
   async createLibp2pNode(idFilePath?: string): Promise<Libp2p> {
+    console.log("this.peerId", this.peerId);
+
     this.peerId = this.peerId ?? await loadPeerIdFromFile(idFilePath)
 
     if (this.listenAddressesConfig) {
@@ -64,22 +91,5 @@ export class Archaeologist {
 
     const node = await createNode(this.name, this.nodeConfig.configObj);
     return node;
-  }
-
-  async subscribe(topic: string, callback: (data) => any) {
-    console.log(`subscribe ${this.name} to ${topic}`);
-    this.node.pubsub.subscribe(topic);
-
-    this.node.pubsub.addEventListener("message", (evt) => {
-      console.log(`event found: ${evt.detail.data.toString()}`)
-    });
-
-  }
-
-  async publish(topic: string, msg: string) {
-    console.log(`publish ${msg} to ${topic}`);
-    const res = await this.node.pubsub.publish(topic, new TextEncoder().encode(msg));
-    console.log("res", res);
-
   }
 }

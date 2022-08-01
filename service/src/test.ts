@@ -8,11 +8,11 @@ import { Archaeologist } from "./models/archaeologist";
  * Set numOfArchsToGenerate for how many archaeologists to generate
  */
 
-const numOfArchsToGenerate = 1
-const startingTcpPort = 8101
+const numOfArchsToGenerate = 2
+const startingTcpPort = 11000
 const startingWsPort = 10801
 
-let archaeologists: { initPromise: Promise<void>, node: Archaeologist }[] = []
+let archaeologists: Promise<void>[] = []
 
 const { peerId, listenAddresses } = await randomArchVals(startingTcpPort, startingWsPort)
 
@@ -20,7 +20,7 @@ const bootstrap = new Archaeologist({
   name: "bootstrap",
   peerId,
   listenAddresses,
-  isBootstrap: true
+  isBootstrap: false
 })
 
 await bootstrap.initNode()
@@ -36,24 +36,7 @@ for (let i = 1; i <= numOfArchsToGenerate; i++) {
     bootstrapList
   })
 
-  archaeologists.push({ initPromise: arch.initNode(), node: arch })
+  archaeologists.push(arch.initNode())
 }
 
-await Promise.all(archaeologists.map(async p => {
-  await p.initPromise;
-  p.node.subscribe("test_topic", () => console.log("got msg"))
-}));
-
-bootstrap.publish("test_topic", "pls work");
-
-
-// await Promise.all(archaeologists).then(async _ => {
-//   await Promise.all(archs.map(node =>
-//     node.subscribe("test_topic", () => console.log("got msg"))
-//   ));
-//   bootstrap.publish("test_topic", "pls work");
-// })
-
-
-
-
+await Promise.all(archaeologists);

@@ -37,8 +37,4 @@ function setupNodeEventListeners(node: Libp2p, name: string) {
     const peer = evt.detail.remotePeer
     console.log(`${name} Connection dropped from:`, peer.toString())
   })
-
-  node.pubsub.addEventListener("message", (evt) => {
-    console.log(`event found: ${evt.detail.data.toString()}`)
-  });
 }

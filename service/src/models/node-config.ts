@@ -13,12 +13,10 @@ const webRtcStar = new WebRTCStar({ wrtc })
 
 import { FloodSub } from '@libp2p/floodsub'
 
-const gossipsub = await import('@chainsafe/libp2p-gossipsub');
-
-const fsub = new FloodSub({
+const pubsub = new FloodSub({
   enabled: true,
   canRelayMessage: true,
-  emitSelf: false
+  emitSelf: true
 });
 
 export class NodeConfig {
@@ -45,13 +43,7 @@ export class NodeConfig {
     peerDiscovery: [
       webRtcStar.discovery
     ],
-    // pubsub: new FloodSub({
-    //   enabled: true,
-    //   canRelayMessage: true,
-    //   emitSelf: false
-    // }),
-    pubsub: new gossipsub.GossipSub({ emitSelf: true }),
-
+    pubsub,
   }
 
   constructor(options: any = {}) {
