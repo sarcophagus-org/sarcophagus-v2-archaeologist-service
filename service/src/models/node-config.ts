@@ -13,12 +13,6 @@ const webRtcStar = new WebRTCStar({ wrtc })
 
 import { FloodSub } from '@libp2p/floodsub'
 
-const pubsub = new FloodSub({
-  enabled: true,
-  canRelayMessage: true,
-  emitSelf: true
-});
-
 export class NodeConfig {
   public configObj: Libp2pOptions = {
     // There are some type issues in libp2p interfaces
@@ -43,7 +37,11 @@ export class NodeConfig {
     peerDiscovery: [
       webRtcStar.discovery
     ],
-    pubsub,
+    pubsub: new FloodSub({
+      enabled: true,
+      canRelayMessage: true,
+      emitSelf: false
+    }),
   }
 
   constructor(options: any = {}) {
