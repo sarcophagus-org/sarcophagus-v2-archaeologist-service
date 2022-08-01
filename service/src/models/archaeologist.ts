@@ -3,6 +3,8 @@ import { loadPeerIdFromFile } from "../utils";
 import { genListenAddresses } from "../utils/listen-addresses";
 import { createNode } from "../utils/create-node";
 import { NodeConfig } from "./node-config";
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -23,7 +25,7 @@ export interface ArchaeologistInit {
 export class Archaeologist {
   public node: Libp2p
   public name: string
-  public i: number = 1
+  public i: number
 
   private nodeConfig
   private peerId
@@ -40,14 +42,15 @@ export class Archaeologist {
       isBootstrap: options.isBootstrap
     })
 
+    this.i = 0;
     this.name = options.name
     this.peerId = options.peerId
     this.listenAddresses = options.listenAddresses
     this.listenAddressesConfig = options.listenAddressesConfig
   }
 
-  async initNode(idFilePath?: string) {
-    this.node = await this.createLibp2pNode(idFilePath);
+  async initNode() {
+    this.node = await this.createLibp2pNode()
 
     const topic = "wow"
     this.node.pubsub.addEventListener("message", (evt) => {
@@ -56,10 +59,11 @@ export class Archaeologist {
     })
     this.node.pubsub.subscribe(topic)
 
-    setInterval(() =>
-      this.publish(topic, `${this.i} -- ${this.name} says hi!`),
-      13000
-    )
+    setInterval(() => {
+      this.publish(topic, `${this.i} -- ${this.name} says hi!`).catch(err => {
+        console.info(err)
+      })
+    }, 3000)
   }
 
   async publish(topic: string, msg: string) {
@@ -74,10 +78,8 @@ export class Archaeologist {
     }
   }
 
-  async createLibp2pNode(idFilePath?: string): Promise<Libp2p> {
-    console.log("this.peerId", this.peerId);
-
-    this.peerId = this.peerId ?? await loadPeerIdFromFile(idFilePath)
+  async createLibp2pNode(): Promise<Libp2p> {
+    this.peerId = this.peerId ?? await loadPeerIdFromFile()
 
     if (this.listenAddressesConfig) {
       const { ipAddress, tcpPort, wsPort, signalServerList } = this.listenAddressesConfig!
@@ -89,7 +91,6 @@ export class Archaeologist {
     this.nodeConfig.add("peerId", this.peerId)
     this.nodeConfig.add("addresses", { listen: this.listenAddresses })
 
-    const node = await createNode(this.name, this.nodeConfig.configObj);
-    return node;
+    return await createNode(this.name, this.nodeConfig.configObj)
   }
 }

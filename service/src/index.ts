@@ -28,7 +28,7 @@ const arch2 = new Archaeologist({
 })
 
 await arch.initNode()
-await arch2.initNode('./peer-id2.json')
+// await arch2.initNode('./peer-id2.json')
 arch2.node.pubsub.subscribe("test_topic");
 arch2.node.pubsub.addEventListener("message", (data) => console.log(`${arch2.name} got ${data}`));
 
