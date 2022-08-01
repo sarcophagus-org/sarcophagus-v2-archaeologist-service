@@ -1,7 +1,7 @@
 import { TCP } from "@libp2p/tcp";
 import { WebSockets } from "@libp2p/websockets";
-import { WebRTCStar } from "@libp2p/webrtc-star";
-import wrtc from '@koush/wrtc'
+// import { WebRTCStar } from "@libp2p/webrtc-star";
+// import wrtc from '@koush/wrtc'
 import { KadDHT } from "@libp2p/kad-dht";
 import { Noise } from "@chainsafe/libp2p-noise";
 import { Mplex } from "@libp2p/mplex";
@@ -9,7 +9,7 @@ import { Bootstrap } from "@libp2p/bootstrap";
 import { Libp2pOptions } from "libp2p";
 
 const PROTOCOL_PREFIX = "/archaeologist-service"
-const webRtcStar = new WebRTCStar({ wrtc })
+// const webRtcStar = new WebRTCStar({ wrtc })
 
 import { FloodSub } from '@libp2p/floodsub'
 
@@ -22,7 +22,7 @@ export class NodeConfig {
       // @ts-ignore
       new WebSockets(),
       // @ts-ignore
-      new WebRTCStar({ wrtc }),
+      // new WebRTCStar({ wrtc }),
     ],
     connectionEncryption: [
       new Noise()
@@ -35,7 +35,7 @@ export class NodeConfig {
       clientMode: false
     }),
     peerDiscovery: [
-      webRtcStar.discovery
+      // webRtcStar.discovery
     ],
     pubsub: new FloodSub({
       enabled: true,
