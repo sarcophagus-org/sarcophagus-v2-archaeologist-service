@@ -1,43 +1,70 @@
 import 'dotenv/config'
+import { randomArchVals } from './utils/random-arch-gen';
 import { Archaeologist } from "./models/archaeologist"
-import { getMultiAddresses, validateEnvVars } from "./utils";
+import { getMultiAddresses } from './utils';
 
-validateEnvVars()
+const numOfArchsToGenerate = 4
+const startingTcpPort = 8000
+const startingWsPort = 10000
 
-const arch = new Archaeologist({
-  name: "arch1",
-  bootstrapList: process.env.BOOTSTRAP_LIST!.split(", "),
-  isBootstrap: true,
-  listenAddressesConfig: {
-    ipAddress: process.env.IP_ADDRESS!,
-    tcpPort: process.env.TCP_PORT!,
-    wsPort: process.env.WS_PORT!,
-    signalServerList: process.env.SIGNAL_SERVER_LIST!.split(", ")
-  },
+let archaeologists: Promise<void>[] = []
+const { peerId, listenAddresses } = await randomArchVals(startingTcpPort, startingWsPort)
+
+const bootstrap = new Archaeologist({
+  name: "bootstrap",
+  peerId,
+  listenAddresses,
+  isBootstrap: true
 })
 
-const arch2 = new Archaeologist({
-  name: "arch2",
-  bootstrapList: process.env.BOOTSTRAP_LIST!.split(", "),
-  listenAddressesConfig: {
-    ipAddress: process.env.IP_ADDRESS!,
-    tcpPort: "9001",
-    wsPort: "10001",
-    signalServerList: process.env.SIGNAL_SERVER_LIST!.split(", ")
-  },
-})
+await bootstrap.initNode()
 
-await arch.initNode()
-// await arch2.initNode('./peer-id2.json')
-arch2.node.pubsub.subscribe("test_topic");
-arch2.node.pubsub.addEventListener("message", (data) => console.log(`${arch2.name} got ${data}`));
+const bootstrapList = getMultiAddresses(bootstrap.node)
 
-console.log("1  -- ", arch.node.pubsub.getTopics());
-console.log("2  -- ", arch2.node.pubsub.getTopics());
+for (let i = 0; i < numOfArchsToGenerate; i++) {
+  const { peerId, listenAddresses } = await randomArchVals(startingTcpPort + i, startingWsPort + i)
+  const arch = new Archaeologist({
+    name: `arch${i}`,
+    peerId,
+    listenAddresses,
+    bootstrapList
+  })
 
-arch.publish("test_topic", "Bird bird bird, bird is the word!").catch(err => {
-  console.error(err)
-})
+  archaeologists.push(arch.initNode())
+}
+
+await Promise.all(archaeologists)
+
+// const { peerId: id, listenAddresses: addr } = await randomArchVals("9000", "10000");
+// const arch = new Archaeologist({
+//   name: "arch1",
+//   peerId: id,
+//   bootstrapList: process.env.BOOTSTRAP_LIST!.split(", "),
+//   isBootstrap: false,
+//   listenAddresses: addr,
+// })
+// await arch.initNode()
+
+
+// const { peerId, listenAddresses } = await randomArchVals("9001", "10001");
+// const arch2 = new Archaeologist({
+//   name: "arch2",
+//   peerId,
+//   bootstrapList: process.env.BOOTSTRAP_LIST!.split(", "),
+//   isBootstrap: false,
+//   listenAddresses,
+// })
+// await arch2.initNode()
+
+// arch2.node.pubsub.subscribe("test_topic");
+// arch2.node.pubsub.addEventListener("message", (data) => console.log(`${arch2.name} got ${data}`));
+
+// console.log("1  -- ", arch.node.pubsub.getTopics());
+// console.log("2  -- ", arch2.node.pubsub.getTopics());
+
+// arch.publish("test_topic", "Bird bird bird, bird is the word!").catch(err => {
+//   console.error(err)
+// })
 
 
 

@@ -9,7 +9,7 @@ import { KadDHT } from "@libp2p/kad-dht";
 import { WebSockets } from "@libp2p/websockets";
 import { WebRTCStar } from '@libp2p/webrtc-star';
 
-import { GossipSub } from '@chainsafe/libp2p-gossipsub';
+import { FloodSub } from '@libp2p/floodsub'
 
 if (!import.meta.env.VITE_BOOTSTRAP_NODE_LIST) {
   throw Error("VITE_BOOTSTRAP_NODE_LIST not set in .env")
@@ -20,6 +20,11 @@ if (!import.meta.env.VITE_SIGNAL_SERVER_LIST) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  function log(txt) {
+    console.info(txt);
+    output.textContent += `${txt.trim()}\n`;
+  }
+
   const dht = new KadDHT({
     protocolPrefix: "/archaeologist-service",
     clientMode: false
@@ -28,6 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const webRtcStar = new WebRTCStar();
 
   const config = {
+    name: "browserNode",
     addresses: {
       // Add the signaling server address, along with our PeerId to our multiaddrs list
       // libp2p will automatically attempt to dial to the signaling server so that it can
@@ -56,6 +62,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     connectionManager: {
       autoDial: true
     },
+    pubsub: new FloodSub({
+      enabled: true,
+      canRelayMessage: true,
+      emitSelf: false
+    }),
   };
 
   const browserNode = await createLibp2p(config);
@@ -64,11 +75,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const output = document.getElementById("output");
 
   output.textContent = "";
-
-  function log(txt) {
-    console.info(txt);
-    output.textContent += `${txt.trim()}\n`;
-  }
 
   const discoverPeers = [];
 
@@ -92,16 +98,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     log(`Connection established to: ${peer.toString()}`)
   });
 
-
-  const gsub = new GossipSub(browserNode, config);
-
-
-  await gsub.start();
-  log(`browserNode id is ${browserNode.peerId.toString()}`);
-
-  gsub.on('test_topic', (data) => {
-    console.log(data)
-    // console.log(`node1 received: ${toString(msg.data)}`)
+  const topic = "wow"
+  browserNode.pubsub.addEventListener("message", (evt) => {
+    log(`${this.name} received a msg: ${new TextDecoder().decode(evt.detail.data)}`)
   })
-  gsub.subscribe('test_topic');
+  browserNode.pubsub.subscribe(topic)
 });

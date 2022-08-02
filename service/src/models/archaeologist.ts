@@ -49,8 +49,8 @@ export class Archaeologist {
     this.listenAddressesConfig = options.listenAddressesConfig
   }
 
-  async initNode() {
-    this.node = await this.createLibp2pNode()
+  async initNode(idFilePath?: string) {
+    this.node = await this.createLibp2pNode(idFilePath)
 
     const topic = "wow"
     this.node.pubsub.addEventListener("message", (evt) => {
@@ -63,7 +63,7 @@ export class Archaeologist {
       this.publish(topic, `${this.i} -- ${this.name} says hi!`).catch(err => {
         console.info(err)
       })
-    }, 3000)
+    }, 1000)
   }
 
   async publish(topic: string, msg: string) {
@@ -78,8 +78,8 @@ export class Archaeologist {
     }
   }
 
-  async createLibp2pNode(): Promise<Libp2p> {
-    this.peerId = this.peerId ?? await loadPeerIdFromFile()
+  async createLibp2pNode(idFilePath?: string): Promise<Libp2p> {
+    this.peerId = this.peerId ?? await loadPeerIdFromFile(idFilePath)
 
     if (this.listenAddressesConfig) {
       const { ipAddress, tcpPort, wsPort, signalServerList } = this.listenAddressesConfig!
