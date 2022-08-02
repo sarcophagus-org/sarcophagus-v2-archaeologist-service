@@ -24,13 +24,14 @@ export interface ArchaeologistInit {
 export class Archaeologist {
   public node: Libp2p
   public name: string
-  public i: number
 
   private nodeConfig
   private peerId
   private listenAddresses: string[] | undefined
   private listenAddressesConfig: ListenAddressesConfig | undefined
   public envConfig: EnvConfig;
+
+  public envTopic = "env-config";
 
   constructor(options: ArchaeologistInit) {
     if (!options.listenAddresses && !options.listenAddressesConfig) {
@@ -42,7 +43,6 @@ export class Archaeologist {
       isBootstrap: options.isBootstrap
     })
 
-    this.i = 0;
     this.name = options.name
     this.peerId = options.peerId
     this.listenAddresses = options.listenAddresses
@@ -53,26 +53,20 @@ export class Archaeologist {
     this.node = await this.createLibp2pNode(arg.idFilePath)
     this.envConfig = arg.config;
 
-    const topic = "wow"
-    this.node.pubsub.addEventListener("message", (evt) => {
-      console.log(`${this.name} received a msg: ${new TextDecoder().decode(evt.detail.data)}`)
-    })
-    this.node.pubsub.subscribe(topic)
+    setInterval(() => this.publishEnvConfig(), 30000)
+  }
 
-    setInterval(() => {
-      const configStr = JSON.stringify(this.envConfig);
-      this.publish(topic, configStr).catch(err => {
-        console.info(err)
-      })
-    }, 1000)
+  async publishEnvConfig() {
+    const configStr = JSON.stringify(this.envConfig);
+    this.publish(this.envTopic, configStr).catch(err => {
+      console.info(err)
+    })
   }
 
   async publish(topic: string, msg: string) {
     try {
       const data = new TextEncoder().encode(msg);
-      console.log(`${this.i} -- ${this.name} publish msg`);
       await this.node.pubsub.publish(topic, data);
-      this.i++
     }
     catch (err) {
       console.log(err);

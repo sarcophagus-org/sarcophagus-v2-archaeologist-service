@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const webRtcStar = new WebRTCStar();
 
   const config = {
-    name: "browserNode",
     addresses: {
       // Add the signaling server address, along with our PeerId to our multiaddrs list
       // libp2p will automatically attempt to dial to the signaling server so that it can
@@ -90,17 +89,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   })
 
-  browserNode.pubsub.addEventListener('message', (evt) => {
-    const msg = new TextDecoder().decode(evt.detail.data)
-    log(msg)
-  })
-
   // Listen for peers connecting
   browserNode.connectionManager.addEventListener('peer:connect', (evt) => {
     const peer = evt.detail.remotePeer
     log(`Connection established to: ${peer.toString()}`)
   });
 
-  const topic = "wow"
-  browserNode.pubsub.subscribe(topic)
+  browserNode.pubsub.addEventListener('message', (evt) => {
+    const msg = new TextDecoder().decode(evt.detail.data)
+    log(msg)
+  })
+  browserNode.pubsub.subscribe("env-config")
 });
