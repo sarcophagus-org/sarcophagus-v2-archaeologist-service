@@ -78,6 +78,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const discoverPeers = [];
 
+  await browserNode.start()
+
   // Listen for new peers
   browserNode.addEventListener('peer:discovery', (evt) => {
     const peer = evt.detail
@@ -89,7 +91,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   })
 
   browserNode.pubsub.addEventListener('message', (evt) => {
-    log(`event found: ${evt.detail.data.toString()}`)
+    log(`Received a msg: ${new TextDecoder().decode(evt.detail.data)}`)
   })
 
   // Listen for peers connecting
@@ -99,8 +101,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   const topic = "wow"
-  browserNode.pubsub.addEventListener("message", (evt) => {
-    log(`${this.name} received a msg: ${new TextDecoder().decode(evt.detail.data)}`)
-  })
   browserNode.pubsub.subscribe(topic)
 });
