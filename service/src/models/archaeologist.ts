@@ -3,8 +3,7 @@ import { loadPeerIdFromFile } from "../utils";
 import { genListenAddresses } from "../utils/listen-addresses";
 import { createNode } from "../utils/create-node";
 import { NodeConfig } from "./node-config";
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { EnvConfig } from "./env-config";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -31,6 +30,7 @@ export class Archaeologist {
   private peerId
   private listenAddresses: string[] | undefined
   private listenAddressesConfig: ListenAddressesConfig | undefined
+  public envConfig: EnvConfig;
 
   constructor(options: ArchaeologistInit) {
     if (!options.listenAddresses && !options.listenAddressesConfig) {
@@ -49,18 +49,19 @@ export class Archaeologist {
     this.listenAddressesConfig = options.listenAddressesConfig
   }
 
-  async initNode(idFilePath?: string) {
-    this.node = await this.createLibp2pNode(idFilePath)
+  async initNode(arg: { config: EnvConfig, idFilePath?: string }) {
+    this.node = await this.createLibp2pNode(arg.idFilePath)
+    this.envConfig = arg.config;
 
     const topic = "wow"
     this.node.pubsub.addEventListener("message", (evt) => {
-      // Will not receive own published messages by default
       console.log(`${this.name} received a msg: ${new TextDecoder().decode(evt.detail.data)}`)
     })
     this.node.pubsub.subscribe(topic)
 
     setInterval(() => {
-      this.publish(topic, `${this.i} -- ${this.name} says hi!`).catch(err => {
+      const configStr = JSON.stringify(this.envConfig);
+      this.publish(topic, configStr).catch(err => {
         console.info(err)
       })
     }, 1000)

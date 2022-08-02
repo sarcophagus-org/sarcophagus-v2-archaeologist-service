@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { getMultiAddresses } from "./utils";
+import { getMultiAddresses, validateEnvVars } from "./utils";
 import { randomArchVals } from "./utils/random-arch-gen.js";
 import { Archaeologist } from "./models/archaeologist";
 
@@ -12,6 +12,8 @@ const numOfArchsToGenerate = 4
 const startingTcpPort = 8000
 const startingWsPort = 10000
 
+const config = validateEnvVars();
+
 let archaeologists: Promise<void>[] = []
 const { peerId, listenAddresses } = await randomArchVals(startingTcpPort, startingWsPort)
 
@@ -22,7 +24,7 @@ const bootstrap = new Archaeologist({
   isBootstrap: true
 })
 
-await bootstrap.initNode()
+await bootstrap.initNode({ config })
 
 const bootstrapList = getMultiAddresses(bootstrap.node)
 
@@ -35,7 +37,7 @@ for (let i = 0; i < numOfArchsToGenerate; i++) {
     bootstrapList
   })
 
-  archaeologists.push(arch.initNode())
+  archaeologists.push(arch.initNode({ config }))
 }
 
 await Promise.all(archaeologists)

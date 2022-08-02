@@ -91,7 +91,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   })
 
   browserNode.pubsub.addEventListener('message', (evt) => {
-    log(`Received a msg: ${new TextDecoder().decode(evt.detail.data)}`)
+    const msg = new TextDecoder().decode(evt.detail.data)
+    log(msg)
   })
 
   // Listen for peers connecting
