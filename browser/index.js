@@ -100,7 +100,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   browserNode.pubsub.addEventListener('message', (evt) => {
     const msg = new TextDecoder().decode(evt.detail.data)
-    log(msg)
+    const sourceId = evt.detail.from.toString();
+    log(`from ${sourceId.slice(sourceId.length - idTruncateLimit)}: ${msg}`)
   })
   browserNode.pubsub.subscribe("env-config")
 });
