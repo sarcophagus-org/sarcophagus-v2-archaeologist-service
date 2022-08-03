@@ -4,6 +4,8 @@ import jsonfile from "jsonfile"
 import { createFromJSON } from "@libp2p/peer-id-factory";
 import { EnvConfig } from 'models/env-config';
 
+import ethers from "ethers";
+
 export function getMultiAddresses(node: Libp2p): string[] {
   return node.getMultiaddrs().map((m) => m.toString())
 }
@@ -48,8 +50,10 @@ export function validateEnvVars() {
     throw Error("FEE_PER_BYTE not set in .env")
   }
 
+  var wallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY);
+
   const config: EnvConfig = {
-    publicKey: "privateKey",
+    publicKey: wallet.publicKey,
     maxRessurectiomTime: Number.parseInt(process.env.MAX_RESURRECTION_TIME),
     minBounty: Number.parseInt(process.env.MIN_BOUNTY),
     minDiggingFees: Number.parseInt(process.env.MIN_DIGGING_FEES),

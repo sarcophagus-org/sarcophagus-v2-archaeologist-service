@@ -25,7 +25,7 @@ export async function createNode(
 function setupNodeEventListeners(node: Libp2p, name: string) {
   node.addEventListener('peer:discovery', (evt) => {
     const peer = evt.detail
-    // console.log(`${name} discovered: ${peer.id.toString()}`)
+    console.log(`${name} discovered: ${peer.id.toString()}`)
   })
 
   node.connectionManager.addEventListener('peer:connect', (evt) => {

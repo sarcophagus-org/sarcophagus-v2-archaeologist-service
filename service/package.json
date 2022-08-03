@@ -27,15 +27,16 @@
     "@libp2p/websockets": "^1.0.9",
     "@types/node": "^18.0.0",
     "dotenv": "^16.0.1",
+    "ethers": "^5.6.9",
     "jsonfile": "^6.1.0",
     "libp2p": "^0.37.2",
     "peer-id": "^0.16.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.18",
-    "ts-node": "^9.1.1",
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
+    "nodemon": "^2.0.18",
     "rollup-plugin-polyfill-node": "^0.10.2",
+    "ts-node": "^9.1.1",
     "typescript": "^4.7.4"
   },
   "engines": {
