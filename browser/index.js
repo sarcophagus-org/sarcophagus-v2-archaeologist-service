@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Add the signaling server address, along with our PeerId to our multiaddrs list
       // libp2p will automatically attempt to dial to the signaling server so that it can
       // receive inbound connections from other peers
-      listen: import.meta.env.VITE_SIGNAL_SERVER_LIST.split(", ").map(server => {
+      listen: import.meta.env.VITE_SIGNAL_SERVER_LIST.split(",").map(s => s.trim()).map(server => {
         return `/dns4/${server}/tcp/443/wss/p2p-webrtc-star`
       })
     },
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     peerDiscovery: [
       webRtcStar.discovery,
       new Bootstrap({
-        list: import.meta.env.VITE_BOOTSTRAP_NODE_LIST.split(", ")
+        list: import.meta.env.VITE_BOOTSTRAP_NODE_LIST.split(",").map(s => s.trim())
       }),
     ],
     dht,
