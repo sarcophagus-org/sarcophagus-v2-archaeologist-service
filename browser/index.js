@@ -72,27 +72,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const status = document.getElementById("status");
   const output = document.getElementById("output");
+  const idTruncateLimit = 5;
 
   output.textContent = "";
 
   const discoverPeers = [];
 
+  const nodeId = browserNode.peerId.toString()
+  log(`starting browser node with id: ${nodeId.slice(nodeId.length - idTruncateLimit)}`)
   await browserNode.start()
 
   // Listen for new peers
   browserNode.addEventListener('peer:discovery', (evt) => {
-    const peer = evt.detail
+    const peerId = evt.detail.id.toString();
 
-    if (discoverPeers.find((p) => p === peer) === undefined) {
-      discoverPeers.push(peer);
-      log(`Peer ${browserNode.peerId.toString()} discovered: ${peer.id.toString()}`)
+    if (discoverPeers.find((p) => p === peerId) === undefined) {
+      discoverPeers.push(peerId);
+      log(`${nodeId.slice(nodeId.length - idTruncateLimit)} discovered: ${peerId.slice(peerId.length - idTruncateLimit)}`)
     }
   })
 
   // Listen for peers connecting
   browserNode.connectionManager.addEventListener('peer:connect', (evt) => {
-    const peer = evt.detail.remotePeer
-    log(`Connection established to: ${peer.toString()}`)
+    const peerId = evt.detail.remotePeer.toString();
+    log(`Connection established to: ${peerId.slice(peerId.length - idTruncateLimit)}`)
   });
 
   browserNode.pubsub.addEventListener('message', (evt) => {
