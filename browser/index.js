@@ -7,7 +7,9 @@ import { Mplex } from '@libp2p/mplex'
 import { Bootstrap } from '@libp2p/bootstrap'
 import { KadDHT } from "@libp2p/kad-dht";
 import { WebSockets } from "@libp2p/websockets";
-import { WebRTCStar } from '@libp2p/webrtc-star'
+import { WebRTCStar } from '@libp2p/webrtc-star';
+
+import { FloodSub } from '@libp2p/floodsub'
 
 if (!import.meta.env.VITE_BOOTSTRAP_NODE_LIST) {
   throw Error("VITE_BOOTSTRAP_NODE_LIST not set in .env")
@@ -18,19 +20,24 @@ if (!import.meta.env.VITE_SIGNAL_SERVER_LIST) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  function log(txt) {
+    console.info(txt);
+    output.textContent += `${txt.trim()}\n`;
+  }
+
   const dht = new KadDHT({
     protocolPrefix: "/archaeologist-service",
     clientMode: false
   })
 
-  const webRtcStar = new WebRTCStar()
+  const webRtcStar = new WebRTCStar();
 
-  const libp2p = await createLibp2p({
+  const config = {
     addresses: {
       // Add the signaling server address, along with our PeerId to our multiaddrs list
       // libp2p will automatically attempt to dial to the signaling server so that it can
       // receive inbound connections from other peers
-      listen: import.meta.env.VITE_SIGNAL_SERVER_LIST.split(", ").map(server => {
+      listen: import.meta.env.VITE_SIGNAL_SERVER_LIST.split(",").map(s => s.trim()).map(server => {
         return `/dns4/${server}/tcp/443/wss/p2p-webrtc-star`
       })
     },
@@ -47,42 +54,54 @@ document.addEventListener("DOMContentLoaded", async () => {
     peerDiscovery: [
       webRtcStar.discovery,
       new Bootstrap({
-        list: import.meta.env.VITE_BOOTSTRAP_NODE_LIST.split(", ")
+        list: import.meta.env.VITE_BOOTSTRAP_NODE_LIST.split(",").map(s => s.trim())
       }),
     ],
     dht,
     connectionManager: {
       autoDial: true
-    }
-  })
+    },
+    pubsub: new FloodSub({
+      enabled: true,
+      canRelayMessage: true,
+      emitSelf: false
+    }),
+  };
+
+  const browserNode = await createLibp2p(config);
 
   const status = document.getElementById("status");
   const output = document.getElementById("output");
+  const idTruncateLimit = 5;
 
   output.textContent = "";
 
-  function log(txt) {
-    console.info(txt);
-    output.textContent += `${txt.trim()}\n`;
-  }
+  const discoverPeers = [];
+
+  const nodeId = browserNode.peerId.toString()
+  log(`starting browser node with id: ${nodeId.slice(nodeId.length - idTruncateLimit)}`)
+  await browserNode.start()
 
   // Listen for new peers
-  libp2p.addEventListener('peer:discovery', (evt) => {
-    const peer = evt.detail
-    log(`Peer ${libp2p.peerId.toString()} discovered: ${peer.id.toString()}`)
-  })
+  browserNode.addEventListener('peer:discovery', (evt) => {
+    const peerId = evt.detail.id.toString();
 
-  libp2p.pubsub.addEventListener('message', (evt) => {
-    log(`event found: ${evt.detail.data.toString()}`)
+    if (discoverPeers.find((p) => p === peerId) === undefined) {
+      discoverPeers.push(peerId);
+      log(`${nodeId.slice(nodeId.length - idTruncateLimit)} discovered: ${peerId.slice(peerId.length - idTruncateLimit)}`)
+    }
   })
 
   // Listen for peers connecting
-  libp2p.connectionManager.addEventListener('peer:connect', (evt) => {
-    const peer = evt.detail.remotePeer
-    log(`Connection established to: ${peer.toString()}`)
+  browserNode.connectionManager.addEventListener('peer:connect', (evt) => {
+    const peerId = evt.detail.remotePeer.toString();
+    log(`Connection established to: ${peerId.slice(peerId.length - idTruncateLimit)}`)
   });
 
-
-  await libp2p.start();
-  log(`libp2p id is ${libp2p.peerId.toString()}`);
+  browserNode.pubsub.addEventListener('message', (evt) => {
+    const msg = new TextDecoder().decode(evt.detail.data)
+    const sourceId = evt.detail.from.toString();
+    log(`from ${sourceId.slice(sourceId.length - idTruncateLimit)}: ${msg}`)
+  })
+  browserNode.pubsub.subscribe("env-config")
 });

@@ -1,4 +1,6 @@
-import { createLibp2p, Libp2p, Libp2pOptions } from "libp2p"
+import { createLibp2p, Libp2p, Libp2pOptions } from "libp2p";
+
+const idTruncateLimit = 5;
 
 /**
  *
@@ -12,29 +14,40 @@ export async function createNode(
   // which prevent this from being typed as Libp2pOptions
   configOptions: any
 ): Promise<Libp2p> {
-  console.log(configOptions)
+  // console.log(configOptions)
   const node = await createLibp2p(configOptions)
-  setupNodeEventListeners(node, name)
+  setupNodeEventListeners(node, name);
 
-  ;console.log(`${name} starting with id: ${node.peerId.toString()}`)
+  const peerId = node.peerId.toString();
+  console.log(`${name} starting with id: ${peerId.slice(peerId.length - idTruncateLimit)}`)
 
-  await node.start()
-  return node
+  await node.start();
+  return node;
 }
+
+const discoverPeers: string[] = [];
 
 function setupNodeEventListeners(node: Libp2p, name: string) {
   node.addEventListener('peer:discovery', (evt) => {
-    const peer = evt.detail
-    console.log(`${name} discovered: ${peer.id.toString()}`)
+    const peerId = evt.detail.id.toString();
+
+    if (discoverPeers.find((p) => p === peerId) === undefined) {
+      discoverPeers.push(peerId);
+      console.log(`${name}: discovered ${peerId.slice(peerId.length - idTruncateLimit)}`)
+    }
   })
 
   node.connectionManager.addEventListener('peer:connect', (evt) => {
-    const peer = evt.detail.remotePeer
-    console.log(`${name} Connection established to:`, peer.toString())
+    const peerId = evt.detail.remotePeer.toString()
+    console.log(`${name}: Connection established to`, peerId.slice(peerId.length - idTruncateLimit))
   })
 
   node.connectionManager.addEventListener('peer:disconnect', (evt) => {
-    const peer = evt.detail.remotePeer
-    console.log(`${name} Connection dropped from:`, peer.toString())
+    const peerId = evt.detail.remotePeer.toString()
+    console.log(`${name}: Connection dropped from`, peerId.slice(peerId.length - idTruncateLimit))
+  })
+
+  node.pubsub.addEventListener("message", (evt) => {
+    console.log(`${this.name} received a msg: ${new TextDecoder().decode(evt.detail.data)}`)
   })
 }
