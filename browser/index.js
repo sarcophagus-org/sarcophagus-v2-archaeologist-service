@@ -93,9 +93,38 @@ document.addEventListener("DOMContentLoaded", async () => {
   })
 
   // Listen for peers connecting
-  browserNode.connectionManager.addEventListener('peer:connect', (evt) => {
+  browserNode.connectionManager.addEventListener('peer:connect', async (evt) => {
     const peerId = evt.detail.remotePeer.toString();
     log(`Connection established to: ${peerId.slice(peerId.length - idTruncateLimit)}`)
+
+    // try {
+    //   log("starting stream")
+    //   const conn = browserNode.getConnections()[0];
+
+    //   const factory = new Mplex()
+    //   const muxer = factory.createStreamMuxer(browserNode.peerStore.components, {
+    //     onStream: stream => {
+    //       console.log("streamed!");
+    //       (async function* () {
+    //         for await (const data of stream) console.log(data)
+    //       })()
+    //     },
+    //   })
+
+    //   // conn.newStream
+    //   const stream = muxer.newStream() // Create a new duplex stream to the remote
+    //   // pipe(conn, muxer, conn) // conn is duplex connection to another peer
+
+    //   stream.source.push("hi");
+
+
+    //   // Use the duplex stream to send some data to the remote...
+    //   pipe([1, 2, 3], stream)
+    //   log("piped stream")
+    // } catch (err) {
+    //   console.log(err)
+    // }
+
   });
 
   browserNode.pubsub.addEventListener('message', (evt) => {
