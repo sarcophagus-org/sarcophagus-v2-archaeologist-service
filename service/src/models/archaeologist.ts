@@ -4,6 +4,7 @@ import { genListenAddresses } from "../utils/listen-addresses";
 import { createNode } from "../utils/create-node";
 import { NodeConfig } from "./node-config";
 import { EnvConfig } from "./env-config";
+import { pipe } from "it-pipe";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -49,11 +50,26 @@ export class Archaeologist {
     this.listenAddressesConfig = options.listenAddressesConfig
   }
 
+  async setupIncomingConfigStream() {
+    this.node.handle(['/get-config/1.0.0'], async ({ stream }) => {
+      try {
+        await pipe(stream, async (source) => {
+          for await (const data of source) {
+            console.log(`${this.name} got data from stream", ${new TextDecoder().decode(data)}`)
+          }
+        })
+      } catch (err) {
+        console.log("problem with pipe", err)
+      }
+    })
+  }
+
   async initNode(arg: { config: EnvConfig, idFilePath?: string }) {
     this.node = await this.createLibp2pNode(arg.idFilePath)
     this.envConfig = arg.config;
 
     setInterval(() => this.publishEnvConfig(), 30000)
+    return this.node;
   }
 
   async publishEnvConfig() {
@@ -86,6 +102,6 @@ export class Archaeologist {
     this.nodeConfig.add("peerId", this.peerId)
     this.nodeConfig.add("addresses", { listen: this.listenAddresses })
 
-    return await createNode(this.name, this.nodeConfig.configObj)
+    return createNode(this.name, this.nodeConfig.configObj)
   }
 }

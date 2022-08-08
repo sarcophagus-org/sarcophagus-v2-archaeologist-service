@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer'
+import { pushable } from "it-pushable";
 globalThis.Buffer = Buffer
 
 import { createLibp2p } from 'libp2p'
@@ -10,6 +11,7 @@ import { WebSockets } from "@libp2p/websockets";
 import { WebRTCStar } from '@libp2p/webrtc-star';
 
 import { FloodSub } from '@libp2p/floodsub'
+import { pipe } from "it-pipe";
 
 if (!import.meta.env.VITE_BOOTSTRAP_NODE_LIST) {
   throw Error("VITE_BOOTSTRAP_NODE_LIST not set in .env")
@@ -92,10 +94,33 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   })
 
+
   // Listen for peers connecting
   browserNode.connectionManager.addEventListener('peer:connect', async (evt) => {
+    const outboundStream = pushable({})
+    let intervalIndex = 0;
+
+    setInterval(() => {
+      intervalIndex += 1;
+      outboundStream.push(
+        new TextEncoder().encode(`talking to u ${intervalIndex}`)
+      )
+    }, 5000)
+
     const peerId = evt.detail.remotePeer.toString();
     log(`Connection established to: ${peerId.slice(peerId.length - idTruncateLimit)}`)
+
+    void Promise.resolve().then(async () => {
+      try {
+        const { stream, protocol } = await evt.detail.newStream('/get-config/1.0.0')
+        pipe(
+          outboundStream,
+          stream
+        )
+      } catch (err) {
+        log(`Error in peer conn listener: ${err}`)
+      }
+    })
 
     // try {
     //   log("starting stream")

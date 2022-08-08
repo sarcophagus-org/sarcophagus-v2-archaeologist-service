@@ -1,6 +1,6 @@
 export interface EnvConfig {
     publicKey: string,
-    maxRessurectiomTime: number,
+    maxRessurectionTime: number,
     minBounty: number,
     minDiggingFees: number,
     isArweaver: boolean,

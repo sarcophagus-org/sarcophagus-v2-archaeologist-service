@@ -54,7 +54,7 @@ export function validateEnvVars() {
 
   const config: EnvConfig = {
     publicKey: wallet.publicKey,
-    maxRessurectiomTime: Number.parseInt(process.env.MAX_RESURRECTION_TIME),
+    maxRessurectionTime: Number.parseInt(process.env.MAX_RESURRECTION_TIME),
     minBounty: Number.parseInt(process.env.MIN_BOUNTY),
     minDiggingFees: Number.parseInt(process.env.MIN_DIGGING_FEES),
     isArweaver: process.env.IS_ARWEAVER === "true",
