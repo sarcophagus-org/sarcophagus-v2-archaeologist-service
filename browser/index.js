@@ -72,24 +72,58 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const browserNode = await createLibp2p(config);
 
-  const status = document.getElementById("status");
+  const fileInput = document.getElementById("file-input");
   const output = document.getElementById("output");
   const idTruncateLimit = 5;
 
+  fileInput.addEventListener("change", (evt) => {
+    const file = fileInput.files[0];
+
+    const reader = new FileReader();
+
+    reader.addEventListener('load', (event) => {
+      const fileData = event.target.result;
+
+      console.log("fileData", fileData);
+
+
+
+      const outboundStream = pushable({});
+      outboundStream.push(new TextEncoder().encode(fileData));
+
+
+      void Promise.resolve().then(async () => {
+        try {
+          const { stream, protocol } = await selectedArweaveConn.newStream('/get-config/1.0.0')
+          pipe(
+            outboundStream,
+            stream
+          )
+        } catch (err) {
+          log(`Error in peer conn listener: ${err}`)
+        }
+      })
+    });
+
+    reader.readAsDataURL(file);
+  });
+
   output.textContent = "";
 
-  const discoverPeers = [];
+  const discoveredPeers = [];
 
   const nodeId = browserNode.peerId.toString()
   log(`starting browser node with id: ${nodeId.slice(nodeId.length - idTruncateLimit)}`)
   await browserNode.start()
 
+  let selectedArweaveConn;
+
   // Listen for new peers
   browserNode.addEventListener('peer:discovery', (evt) => {
     const peerId = evt.detail.id.toString();
 
-    if (discoverPeers.find((p) => p === peerId) === undefined) {
-      discoverPeers.push(peerId);
+    if (discoveredPeers.find((p) => p === peerId) === undefined) {
+      discoveredPeers.push(peerId);
       log(`${nodeId.slice(nodeId.length - idTruncateLimit)} discovered: ${peerId.slice(peerId.length - idTruncateLimit)}`)
     }
   })
@@ -97,59 +131,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Listen for peers connecting
   browserNode.connectionManager.addEventListener('peer:connect', async (evt) => {
-    const outboundStream = pushable({})
-    let intervalIndex = 0;
-
-    setInterval(() => {
-      intervalIndex += 1;
-      outboundStream.push(
-        new TextEncoder().encode(`talking to u ${intervalIndex}`)
-      )
-    }, 5000)
+    // in actual app, will need to track all connected nodes, and set this value
+    // based on user input
+    selectedArweaveConn = evt.detail;
 
     const peerId = evt.detail.remotePeer.toString();
     log(`Connection established to: ${peerId.slice(peerId.length - idTruncateLimit)}`)
-
-    void Promise.resolve().then(async () => {
-      try {
-        const { stream, protocol } = await evt.detail.newStream('/get-config/1.0.0')
-        pipe(
-          outboundStream,
-          stream
-        )
-      } catch (err) {
-        log(`Error in peer conn listener: ${err}`)
-      }
-    })
-
-    // try {
-    //   log("starting stream")
-    //   const conn = browserNode.getConnections()[0];
-
-    //   const factory = new Mplex()
-    //   const muxer = factory.createStreamMuxer(browserNode.peerStore.components, {
-    //     onStream: stream => {
-    //       console.log("streamed!");
-    //       (async function* () {
-    //         for await (const data of stream) console.log(data)
-    //       })()
-    //     },
-    //   })
-
-    //   // conn.newStream
-    //   const stream = muxer.newStream() // Create a new duplex stream to the remote
-    //   // pipe(conn, muxer, conn) // conn is duplex connection to another peer
-
-    //   stream.source.push("hi");
-
-
-    //   // Use the duplex stream to send some data to the remote...
-    //   pipe([1, 2, 3], stream)
-    //   log("piped stream")
-    // } catch (err) {
-    //   console.log(err)
-    // }
-
   });
 
   browserNode.pubsub.addEventListener('message', (evt) => {
@@ -157,5 +144,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const sourceId = evt.detail.from.toString();
     log(`from ${sourceId.slice(sourceId.length - idTruncateLimit)}: ${msg}`)
   })
+
   browserNode.pubsub.subscribe("env-config")
 });
