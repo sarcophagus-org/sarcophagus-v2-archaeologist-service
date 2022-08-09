@@ -5,6 +5,7 @@ import { createNode } from "../utils/create-node";
 import { NodeConfig } from "./node-config";
 import { EnvConfig } from "./env-config";
 import { pipe } from "it-pipe";
+import { solidityKeccak256 } from "ethers/lib/utils";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -55,7 +56,10 @@ export class Archaeologist {
       try {
         await pipe(stream, async (source) => {
           for await (const data of source) {
-            console.log(`${this.name} got data from stream", ${new TextDecoder().decode(data)}`)
+            const decoded = new TextDecoder().decode(data);
+            const hashed = solidityKeccak256(["string"], [decoded]);
+
+            console.log("arch hashed", hashed);
           }
         })
       } catch (err) {

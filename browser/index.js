@@ -12,6 +12,7 @@ import { WebRTCStar } from '@libp2p/webrtc-star';
 
 import { FloodSub } from '@libp2p/floodsub'
 import { pipe } from "it-pipe";
+import { solidityKeccak256 } from "ethers/lib/utils";
 
 if (!import.meta.env.VITE_BOOTSTRAP_NODE_LIST) {
   throw Error("VITE_BOOTSTRAP_NODE_LIST not set in .env")
@@ -84,11 +85,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     reader.addEventListener('load', (event) => {
       const fileData = event.target.result;
 
-      console.log("fileData", fileData);
-
-
-
       const outboundStream = pushable({});
+
+      console.log("browser hashed", solidityKeccak256(["string"], [fileData]));
+
       outboundStream.push(new TextEncoder().encode(fileData));
 
 
