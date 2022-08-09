@@ -52,7 +52,7 @@ export class Archaeologist {
   }
 
   async setupIncomingConfigStream() {
-    this.node.handle(['/get-config/1.0.0'], async ({ stream }) => {
+    this.node.handle(['/get-file/1.0.0'], async ({ stream }) => {
       try {
         await pipe(stream, async (source) => {
           for await (const data of source) {

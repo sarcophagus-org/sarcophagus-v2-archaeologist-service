@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       void Promise.resolve().then(async () => {
         try {
-          const { stream, protocol } = await selectedArweaveConn.newStream('/get-config/1.0.0')
+          const { stream } = await selectedArweaveConn.newStream('/get-file/1.0.0')
           pipe(
             outboundStream,
             stream
