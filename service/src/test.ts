@@ -9,7 +9,7 @@ import { Libp2p } from "libp2p";
  * Set numOfArchsToGenerate for how many archaeologists to generate
  */
 
-const numOfArchsToGenerate = 4
+const numOfArchsToGenerate = 1
 const startingTcpPort = 8000
 const startingWsPort = 10000
 
