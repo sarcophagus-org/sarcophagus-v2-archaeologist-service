@@ -82,27 +82,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const reader = new FileReader();
 
-    reader.addEventListener('load', (event) => {
+    reader.addEventListener('load', async (event) => {
       const fileData = event.target.result;
-
       const outboundStream = pushable({});
 
-      console.log("browser hashed", solidityKeccak256(["string"], [fileData]));
+      try {
+        console.log("browser hashed", solidityKeccak256(["string"], [fileData]));
+        outboundStream.push(new TextEncoder().encode(fileData));
+        const { stream } = await selectedArweaveConn.newStream('/get-file/1.0.0')
+        pipe(
+          outboundStream,
+          stream,
+        )
+      } catch (err) {
+        log(`Error in peer conn listener: ${err}`)
+      }
+    });
 
-      outboundStream.push(new TextEncoder().encode(fileData));
-
-
-      void Promise.resolve().then(async () => {
-        try {
-          const { stream } = await selectedArweaveConn.newStream('/get-file/1.0.0')
-          pipe(
-            outboundStream,
-            stream
-          )
-        } catch (err) {
-          log(`Error in peer conn listener: ${err}`)
-        }
-      })
+    reader.addEventListener('progress', (event) => {
+      if (event.loaded && event.total) {
+        const percent = (event.loaded / event.total) * 100;
+        console.log(`Progress: ${Math.round(percent)}%`);
+      }
     });
 
     reader.readAsDataURL(file);
