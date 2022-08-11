@@ -3,7 +3,7 @@ import { loadPeerIdFromFile } from "../utils";
 import { genListenAddresses } from "../utils/listen-addresses";
 import { createNode } from "../utils/create-node";
 import { NodeConfig } from "./node-config";
-import { EnvConfig } from "./env-config";
+import { PublicEnvConfig } from "./env-config";
 import { pipe } from "it-pipe";
 import { solidityKeccak256 } from "ethers/lib/utils";
 
@@ -31,7 +31,7 @@ export class Archaeologist {
   private peerId
   private listenAddresses: string[] | undefined
   private listenAddressesConfig: ListenAddressesConfig | undefined
-  public envConfig: EnvConfig;
+  public envConfig: PublicEnvConfig;
 
   public envTopic = "env-config";
 
@@ -68,7 +68,7 @@ export class Archaeologist {
     })
   }
 
-  async initNode(arg: { config: EnvConfig, idFilePath?: string }) {
+  async initNode(arg: { config: PublicEnvConfig, idFilePath?: string }) {
     this.node = await this.createLibp2pNode(arg.idFilePath)
     this.envConfig = arg.config;
 

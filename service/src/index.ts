@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { Archaeologist } from "./models/archaeologist"
-import { validateEnvVars } from "./utils";
+import { validateEnvVars } from './utils/validateEnv'
 
 const config = validateEnvVars()
 
