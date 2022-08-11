@@ -42,7 +42,9 @@ function validateBlockEnvVars() {
         feePerByte: constants.Zero,
     };
 
-    tryReadEnv("CHAIN_ID", process.env.CHAIN_ID, (envVar) => Number.parseInt(envVar));
+    tryReadEnv("CHAIN_ID", process.env.CHAIN_ID, (envVar) => {
+        if (Number.isNaN(Number.parseInt(envVar))) throw "";
+    });
     tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL);
     tryReadEnv("SARCO_DIAMOND_ADDRESS", process.env.SARCO_DIAMOND_ADDRESS);
     tryReadEnv("SARCO_TOKEN_ADDRESS", process.env.SARCO_TOKEN_ADDRESS);
@@ -62,7 +64,10 @@ function validateBlockEnvVars() {
     tryReadEnv(
         "MAX_RESURRECTION_TIME",
         process.env.MAX_RESURRECTION_TIME,
-        (envVar) => publicConfig.maxResurrectionTime = Number.parseInt(envVar)
+        (envVar) => {
+            if (Number.isNaN(Number.parseInt(envVar))) throw "";
+            publicConfig.maxResurrectionTime = Number.parseInt(envVar)
+        }
     );
     tryReadEnv(
         "MIN_BOUNTY",
