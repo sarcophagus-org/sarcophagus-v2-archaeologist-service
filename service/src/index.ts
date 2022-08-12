@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import { getWeb3Interface } from './scripts/web3-interface'
 import { Archaeologist } from "./models/archaeologist"
 import { validateEnvVars } from './utils/validateEnv'
 
@@ -16,6 +17,8 @@ const arch = new Archaeologist({
 })
 
 await arch.initNode({ config })
+arch.setupIncomingConfigStream();
 
+const web3Interface = await getWeb3Interface();
 
 
