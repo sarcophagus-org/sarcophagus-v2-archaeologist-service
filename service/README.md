@@ -71,6 +71,7 @@ Output how much rewards you have accumulated
 - `q:` or `exit:` or `end:` or `quit:`
 
 Indicate that the process should termite as soon as other commands have completed
+
 ---
 
 ## Notes
