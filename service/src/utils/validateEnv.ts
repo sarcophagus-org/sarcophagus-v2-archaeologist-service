@@ -42,9 +42,6 @@ function validateBlockEnvVars() {
         feePerByte: constants.Zero,
     };
 
-    _tryReadEnv("CHAIN_ID", process.env.CHAIN_ID, (envVar) => {
-        if (Number.isNaN(Number.parseInt(envVar))) throw "";
-    });
     _tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL);
     _tryReadEnv("SARCO_DIAMOND_ADDRESS", process.env.SARCO_DIAMOND_ADDRESS);
     _tryReadEnv("SARCO_TOKEN_ADDRESS", process.env.SARCO_TOKEN_ADDRESS);

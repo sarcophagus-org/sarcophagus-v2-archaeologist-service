@@ -23,5 +23,7 @@ arch.setupIncomingConfigStream();
 const web3Interface = await getWeb3Interface();
 
 const bal = await web3Interface.sarcoToken.balanceOf(await web3Interface.signer.getAddress());
+const ethBal = await web3Interface.signer.getBalance();
 
+console.log("ETH Balance: ", ethers.utils.formatEther(ethBal));
 console.log("SARCO Balance: ", ethers.utils.formatEther(bal));
