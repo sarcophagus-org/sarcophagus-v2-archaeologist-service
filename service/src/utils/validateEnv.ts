@@ -4,15 +4,15 @@ import { BigNumber, constants } from "ethers"
 
 import ethers from "ethers";
 
-const _tryReadEnv = (envName: string, envVar: string | undefined, operation?: (envVar: string) => any) => {
+const _tryReadEnv = (envName: string, envVar: string | undefined, callback?: (envVar: string) => any) => {
     if (!envVar) {
         throw Error(`${envName} not set in .env`)
     }
 
-    if (!operation) return;
+    if (!callback) return;
 
     try {
-        operation(envVar);
+        callback(envVar);
     } catch (_) {
         throw Error(`${envName} not is invalid`)
     }
