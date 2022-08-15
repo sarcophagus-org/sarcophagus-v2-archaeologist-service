@@ -1,4 +1,4 @@
-import { createLibp2p, Libp2p, Libp2pOptions } from "libp2p";
+import { createLibp2p, Libp2p } from "libp2p";
 
 const idTruncateLimit = 5;
 
@@ -37,9 +37,9 @@ function setupNodeEventListeners(node: Libp2p, name: string) {
     }
   })
 
-  node.connectionManager.addEventListener('peer:connect', (evt) => {
+  node.connectionManager.addEventListener('peer:connect', async (evt) => {
     const peerId = evt.detail.remotePeer.toString()
-    console.log(`${name}: Connection established to`, peerId.slice(peerId.length - idTruncateLimit))
+    console.log(`${name}: Connection established to`, peerId.slice(peerId.length - idTruncateLimit));
   })
 
   node.connectionManager.addEventListener('peer:disconnect', (evt) => {

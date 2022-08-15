@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer'
+import { pushable } from "it-pushable";
 globalThis.Buffer = Buffer
 
 import { createLibp2p } from 'libp2p'
@@ -10,6 +11,8 @@ import { WebSockets } from "@libp2p/websockets";
 import { WebRTCStar } from '@libp2p/webrtc-star';
 
 import { FloodSub } from '@libp2p/floodsub'
+import { pipe } from "it-pipe";
+import { solidityKeccak256 } from "ethers/lib/utils";
 
 if (!import.meta.env.VITE_BOOTSTRAP_NODE_LIST) {
   throw Error("VITE_BOOTSTRAP_NODE_LIST not set in .env")
@@ -70,30 +73,69 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const browserNode = await createLibp2p(config);
 
-  const status = document.getElementById("status");
+  const fileInput = document.getElementById("file-input");
   const output = document.getElementById("output");
   const idTruncateLimit = 5;
 
+  fileInput.addEventListener("change", (evt) => {
+    const file = fileInput.files[0];
+
+    const reader = new FileReader();
+
+    reader.addEventListener('load', async (event) => {
+      const fileData = event.target.result;
+      const outboundStream = pushable({});
+
+      try {
+        console.log("browser hashed", solidityKeccak256(["string"], [fileData]));
+        outboundStream.push(new TextEncoder().encode(fileData));
+        const { stream } = await selectedArweaveConn.newStream('/get-file/1.0.0')
+        pipe(
+          outboundStream,
+          stream,
+        )
+      } catch (err) {
+        log(`Error in peer conn listener: ${err}`)
+      }
+    });
+
+    reader.addEventListener('progress', (event) => {
+      if (event.loaded && event.total) {
+        const percent = (event.loaded / event.total) * 100;
+        console.log(`Progress: ${Math.round(percent)}%`);
+      }
+    });
+
+    reader.readAsDataURL(file);
+  });
+
   output.textContent = "";
 
-  const discoverPeers = [];
+  const discoveredPeers = [];
 
   const nodeId = browserNode.peerId.toString()
   log(`starting browser node with id: ${nodeId.slice(nodeId.length - idTruncateLimit)}`)
   await browserNode.start()
 
+  let selectedArweaveConn;
+
   // Listen for new peers
   browserNode.addEventListener('peer:discovery', (evt) => {
     const peerId = evt.detail.id.toString();
 
-    if (discoverPeers.find((p) => p === peerId) === undefined) {
-      discoverPeers.push(peerId);
+    if (discoveredPeers.find((p) => p === peerId) === undefined) {
+      discoveredPeers.push(peerId);
       log(`${nodeId.slice(nodeId.length - idTruncateLimit)} discovered: ${peerId.slice(peerId.length - idTruncateLimit)}`)
     }
   })
 
+
   // Listen for peers connecting
-  browserNode.connectionManager.addEventListener('peer:connect', (evt) => {
+  browserNode.connectionManager.addEventListener('peer:connect', async (evt) => {
+    // in actual app, will need to track all connected nodes, and set this value
+    // based on user input
+    selectedArweaveConn = evt.detail;
+
     const peerId = evt.detail.remotePeer.toString();
     log(`Connection established to: ${peerId.slice(peerId.length - idTruncateLimit)}`)
   });
@@ -103,5 +145,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const sourceId = evt.detail.from.toString();
     log(`from ${sourceId.slice(sourceId.length - idTruncateLimit)}: ${msg}`)
   })
+
   browserNode.pubsub.subscribe("env-config")
 });
