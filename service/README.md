@@ -11,7 +11,7 @@ Configure the .env file as necessary:
 `nvm use && npm install`
 
 ---
-##### Generate Peer ID file
+##### Generate a Peer ID file for your node
 `npm peer-id-gen`
 
 _This only needs to be run once_
@@ -25,6 +25,29 @@ The service will still build despite these typescript errors._
 
 `npm run start`
 
+##### Approve
+Before your node can execute any contract call that sends SARCO token to the contract, you must
+approve the contract's spending SARCO on your behalf. This is a standard step. To do this, run:
+`npm run approve`
+
+##### Command Line Arguments
+Certain arguments may be passed into the process to trigger certain tasks on node startup.
+
+To use, run:
+`npm run start -- --<arg-name>:<value>`
+
+**Available arguments**
+- `deposit:<amount>`
+
+Deposit `<amount>` SARCO tokens to your free bond. Be sure to approve spending before using this argument.
+
+- `withdraw-bond:<amount>`
+
+Withrdraw `<amount>` SARCO tokens from your available free bond
+
+- `withdraw-reward:<amount>`
+
+Withrdraw `<amount>` SARCO tokens from your earned reward pool
 ---
 
 ## Notes
