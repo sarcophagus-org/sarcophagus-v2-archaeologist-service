@@ -90,9 +90,5 @@ function validateBlockEnvVars() {
         (envVar) => publicConfig.isArweaver = envVar === "true"
     );
 
-    if (!process.env.INFURA_API_KEY && !process.env.ALCHEMY_API_KEY && !process.env.ETHERSCAN_API_KEY) {
-        throw Error("None of INFURA_API_KEY, ALCHEMY_API_KEY or ETHERSCAN_API_KEY set in .env")
-    }
-
     return publicConfig;
 }
