@@ -9,7 +9,7 @@ import {
 } from "../typechain";
 
 
-interface Web3Interface {
+export interface Web3Interface {
     networkName: string,
     wallet: ethers.Wallet,
     signer: ethers.Signer,
