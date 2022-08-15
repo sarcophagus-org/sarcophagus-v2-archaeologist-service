@@ -4,3 +4,4 @@ build
 .env
 tsconfig.tsbuildinfo
 peer-id.json
+typechain
