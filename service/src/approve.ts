@@ -14,7 +14,6 @@ console.log("Approving Sarcophagus contracts to spend SARCO on your behalf...");
 setInterval(() => process.stdout.write("."), 1000);
 
 const handleException = (e) => {
-  console.error('someht');
   console.error(e);
   exit(RPC_EXCEPTION);
 }

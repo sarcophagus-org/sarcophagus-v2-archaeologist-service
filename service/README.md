@@ -34,20 +34,43 @@ approve the contract's spending SARCO on your behalf. This is a standard step. T
 Certain arguments may be passed into the process to trigger certain tasks on node startup.
 
 To use, run:
-`npm run start -- --<arg-name>:<value>`
+`npm run start -- --<arg-name1>:<value1> <arg-name2>:<value2> <arg-name3>:`
+
+Multiple arguments:
+`npm run start -- --<arg-name1>:<value1> <arg-name2>:<value2>` <-- Do not repeat `--` for each argument
+
+Argument without a value:
+`npm run start -- --<arg>:`  <-- Note the trailing `:`!!
 
 **Available arguments**
-- `deposit:<amount>`
+- `deposit-bond:<amount>`
 
 Deposit `<amount>` SARCO tokens to your free bond. Be sure to approve spending before using this argument.
+
 
 - `withdraw-bond:<amount>`
 
 Withrdraw `<amount>` SARCO tokens from your available free bond
 
+
 - `withdraw-reward:<amount>`
 
 Withrdraw `<amount>` SARCO tokens from your earned reward pool
+
+
+- `free-bond:`
+
+Output how much free bond you have deposited in the contract
+
+
+- `rewards:`
+
+Output how much rewards you have accumulated
+
+
+- `q:` or `exit:` or `end:` or `quit:`
+
+Indicate that the process should termite as soon as other commands have completed
 ---
 
 ## Notes
