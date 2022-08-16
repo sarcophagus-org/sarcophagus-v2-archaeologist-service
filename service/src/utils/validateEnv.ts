@@ -69,17 +69,17 @@ function validateBlockEnvVars() {
     _tryReadEnv(
         "MIN_BOUNTY",
         process.env.MIN_BOUNTY,
-        (envVar) => publicConfig.minBounty = BigNumber.from(envVar)
+        (envVar) => publicConfig.minBounty = ethers.utils.parseEther(envVar)
     );
     _tryReadEnv(
         "MIN_DIGGING_FEES",
         process.env.MIN_DIGGING_FEES,
-        (envVar) => publicConfig.minDiggingFees = BigNumber.from(envVar)
+        (envVar) => publicConfig.minDiggingFees = ethers.utils.parseEther(envVar)
     );
     _tryReadEnv(
         "FEE_PER_BYTE",
         process.env.FEE_PER_BYTE,
-        (envVar) => publicConfig.feePerByte = BigNumber.from(envVar)
+        (envVar) => publicConfig.feePerByte = ethers.utils.parseEther(envVar)
     );
     _tryReadEnv(
         "IS_ARWEAVER",
