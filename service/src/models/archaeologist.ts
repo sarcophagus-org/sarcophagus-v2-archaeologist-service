@@ -73,7 +73,6 @@ export class Archaeologist {
     this.node = await this.createLibp2pNode(arg.idFilePath)
     this.envConfig = arg.config;
 
-    setInterval(() => this.publishEnvConfig(), 30000)
     return this.node;
   }
 
@@ -107,6 +106,6 @@ export class Archaeologist {
     this.nodeConfig.add("peerId", this.peerId)
     this.nodeConfig.add("addresses", { listen: this.listenAddresses })
 
-    return createNode(this.name, this.nodeConfig.configObj)
+    return createNode(this.name, this.nodeConfig.configObj, () => setTimeout(() => this.publishEnvConfig(), 400));
   }
 }

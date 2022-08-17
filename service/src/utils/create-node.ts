@@ -10,11 +10,12 @@ const idTruncateLimit = 5;
  */
 export async function createNode(
   name: string,
-  configOptions: Libp2pOptions
+  configOptions: Libp2pOptions,
+  connectCallback: () => void,
 ): Promise<Libp2p> {
   // console.log(configOptions)
   const node = await createLibp2p(configOptions)
-  setupNodeEventListeners(node, name);
+  setupNodeEventListeners(node, name, connectCallback);
 
   const peerId = node.peerId.toString();
   console.log(`${name} starting with id: ${peerId.slice(peerId.length - idTruncateLimit)}`)
@@ -25,7 +26,11 @@ export async function createNode(
 
 const discoverPeers: string[] = [];
 
-function setupNodeEventListeners(node: Libp2p, name: string) {
+function setupNodeEventListeners(
+  node: Libp2p,
+  name: string,
+  connectCallback: () => void,
+) {
   node.addEventListener('peer:discovery', (evt) => {
     const peerId = evt.detail.id.toString();
 
@@ -38,6 +43,8 @@ function setupNodeEventListeners(node: Libp2p, name: string) {
   node.connectionManager.addEventListener('peer:connect', async (evt) => {
     const peerId = evt.detail.remotePeer.toString()
     console.log(`${name}: Connection established to`, peerId.slice(peerId.length - idTruncateLimit));
+
+    connectCallback();
   })
 
   node.connectionManager.addEventListener('peer:disconnect', (evt) => {
