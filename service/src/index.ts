@@ -2,8 +2,8 @@ import 'dotenv/config'
 import { getWeb3Interface } from './scripts/web3-interface'
 import { Archaeologist } from "./models/archaeologist"
 import { validateEnvVars } from './utils/validateEnv'
-import { ethers } from 'ethers'
 import { parseArgs } from './utils/parseArgs'
+import { healthCheck } from './utils/health-check'
 
 const config = validateEnvVars()
 
@@ -23,10 +23,6 @@ arch.setupIncomingConfigStream();
 
 const web3Interface = await getWeb3Interface();
 
-const bal = await web3Interface.sarcoToken.balanceOf(await web3Interface.signer.getAddress());
-const ethBal = await web3Interface.signer.getBalance();
-
-console.log("ETH Balance: ", ethers.utils.formatEther(ethBal));
-console.log("SARCO Balance: ", ethers.utils.formatEther(bal));
-
 parseArgs(web3Interface);
+
+healthCheck(web3Interface);
