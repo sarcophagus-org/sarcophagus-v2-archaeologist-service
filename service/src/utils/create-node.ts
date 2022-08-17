@@ -1,4 +1,4 @@
-import { createLibp2p, Libp2p } from "libp2p";
+import { createLibp2p, Libp2p, Libp2pOptions } from "libp2p";
 
 const idTruncateLimit = 5;
 
@@ -10,9 +10,7 @@ const idTruncateLimit = 5;
  */
 export async function createNode(
   name: string,
-  // There are some type issues in libp2p interfaces
-  // which prevent this from being typed as Libp2pOptions
-  configOptions: any
+  configOptions: Libp2pOptions
 ): Promise<Libp2p> {
   // console.log(configOptions)
   const node = await createLibp2p(configOptions)

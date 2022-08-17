@@ -6,6 +6,7 @@ import { NodeConfig } from "./node-config";
 import { PublicEnvConfig } from "./env-config";
 import { pipe } from "it-pipe";
 import { solidityKeccak256 } from "ethers/lib/utils";
+import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -16,7 +17,7 @@ export interface ListenAddressesConfig {
 
 export interface ArchaeologistInit {
   name: string
-  peerId?: any
+  peerId?: PeerId
   listenAddresses?: string[] | undefined
   isBootstrap?: boolean
   listenAddressesConfig?: ListenAddressesConfig
@@ -27,8 +28,8 @@ export class Archaeologist {
   public node: Libp2p
   public name: string
 
-  private nodeConfig
-  private peerId
+  private nodeConfig: NodeConfig
+  private peerId: PeerId
   private listenAddresses: string[] | undefined
   private listenAddressesConfig: ListenAddressesConfig | undefined
   public envConfig: PublicEnvConfig;
