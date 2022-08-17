@@ -6,7 +6,7 @@ import {
     ArchaeologistFacet,
     ViewStateFacet,
     IERC20__factory
-} from "../typechain";
+} from "../abi_interfaces";
 
 
 export interface Web3Interface {
