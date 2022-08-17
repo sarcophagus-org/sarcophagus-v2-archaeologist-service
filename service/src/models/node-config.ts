@@ -8,8 +8,6 @@ import { Mplex } from "@libp2p/mplex";
 import { Bootstrap } from "@libp2p/bootstrap";
 import { Libp2pOptions } from "libp2p";
 
-const PROTOCOL_PREFIX = "/archaeologist-service"
-const webRtcStar = new WebRTCStar({ wrtc })
 
 import { FloodSub } from '@libp2p/floodsub'
 
@@ -18,6 +16,9 @@ interface NodeConfigParams {
   isBootstrap?: boolean,
   autoDial?: boolean,
 }
+
+const PROTOCOL_PREFIX = "/archaeologist-service";
+const webRtcStar = new WebRTCStar({ wrtc });
 
 export class NodeConfig {
   public configObj: Libp2pOptions = {
@@ -28,7 +29,7 @@ export class NodeConfig {
       // @ts-ignore
       new WebSockets(),
       // @ts-ignore
-      new WebRTCStar({ wrtc }),
+      webRtcStar,
     ],
     connectionEncryption: [
       new Noise()
