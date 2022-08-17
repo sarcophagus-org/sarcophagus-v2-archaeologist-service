@@ -13,6 +13,12 @@ const webRtcStar = new WebRTCStar({ wrtc })
 
 import { FloodSub } from '@libp2p/floodsub'
 
+interface NodeConfigParams {
+  bootstrapList?: string[],
+  isBootstrap?: boolean,
+  autoDial?: boolean,
+}
+
 export class NodeConfig {
   public configObj: Libp2pOptions = {
     // There are some type issues in libp2p interfaces
@@ -44,7 +50,7 @@ export class NodeConfig {
     }),
   }
 
-  constructor(options: any = {}) {
+  constructor(options: NodeConfigParams = {}) {
     if (options.bootstrapList) {
       this.configObj.peerDiscovery!.push(
         new Bootstrap({
