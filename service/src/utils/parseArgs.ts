@@ -77,7 +77,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
             case "rewards":
                 commands.push({
                     cmdName: argName,
-                    run: async () => web3Interface.viewStateFacet.getAvailableRewards(await web3Interface.signer.getAddress()),
+                    run: async () => web3Interface.viewStateFacet.getAvailableRewards(web3Interface.wallet.address),
                     notice: `Querying contract...`,
                     onComplete: (reward: ethers.BigNumberish) => console.log(`\nRewards Available: ${ethers.utils.formatEther(reward)} SARCO`),
                 });
@@ -88,7 +88,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
             case "free-bond":
                 commands.push({
                     cmdName: argName,
-                    run: async () => web3Interface.viewStateFacet.getFreeBond(await web3Interface.signer.getAddress()),
+                    run: async () => web3Interface.viewStateFacet.getFreeBond(web3Interface.wallet.address),
                     notice: `Querying contract...`,
                     onComplete: (bond: ethers.BigNumberish) => console.log(`\nFree Bond Available: ${ethers.utils.formatEther(bond)} SARCO`),
 

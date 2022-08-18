@@ -1,4 +1,4 @@
-import { BigNumber, constants, ethers } from "ethers";
+import { ethers } from "ethers";
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
 import { RPC_EXCEPTION } from "./exit-codes";
@@ -7,8 +7,8 @@ export async function healthCheck(web3Interface: Web3Interface) {
     try {
         // Query the contracts to get the archaeologists free bond value.If free bond is 0, spit out a warning on the console to tell the user they will not be able to accept new jobs.
         // Check the archaeologists local ETH balance.If the balance is 0, the archaeologist won't be able to sign any transactions (or do unwrappings). At this point, lets just show a warning for this.
-        const bal = await web3Interface.sarcoToken.balanceOf(await web3Interface.signer.getAddress());
-        const freeBond = await web3Interface.viewStateFacet.getFreeBond(await web3Interface.signer.getAddress());
+        const bal = await web3Interface.sarcoToken.balanceOf(web3Interface.wallet.address);
+        const freeBond = await web3Interface.viewStateFacet.getFreeBond(web3Interface.wallet.address);
         const ethBal = await web3Interface.signer.getBalance();
 
         console.log("\n\n=========================================================================================================");
