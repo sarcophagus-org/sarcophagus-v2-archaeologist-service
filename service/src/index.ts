@@ -4,6 +4,7 @@ import { Archaeologist } from "./models/archaeologist"
 import { validateEnvVars } from './utils/validateEnv'
 import { parseArgs } from './utils/parseArgs'
 import { healthCheck } from './utils/health-check'
+import { setupEventListeners } from './utils/event-listeners'
 
 const config = validateEnvVars()
 
@@ -26,3 +27,5 @@ const web3Interface = await getWeb3Interface();
 parseArgs(web3Interface);
 
 healthCheck(web3Interface);
+
+setupEventListeners(web3Interface);
