@@ -4,12 +4,12 @@
   "description": "Service used to perform jobs in the Sarcophagus ecosystem",
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development nodemon --watch 'src/**' index.ts",
+    "dev": "cross-env NODE_ENV=development nodemon --watch 'src/**' index.ts",
     "build": "tsc -p tsconfig.json",
-    "approve": "NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/approve.js",
-    "start": "NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/index.js",
-    "start:test": "NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/test.js",
-    "start:debug": "DEBUG=libp2p:* NODE_ENV=production NODE_PATH=./build node build/src/index.js",
+    "approve": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/approve.js",
+    "start": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/index.js",
+    "start:test": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/test.js",
+    "start:debug": "cross-env NODE_ENV=production DEBUG=libp2p:* NODE_PATH=./build node build/src/index.js",
     "peer-id-gen": "node ./src/scripts/peer-id-gen.js",
     "test": "node ./test.js",
     "test:all": "node ./test-all.js"
@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
+    "cross-env": "^7.0.3",
     "nodemon": "^2.0.18",
     "rollup-plugin-polyfill-node": "^0.10.2",
     "ts-node": "^9.1.1",
