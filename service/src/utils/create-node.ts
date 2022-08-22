@@ -1,4 +1,5 @@
-import { createLibp2p, Libp2p } from "libp2p";
+import { createLibp2p, Libp2p, Libp2pOptions } from "libp2p";
+import { archLogger } from "./chalk-theme";
 
 const idTruncateLimit = 5;
 
@@ -10,16 +11,14 @@ const idTruncateLimit = 5;
  */
 export async function createNode(
   name: string,
-  // There are some type issues in libp2p interfaces
-  // which prevent this from being typed as Libp2pOptions
-  configOptions: any
+  configOptions: Libp2pOptions,
+  connectCallback: () => void,
 ): Promise<Libp2p> {
-  // console.log(configOptions)
   const node = await createLibp2p(configOptions)
-  setupNodeEventListeners(node, name);
+  setupNodeEventListeners(node, name, connectCallback);
 
   const peerId = node.peerId.toString();
-  console.log(`${name} starting with id: ${peerId.slice(peerId.length - idTruncateLimit)}`)
+  archLogger.info(`${name} starting with id: ${peerId.slice(peerId.length - idTruncateLimit)}`)
 
   await node.start();
   return node;
@@ -27,27 +26,33 @@ export async function createNode(
 
 const discoverPeers: string[] = [];
 
-function setupNodeEventListeners(node: Libp2p, name: string) {
+function setupNodeEventListeners(
+  node: Libp2p,
+  name: string,
+  connectCallback: () => void,
+) {
   node.addEventListener('peer:discovery', (evt) => {
     const peerId = evt.detail.id.toString();
 
     if (discoverPeers.find((p) => p === peerId) === undefined) {
       discoverPeers.push(peerId);
-      console.log(`${name}: discovered ${peerId.slice(peerId.length - idTruncateLimit)}`)
+      archLogger.info(`${name}: discovered ${peerId.slice(peerId.length - idTruncateLimit)}`)
     }
   })
 
   node.connectionManager.addEventListener('peer:connect', async (evt) => {
     const peerId = evt.detail.remotePeer.toString()
-    console.log(`${name}: Connection established to`, peerId.slice(peerId.length - idTruncateLimit));
+    archLogger.info(`${name}: Connection established to ${peerId.slice(peerId.length - idTruncateLimit)}`);
+
+    connectCallback();
   })
 
   node.connectionManager.addEventListener('peer:disconnect', (evt) => {
     const peerId = evt.detail.remotePeer.toString()
-    console.log(`${name}: Connection dropped from`, peerId.slice(peerId.length - idTruncateLimit))
+    archLogger.info(`${name}: Connection dropped from ${peerId.slice(peerId.length - idTruncateLimit)}`)
   })
 
   node.pubsub.addEventListener("message", (evt) => {
-    console.log(`${this.name} received a msg: ${new TextDecoder().decode(evt.detail.data)}`)
+    archLogger.info(`${this.name} received a msg: ${new TextDecoder().decode(evt.detail.data)}`)
   })
 }

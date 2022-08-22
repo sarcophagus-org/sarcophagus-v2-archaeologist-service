@@ -87,7 +87,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const outboundStream = pushable({});
 
       try {
-        console.log("browser hashed", solidityKeccak256(["string"], [fileData]));
         outboundStream.push(new TextEncoder().encode(fileData));
         const { stream } = await selectedArweaveConn.newStream('/get-file/1.0.0')
         pipe(

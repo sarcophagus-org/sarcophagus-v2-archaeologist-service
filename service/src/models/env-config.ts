@@ -1,8 +1,10 @@
-export interface EnvConfig {
-    publicKey: string,
+import { BigNumber } from "ethers";
+
+export interface PublicEnvConfig {
+    encryptionPublicKey: string,
     maxResurrectionTime: number,
-    minBounty: number,
-    minDiggingFees: number,
+    minBounty: BigNumber,
+    minDiggingFees: BigNumber,
     isArweaver: boolean,
-    feePerByte: number,
+    feePerByte: BigNumber,
 }
