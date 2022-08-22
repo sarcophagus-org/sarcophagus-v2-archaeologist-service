@@ -27,6 +27,7 @@
     "@libp2p/webrtc-star-signalling-server": "^2.0.1",
     "@libp2p/websockets": "^1.0.9",
     "@types/node": "^18.0.0",
+    "chalk": "^5.0.1",
     "dotenv": "^16.0.1",
     "ethers": "^5.6.9",
     "jsonfile": "^6.1.0",

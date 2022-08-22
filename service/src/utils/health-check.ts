@@ -1,7 +1,9 @@
 import { constants, ethers } from "ethers";
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
+import { archLogger } from "./chalk-theme";
 import { RPC_EXCEPTION } from "./exit-codes";
+
 
 export async function healthCheck(web3Interface: Web3Interface) {
     try {
@@ -11,23 +13,23 @@ export async function healthCheck(web3Interface: Web3Interface) {
         const freeBond = await web3Interface.viewStateFacet.getFreeBond(web3Interface.wallet.address);
         const ethBal = await web3Interface.signer.getBalance();
 
-        console.log("\n\n=========================================================================================================");
+        console.log("\n\n=========================================================================================================\n");
         console.log(" YOUR BALANCES:\n");
 
         console.log(` * SARCO:             ${ethers.utils.formatEther(bal)} SARCO`,);
         console.log(` * ETHER:             ${ethers.utils.formatEther(ethBal)} ETH`,);
         if (ethBal.eq(constants.Zero)) {
-            console.log(`\n   You will not be able to sign any transactions (or do unwrappings)!\n`);
+            archLogger.warn(`\n   You will not be able to sign any transactions (or do unwrappings)!\n`);
         }
 
         console.log(` * Free Bond:         ${ethers.utils.formatEther(freeBond)} SARCO`,);
         if (freeBond.eq(constants.Zero)) {
-            console.log(`\n   You will not be able to accept new jobs!`);
-            console.log(`   Run: \`npm run start -- --deposit-bond:<amount>\` to deposit some SARCO\n`);
+            archLogger.warn(`\n   You will not be able to accept new jobs!`);
+            archLogger.error(`   Run: \`npm run start -- --deposit-bond:<amount>\` to deposit some SARCO\n`);
         }
         console.log("=========================================================================================================\n\n");
     } catch (e) {
-        console.error(e);
+        archLogger.error(e);
         exit(RPC_EXCEPTION);
     }
 }

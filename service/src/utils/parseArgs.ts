@@ -1,7 +1,9 @@
 import { ethers } from "ethers";
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
+import { archLogger } from "./chalk-theme";
 import { CLI_BAD_STARTUP_ARGUMENT, RPC_EXCEPTION } from "./exit-codes";
+import { healthCheck } from "./health-check";
 
 export async function parseArgs(web3Interface: Web3Interface) {
     const argsStr = process.argv.toString().split("--")[1];
@@ -79,7 +81,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
                     cmdName: argName,
                     run: async () => web3Interface.viewStateFacet.getAvailableRewards(web3Interface.wallet.address),
                     notice: `Querying contract...`,
-                    onComplete: (reward: ethers.BigNumberish) => console.log(`\nRewards Available: ${ethers.utils.formatEther(reward)} SARCO`),
+                    onComplete: (reward: ethers.BigNumberish) => archLogger.info(`\nRewards Available: ${ethers.utils.formatEther(reward)} SARCO`),
                 });
 
                 processedArgs.push(argName);
@@ -90,7 +92,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
                     cmdName: argName,
                     run: async () => web3Interface.viewStateFacet.getFreeBond(web3Interface.wallet.address),
                     notice: `Querying contract...`,
-                    onComplete: (bond: ethers.BigNumberish) => console.log(`\nFree Bond Available: ${ethers.utils.formatEther(bond)} SARCO`),
+                    onComplete: (bond: ethers.BigNumberish) => archLogger.info(`\nFree Bond Available: ${ethers.utils.formatEther(bond)} SARCO`),
 
                 });
 
@@ -117,7 +119,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
                         try {
                             await res.wait();
                             if (cmd.onComplete) cmd.onComplete();
-                            else console.log("SUCCESS");
+                            else archLogger.info("SUCCESS");
                             resolve();
                         } catch (e) {
                             reject();
@@ -128,7 +130,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
                         clearInterval(intervalIds[cmd.cmdName]);
 
                         if (cmd.onComplete) cmd.onComplete(res);
-                        else console.log("SUCCESS");
+                        else archLogger.info("SUCCESS");
                         resolve();
                     }
                 }).catch(e => {
@@ -149,10 +151,14 @@ export async function parseArgs(web3Interface: Web3Interface) {
         cmdPromises.push(cmdPromise);
     }
 
-    if (doExit) Promise.all(cmdPromises).then(() => exit(0)).catch((e) => {
-        console.error(e);
+    Promise.all(cmdPromises).then(() =>
+        doExit ?
+            exit(1) :
+            healthCheck(web3Interface)
+    ).catch((e) => {
+        archLogger.error(e);
         exit(1);
-    });
+    });;
 }
 
 function handleRpcError(error: string) {
@@ -161,14 +167,20 @@ function handleRpcError(error: string) {
         const b = error.indexOf(",");
 
         const available = error.substring(a, b);
-        console.error(`\nNot enough free bond. Available: ${ethers.utils.formatEther(available)} SARCO`,)
+        archLogger.error(`\nNot enough free bond. Available: ${ethers.utils.formatEther(available)} SARCO`,)
     } else if (error.includes("NotEnoughReward")) {
         const a = error.indexOf("(") + 1;
         const b = error.indexOf(",");
 
         const available = error.substring(a, b);
-        console.error(`\nNot enough reward. Available: ${ethers.utils.formatEther(available)} SARCO`,)
+        archLogger.error(`\nNot enough reward. Available: ${ethers.utils.formatEther(available)} SARCO`,)
+    } else if (error.includes("insufficient allowance")) {
+        archLogger.error(`\nTransaction reverted: Insufficient allowance`);
+        archLogger.error(`Run \`npm run approve\` to grant Sarcophagus contracts permission to transfer your SARCO tokens.`);
+    } else if (error.includes("transfer amount exceeds balance")) {
+        archLogger.error(`\nInsufficient balance`);
+        archLogger.error(`Add some SARCO to your account to continue`);
     } else {
-        console.error(error);
+        archLogger.error(`\n${error}`);
     }
 }

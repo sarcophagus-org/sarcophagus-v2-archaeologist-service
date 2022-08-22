@@ -7,6 +7,7 @@ import { PublicEnvConfig } from "./env-config";
 import { pipe } from "it-pipe";
 import { solidityKeccak256 } from "ethers/lib/utils";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
+import { archLogger } from "../utils/chalk-theme";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -89,7 +90,7 @@ export class Archaeologist {
       await this.node.pubsub.publish(topic, data);
     }
     catch (err) {
-      console.log(err);
+      archLogger.error(err);
     }
   }
 

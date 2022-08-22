@@ -26,7 +26,7 @@ The service will still build despite these typescript errors._
 `npm run start`
 
 ##### Approve
-Before your node can execute any contract call that sends SARCO token to the contract, you must
+Before your node can execute any contract call that sends SARCO tokens to the contract, you must
 approve the contract's spending SARCO on your behalf. This is a standard step. To do this, run:
 `npm run approve`
 

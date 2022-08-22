@@ -28,6 +28,5 @@ const web3Interface = await getWeb3Interface();
 parseArgs(web3Interface);
 
 retrieveOnchainData(web3Interface);
-healthCheck(web3Interface);
 
 setupEventListeners(web3Interface);
