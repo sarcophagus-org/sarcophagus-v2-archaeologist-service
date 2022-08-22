@@ -67,6 +67,29 @@ export class Archaeologist {
       } catch (err) {
         console.log("problem with pipe", err)
       }
+    });
+
+    this.node.handle(['/validate-arweave'], async ({ stream }) => {
+      try {
+        await pipe(stream, async (source) => {
+          for await (const data of source) {
+            const decoded = new TextDecoder().decode(data);
+            const jsonData = JSON.parse(decoded);
+
+            const txId = jsonData.arweaveTxId;
+            const unencryptedShardHash = jsonData.unencryptedShardHash;
+
+            console.log("txId", txId);
+            console.log("unencryptedShardHash", unencryptedShardHash);
+
+            // use txId to retrieve data on arweave
+            // using private key, decrypt data; hash it
+            // compare hash of decrypted data with unencryptedShardHash
+          }
+        })
+      } catch (err) {
+        console.log("problem with pipe", err)
+      }
     })
   }
 

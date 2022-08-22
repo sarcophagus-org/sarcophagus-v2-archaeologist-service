@@ -27,7 +27,7 @@ export async function healthCheck(web3Interface: Web3Interface) {
             archLogger.warn(`\n   You have no free bond. You will not be able to accept new jobs!`);
             archLogger.error(`   Run: \`npm run start -- --deposit-bond:<amount>\` to deposit some SARCO\n`);
         }
-        console.log("=========================================================================================================\n\n");
+        console.log("\n=========================================================================================================\n\n");
     } catch (e) {
         archLogger.error(e);
         exit(RPC_EXCEPTION);
