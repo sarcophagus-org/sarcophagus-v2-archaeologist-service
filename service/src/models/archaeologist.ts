@@ -3,9 +3,11 @@ import { loadPeerIdFromFile } from "../utils";
 import { genListenAddresses } from "../utils/listen-addresses";
 import { createNode } from "../utils/create-node";
 import { NodeConfig } from "./node-config";
-import { EnvConfig } from "./env-config";
+import { PublicEnvConfig } from "./env-config";
 import { pipe } from "it-pipe";
 import { solidityKeccak256 } from "ethers/lib/utils";
+import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
+import { archLogger } from "../utils/chalk-theme";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -16,7 +18,7 @@ export interface ListenAddressesConfig {
 
 export interface ArchaeologistInit {
   name: string
-  peerId?: any
+  peerId?: PeerId
   listenAddresses?: string[] | undefined
   isBootstrap?: boolean
   listenAddressesConfig?: ListenAddressesConfig
@@ -27,11 +29,11 @@ export class Archaeologist {
   public node: Libp2p
   public name: string
 
-  private nodeConfig
-  private peerId
+  private nodeConfig: NodeConfig
+  private peerId: PeerId
   private listenAddresses: string[] | undefined
   private listenAddressesConfig: ListenAddressesConfig | undefined
-  public envConfig: EnvConfig;
+  public envConfig: PublicEnvConfig;
 
   public envTopic = "env-config";
 
@@ -68,11 +70,10 @@ export class Archaeologist {
     })
   }
 
-  async initNode(arg: { config: EnvConfig, idFilePath?: string }) {
+  async initNode(arg: { config: PublicEnvConfig, idFilePath?: string }) {
     this.node = await this.createLibp2pNode(arg.idFilePath)
     this.envConfig = arg.config;
 
-    setInterval(() => this.publishEnvConfig(), 30000)
     return this.node;
   }
 
@@ -89,7 +90,7 @@ export class Archaeologist {
       await this.node.pubsub.publish(topic, data);
     }
     catch (err) {
-      console.log(err);
+      archLogger.error(err);
     }
   }
 
@@ -106,6 +107,6 @@ export class Archaeologist {
     this.nodeConfig.add("peerId", this.peerId)
     this.nodeConfig.add("addresses", { listen: this.listenAddresses })
 
-    return createNode(this.name, this.nodeConfig.configObj)
+    return createNode(this.name, this.nodeConfig.configObj, () => setTimeout(() => this.publishEnvConfig(), 400));
   }
 }

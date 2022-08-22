@@ -1,6 +1,11 @@
 import 'dotenv/config'
+import { getWeb3Interface } from './scripts/web3-interface'
 import { Archaeologist } from "./models/archaeologist"
-import { validateEnvVars } from "./utils";
+import { validateEnvVars } from './utils/validateEnv'
+import { parseArgs } from './utils/parseArgs'
+import { healthCheck } from './utils/health-check'
+import { setupEventListeners } from './utils/event-listeners'
+import { retrieveOnchainData } from './utils/onchain-data'
 
 const config = validateEnvVars()
 
@@ -16,6 +21,12 @@ const arch = new Archaeologist({
 })
 
 await arch.initNode({ config })
+arch.setupIncomingConfigStream();
 
+const web3Interface = await getWeb3Interface();
 
+parseArgs(web3Interface);
 
+retrieveOnchainData(web3Interface);
+
+setupEventListeners(web3Interface);
