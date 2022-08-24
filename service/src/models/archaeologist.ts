@@ -8,6 +8,7 @@ import { pipe } from "it-pipe";
 import { solidityKeccak256 } from "ethers/lib/utils";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../utils/chalk-theme";
+import { ethers } from "ethers";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -73,18 +74,25 @@ export class Archaeologist {
       try {
         await pipe(stream, async (source) => {
           for await (const data of source) {
-            const decoded = new TextDecoder().decode(data);
-            const jsonData = JSON.parse(decoded);
+            const jsonData = JSON.parse(new TextDecoder().decode(data));
 
             const txId = jsonData.arweaveTxId;
             const unencryptedShardHash = jsonData.unencryptedShardHash;
 
-            console.log("txId", txId);
-            console.log("unencryptedShardHash", unencryptedShardHash);
 
             // use txId to retrieve data on arweave
             // using private key, decrypt data; hash it
             // compare hash of decrypted data with unencryptedShardHash
+
+            const wallet = new ethers.Wallet(process.env.ETH_PRIVATE_KEY!);
+
+            const signatures = {
+              arweaveTxId: await wallet.signMessage(txId),
+              unencryptedShardHash: await wallet.signMessage(unencryptedShardHash)
+            };
+
+            const toBrowser = JSON.stringify(signatures);
+            this.publish("env-config", `signatures ${toBrowser}`);
           }
         })
       } catch (err) {
