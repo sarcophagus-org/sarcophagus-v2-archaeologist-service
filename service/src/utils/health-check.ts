@@ -19,12 +19,12 @@ export async function healthCheck(web3Interface: Web3Interface) {
         console.log(` * SARCO:             ${ethers.utils.formatEther(bal)} SARCO`,);
         console.log(` * ETHER:             ${ethers.utils.formatEther(ethBal)} ETH`,);
         if (ethBal.eq(constants.Zero)) {
-            archLogger.warn(`\n   You will not be able to sign any transactions (or do unwrappings)!\n`);
+            archLogger.warn(`\n   You have no ETH in your account. You will not be able to sign any transactions (or do unwrappings)!\n`);
         }
 
         console.log(` * Free Bond:         ${ethers.utils.formatEther(freeBond)} SARCO`,);
         if (freeBond.eq(constants.Zero)) {
-            archLogger.warn(`\n   You will not be able to accept new jobs!`);
+            archLogger.warn(`\n   You have no free bond. You will not be able to accept new jobs!`);
             archLogger.error(`   Run: \`npm run start -- --deposit-bond:<amount>\` to deposit some SARCO\n`);
         }
         console.log("=========================================================================================================\n\n");

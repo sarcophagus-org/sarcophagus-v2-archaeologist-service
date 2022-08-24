@@ -3,8 +3,7 @@ import { getWeb3Interface } from './scripts/web3-interface'
 import { Archaeologist } from "./models/archaeologist"
 import { validateEnvVars } from './utils/validateEnv'
 import { parseArgs } from './utils/parseArgs'
-import { healthCheck } from './utils/health-check'
-import { setupEventListeners } from './utils/event-listeners'
+import { setupEventListeners } from './utils/contract-event-listeners'
 import { retrieveOnchainData } from './utils/onchain-data'
 
 const config = validateEnvVars()
