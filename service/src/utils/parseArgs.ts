@@ -8,7 +8,10 @@ import { healthCheck } from "./health-check";
 export async function parseArgs(web3Interface: Web3Interface) {
     const argsStr = process.argv.toString().split("--")[1];
 
-    if (!argsStr) return;
+    if (!argsStr) {
+        healthCheck(web3Interface);
+        return;
+    }
 
     const args = argsStr.split(",").map(a => a.trim()).filter(a => a !== "");
 
