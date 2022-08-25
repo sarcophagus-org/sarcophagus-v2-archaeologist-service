@@ -85,15 +85,13 @@ export class Archaeologist {
             const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, wallet.publicKey);
 
             if (isValidShard) {
-              const signatures = {
-                arweaveTxId: await wallet.signMessage(txId),
-                unencryptedShardHash: await wallet.signMessage(unencryptedShardHash)
-              };
+              const msg = ethers.utils.solidityPack(['string', 'string'], [txId, unencryptedShardHash])
+              const signature = await wallet.signMessage(msg);
 
-              const toBrowser = JSON.stringify(signatures);
-              this.publish("env-config", `signatures ${toBrowser}`);
+              const toBrowser = JSON.stringify(signature);
+              this.publish("env-config", `signature ${toBrowser}`);
             } else {
-              this.publish("env-config", `signatures ${null}`);
+              this.publish("env-config", `signature ${null}`);
             }
           }
         })
