@@ -9,6 +9,7 @@ import { solidityKeccak256 } from "ethers/lib/utils";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../utils/chalk-theme";
 import { ethers } from "ethers";
+import { fetchAndValidateArweaveShard } from "../utils/arweave";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -79,20 +80,21 @@ export class Archaeologist {
             const txId = jsonData.arweaveTxId;
             const unencryptedShardHash = jsonData.unencryptedShardHash;
 
+            const wallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!);
 
-            // use txId to retrieve data on arweave
-            // using private key, decrypt data; hash it
-            // compare hash of decrypted data with unencryptedShardHash
+            const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, wallet.publicKey);
 
-            const wallet = new ethers.Wallet(process.env.ETH_PRIVATE_KEY!);
+            if (isValidShard) {
+              const signatures = {
+                arweaveTxId: await wallet.signMessage(txId),
+                unencryptedShardHash: await wallet.signMessage(unencryptedShardHash)
+              };
 
-            const signatures = {
-              arweaveTxId: await wallet.signMessage(txId),
-              unencryptedShardHash: await wallet.signMessage(unencryptedShardHash)
-            };
-
-            const toBrowser = JSON.stringify(signatures);
-            this.publish("env-config", `signatures ${toBrowser}`);
+              const toBrowser = JSON.stringify(signatures);
+              this.publish("env-config", `signatures ${toBrowser}`);
+            } else {
+              this.publish("env-config", `signatures ${null}`);
+            }
           }
         })
       } catch (err) {

@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { PublicEnvConfig } from "models/env-config";
-import { BigNumber, constants } from "ethers"
+import { constants } from "ethers"
 
 import ethers from "ethers";
 
