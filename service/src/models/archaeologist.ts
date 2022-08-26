@@ -100,7 +100,7 @@ export class Archaeologist {
 
               streamToBrowser(signature);
             } else {
-              streamToBrowser('');
+              streamToBrowser('0');
             }
           }
         })
