@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { PublicEnvConfig } from "models/env-config";
-import { BigNumber, constants } from "ethers"
+import { constants } from "ethers"
 
 import ethers from "ethers";
 
@@ -52,10 +52,7 @@ function validateBlockEnvVars() {
     _tryReadEnv(
         "ENCRYPTION_PRIVATE_KEY",
         process.env.ENCRYPTION_PRIVATE_KEY,
-        (envVar) => {
-            var wallet = new ethers.Wallet(envVar);
-            publicConfig.encryptionPublicKey = wallet.publicKey;
-        }
+        (envVar) => publicConfig.encryptionPublicKey = new ethers.Wallet(envVar).publicKey,
     );
 
     _tryReadEnv(

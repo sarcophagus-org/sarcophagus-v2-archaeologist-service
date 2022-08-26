@@ -8,7 +8,10 @@ import { healthCheck } from "./health-check";
 export async function parseArgs(web3Interface: Web3Interface) {
     const argsStr = process.argv.toString().split("--")[1];
 
-    if (!argsStr) return;
+    if (!argsStr) {
+        healthCheck(web3Interface);
+        return;
+    }
 
     const args = argsStr.split(",").map(a => a.trim()).filter(a => a !== "");
 
@@ -79,7 +82,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
             case "rewards":
                 commands.push({
                     cmdName: argName,
-                    run: async () => web3Interface.viewStateFacet.getAvailableRewards(web3Interface.wallet.address),
+                    run: async () => web3Interface.viewStateFacet.getAvailableRewards(web3Interface.ethWallet.address),
                     notice: `Querying contract...`,
                     onComplete: (reward: ethers.BigNumberish) => archLogger.info(`\nRewards Available: ${ethers.utils.formatEther(reward)} SARCO`),
                 });
@@ -90,7 +93,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
             case "free-bond":
                 commands.push({
                     cmdName: argName,
-                    run: async () => web3Interface.viewStateFacet.getFreeBond(web3Interface.wallet.address),
+                    run: async () => web3Interface.viewStateFacet.getFreeBond(web3Interface.ethWallet.address),
                     notice: `Querying contract...`,
                     onComplete: (bond: ethers.BigNumberish) => archLogger.info(`\nFree Bond Available: ${ethers.utils.formatEther(bond)} SARCO`),
 

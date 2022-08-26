@@ -8,6 +8,9 @@ import { pipe } from "it-pipe";
 import { solidityKeccak256 } from "ethers/lib/utils";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../utils/chalk-theme";
+import { ethers, Wallet } from "ethers";
+import { fetchAndValidateArweaveShard } from "../utils/arweave";
+import { pushable } from "it-pushable";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -34,6 +37,7 @@ export class Archaeologist {
   private listenAddresses: string[] | undefined
   private listenAddressesConfig: ListenAddressesConfig | undefined
   public envConfig: PublicEnvConfig;
+  public encryptionWallet: Wallet;
 
   public envTopic = "env-config";
 
@@ -67,12 +71,48 @@ export class Archaeologist {
       } catch (err) {
         console.log("problem with pipe", err)
       }
+    });
+
+    this.node.handle(['/validate-arweave'], async ({ stream }) => {
+      try {
+        const streamToBrowser = (result: string) => {
+          const outboundStream = pushable({})
+          outboundStream.push(new TextEncoder().encode(result))
+          pipe(
+            outboundStream,
+            stream
+          )
+        }
+
+        await pipe(stream, async (source) => {
+          for await (const data of source) {
+            const jsonData = JSON.parse(new TextDecoder().decode(data));
+
+            const txId = jsonData.arweaveTxId;
+            const unencryptedShardHash = jsonData.unencryptedShardHash;
+
+            const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, this.encryptionWallet.publicKey);
+
+            if (isValidShard) {
+              const msg = ethers.utils.solidityPack(['string', 'string'], [txId, unencryptedShardHash])
+              const signature = await this.encryptionWallet.signMessage(msg);
+
+              streamToBrowser(signature);
+            } else {
+              streamToBrowser('0');
+            }
+          }
+        })
+      } catch (err) {
+        console.log("problem with pipe", err)
+      }
     })
   }
 
-  async initNode(arg: { config: PublicEnvConfig, idFilePath?: string }) {
+  async initNode(arg: { config: PublicEnvConfig, encryptionWallet: Wallet, idFilePath?: string }) {
     this.node = await this.createLibp2pNode(arg.idFilePath)
     this.envConfig = arg.config;
+    this.encryptionWallet = arg.encryptionWallet;
 
     return this.node;
   }

@@ -15,7 +15,8 @@ import {
 
 export interface Web3Interface {
     networkName: string,
-    wallet: ethers.Wallet,
+    ethWallet: ethers.Wallet,
+    encryptionWallet: ethers.Wallet,
     signer: ethers.Signer,
     sarcoToken: IERC20,
     archaeologistFacet: ArchaeologistFacet,
@@ -26,8 +27,9 @@ export interface Web3Interface {
 
 export const getWeb3Interface = async () => {
     const rpcProvider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_URL);
-    const wallet = new ethers.Wallet(process.env.ETH_PRIVATE_KEY!, rpcProvider);
-    const signer = rpcProvider.getSigner(wallet.address);
+    const ethWallet = new ethers.Wallet(process.env.ETH_PRIVATE_KEY!, rpcProvider);
+    const encryptionWallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!, rpcProvider);
+    const signer = rpcProvider.getSigner(ethWallet.address);
     const network = await rpcProvider.detectNetwork();
 
     const sarcoToken = IERC20__factory.connect(process.env.SARCO_TOKEN_ADDRESS!, signer);
@@ -38,7 +40,8 @@ export const getWeb3Interface = async () => {
 
     return {
         networkName: network.name,
-        wallet,
+        encryptionWallet,
+        ethWallet,
         signer,
         sarcoToken,
         archaeologistFacet,
