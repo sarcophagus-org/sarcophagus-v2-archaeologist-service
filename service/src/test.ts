@@ -4,6 +4,7 @@ import { validateEnvVars } from "./utils/validateEnv";
 import { randomArchVals } from "./utils/random-arch-gen.js";
 import { Archaeologist } from "./models/archaeologist";
 import { Libp2p } from "libp2p";
+import { ethers } from 'ethers';
 
 /**
  * This file is used to test multiple archaeologists locally
@@ -19,6 +20,8 @@ const config = validateEnvVars();
 let archInitNodePromises: Promise<Libp2p>[] = [];
 const { peerId, listenAddresses } = await randomArchVals(startingTcpPort, startingWsPort)
 
+const wallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!);
+
 const bootstrap = new Archaeologist({
   name: "bootstrap",
   peerId,
@@ -26,7 +29,7 @@ const bootstrap = new Archaeologist({
   isBootstrap: true
 })
 
-await bootstrap.initNode({ config })
+await bootstrap.initNode({ config, wallet })
 
 const bootstrapList = getMultiAddresses(bootstrap.node)
 const archs: Archaeologist[] = []
@@ -40,7 +43,7 @@ for (let i = 1; i <= numOfArchsToGenerate; i++) {
     bootstrapList
   })
 
-  archInitNodePromises.push(arch.initNode({ config }))
+  archInitNodePromises.push(arch.initNode({ config, wallet }))
   archs.push(arch)
 }
 

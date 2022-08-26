@@ -37,7 +37,7 @@ export class Archaeologist {
   private listenAddresses: string[] | undefined
   private listenAddressesConfig: ListenAddressesConfig | undefined
   public envConfig: PublicEnvConfig;
-  public wallet: Wallet;
+  public encryptionWallet: Wallet;
 
   public envTopic = "env-config";
 
@@ -91,11 +91,11 @@ export class Archaeologist {
             const txId = jsonData.arweaveTxId;
             const unencryptedShardHash = jsonData.unencryptedShardHash;
 
-            const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, this.wallet.publicKey);
+            const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, this.encryptionWallet.publicKey);
 
             if (isValidShard) {
               const msg = ethers.utils.solidityPack(['string', 'string'], [txId, unencryptedShardHash])
-              const signature = await this.wallet.signMessage(msg);
+              const signature = await this.encryptionWallet.signMessage(msg);
 
               streamToBrowser(signature);
             } else {
@@ -112,7 +112,7 @@ export class Archaeologist {
   async initNode(arg: { config: PublicEnvConfig, wallet: Wallet, idFilePath?: string }) {
     this.node = await this.createLibp2pNode(arg.idFilePath)
     this.envConfig = arg.config;
-    this.wallet = arg.wallet;
+    this.encryptionWallet = arg.wallet;
 
     return this.node;
   }
