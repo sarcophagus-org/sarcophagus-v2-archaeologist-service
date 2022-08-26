@@ -19,10 +19,10 @@ const arch = new Archaeologist({
   }
 })
 
-await arch.initNode({ config })
-arch.setupIncomingConfigStream();
-
 const web3Interface = await getWeb3Interface();
+
+await arch.initNode({ config, wallet: web3Interface.wallet })
+arch.setupIncomingConfigStream();
 
 parseArgs(web3Interface);
 

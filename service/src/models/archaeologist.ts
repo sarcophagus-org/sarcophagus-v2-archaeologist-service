@@ -8,7 +8,7 @@ import { pipe } from "it-pipe";
 import { solidityKeccak256 } from "ethers/lib/utils";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../utils/chalk-theme";
-import { ethers } from "ethers";
+import { ethers, Wallet } from "ethers";
 import { fetchAndValidateArweaveShard } from "../utils/arweave";
 import { pushable } from "it-pushable";
 
@@ -37,6 +37,7 @@ export class Archaeologist {
   private listenAddresses: string[] | undefined
   private listenAddressesConfig: ListenAddressesConfig | undefined
   public envConfig: PublicEnvConfig;
+  public wallet: Wallet;
 
   public envTopic = "env-config";
 
@@ -90,13 +91,11 @@ export class Archaeologist {
             const txId = jsonData.arweaveTxId;
             const unencryptedShardHash = jsonData.unencryptedShardHash;
 
-            const wallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!);
-
-            const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, wallet.publicKey);
+            const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, this.wallet.publicKey);
 
             if (isValidShard) {
               const msg = ethers.utils.solidityPack(['string', 'string'], [txId, unencryptedShardHash])
-              const signature = await wallet.signMessage(msg);
+              const signature = await this.wallet.signMessage(msg);
 
               streamToBrowser(signature);
             } else {
@@ -110,9 +109,10 @@ export class Archaeologist {
     })
   }
 
-  async initNode(arg: { config: PublicEnvConfig, idFilePath?: string }) {
+  async initNode(arg: { config: PublicEnvConfig, wallet: Wallet, idFilePath?: string }) {
     this.node = await this.createLibp2pNode(arg.idFilePath)
     this.envConfig = arg.config;
+    this.wallet = arg.wallet;
 
     return this.node;
   }
