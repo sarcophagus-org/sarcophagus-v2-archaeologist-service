@@ -109,10 +109,10 @@ export class Archaeologist {
     })
   }
 
-  async initNode(arg: { config: PublicEnvConfig, wallet: Wallet, idFilePath?: string }) {
+  async initNode(arg: { config: PublicEnvConfig, encryptionWallet: Wallet, idFilePath?: string }) {
     this.node = await this.createLibp2pNode(arg.idFilePath)
     this.envConfig = arg.config;
-    this.encryptionWallet = arg.wallet;
+    this.encryptionWallet = arg.encryptionWallet;
 
     return this.node;
   }

@@ -7,7 +7,7 @@ const waitingForFinalise: string[] = [];
 
 export async function setupEventListeners(web3Interface: Web3Interface) {
     try {
-        const archAddress = web3Interface.wallet.address;
+        const archAddress = web3Interface.ethWallet.address;
 
         const initialiseFilter = web3Interface.embalmerFacet.filters.InitializeSarcophagus();
         web3Interface.embalmerFacet.on(initialiseFilter, (

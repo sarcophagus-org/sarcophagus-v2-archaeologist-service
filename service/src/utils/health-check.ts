@@ -9,8 +9,8 @@ export async function healthCheck(web3Interface: Web3Interface) {
     try {
         // Query the contracts to get the archaeologists free bond value.If free bond is 0, spit out a warning on the console to tell the user they will not be able to accept new jobs.
         // Check the archaeologists local ETH balance.If the balance is 0, the archaeologist won't be able to sign any transactions (or do unwrappings). At this point, lets just show a warning for this.
-        const bal = await web3Interface.sarcoToken.balanceOf(web3Interface.wallet.address);
-        const freeBond = await web3Interface.viewStateFacet.getFreeBond(web3Interface.wallet.address);
+        const bal = await web3Interface.sarcoToken.balanceOf(web3Interface.ethWallet.address);
+        const freeBond = await web3Interface.viewStateFacet.getFreeBond(web3Interface.ethWallet.address);
         const ethBal = await web3Interface.signer.getBalance();
 
         console.log("\n\n=========================================================================================================\n");

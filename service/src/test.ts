@@ -20,7 +20,7 @@ const config = validateEnvVars();
 let archInitNodePromises: Promise<Libp2p>[] = [];
 const { peerId, listenAddresses } = await randomArchVals(startingTcpPort, startingWsPort)
 
-const wallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!);
+const encryptionWallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!);
 
 const bootstrap = new Archaeologist({
   name: "bootstrap",
@@ -29,7 +29,7 @@ const bootstrap = new Archaeologist({
   isBootstrap: true
 })
 
-await bootstrap.initNode({ config, wallet })
+await bootstrap.initNode({ config, encryptionWallet })
 
 const bootstrapList = getMultiAddresses(bootstrap.node)
 const archs: Archaeologist[] = []
@@ -43,7 +43,7 @@ for (let i = 1; i <= numOfArchsToGenerate; i++) {
     bootstrapList
   })
 
-  archInitNodePromises.push(arch.initNode({ config, wallet }))
+  archInitNodePromises.push(arch.initNode({ config, encryptionWallet }))
   archs.push(arch)
 }
 

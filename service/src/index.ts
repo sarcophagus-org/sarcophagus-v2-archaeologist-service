@@ -21,7 +21,7 @@ const arch = new Archaeologist({
 
 const web3Interface = await getWeb3Interface();
 
-await arch.initNode({ config, wallet: web3Interface.wallet })
+await arch.initNode({ config, encryptionWallet: web3Interface.encryptionWallet })
 arch.setupIncomingConfigStream();
 
 parseArgs(web3Interface);
