@@ -10,6 +10,7 @@ import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../utils/chalk-theme";
 import { ethers } from "ethers";
 import { fetchAndValidateArweaveShard } from "../utils/arweave";
+import { pushable } from "it-pushable";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -73,6 +74,15 @@ export class Archaeologist {
 
     this.node.handle(['/validate-arweave'], async ({ stream }) => {
       try {
+        const streamToBrowser = (result: string) => {
+          const outboundStream = pushable({})
+          outboundStream.push(new TextEncoder().encode(result))
+          pipe(
+            outboundStream,
+            stream
+          )
+        }
+
         await pipe(stream, async (source) => {
           for await (const data of source) {
             const jsonData = JSON.parse(new TextDecoder().decode(data));
@@ -88,10 +98,9 @@ export class Archaeologist {
               const msg = ethers.utils.solidityPack(['string', 'string'], [txId, unencryptedShardHash])
               const signature = await wallet.signMessage(msg);
 
-              const toBrowser = JSON.stringify(signature);
-              this.publish("env-config", `signature ${toBrowser}`);
+              streamToBrowser(signature);
             } else {
-              this.publish("env-config", `signature ${null}`);
+              streamToBrowser('');
             }
           }
         })
