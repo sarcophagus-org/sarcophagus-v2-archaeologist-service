@@ -1,10 +1,21 @@
+import { BigNumber } from "ethers";
 import { Web3Interface } from "scripts/web3-interface";
 
-export const storage: {
+interface InMemoryStore {
     sarcophagi?: string[],
-} = {};
+    profile?: {
+        exists: boolean;
+        minimumDiggingFee: BigNumber;
+        maximumRewrapInterval: BigNumber;
+        freeBond: BigNumber;
+        cursedBond: BigNumber;
+        rewards: BigNumber;
+    }
+}
+
+export const inMemoryStore: InMemoryStore = {};
 
 export async function retrieveOnchainData(web3Interface: Web3Interface) {
-    const sarcoCursed = await web3Interface.viewStateFacet.getArchaeologistsarcophagi(web3Interface.ethWallet.address)
-    storage.sarcophagi = sarcoCursed;
+    inMemoryStore.sarcophagi = await web3Interface.viewStateFacet.getArchaeologistSarcophagi(web3Interface.ethWallet.address);
+    inMemoryStore.profile = await web3Interface.viewStateFacet.getArchaeologistProfile(web3Interface.ethWallet.address);
 }

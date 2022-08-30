@@ -1,9 +1,9 @@
 import { ethers } from "ethers";
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
-import { archLogger } from "./chalk-theme";
-import { CLI_BAD_STARTUP_ARGUMENT, RPC_EXCEPTION } from "./exit-codes";
-import { healthCheck } from "./health-check";
+import { archLogger } from "../chalk-theme";
+import { CLI_BAD_STARTUP_ARGUMENT, RPC_EXCEPTION } from "../exit-codes";
+import { healthCheck } from "../health-check";
 
 export async function parseArgs(web3Interface: Web3Interface) {
     const argsStr = process.argv.toString().split("--")[1];
@@ -156,11 +156,11 @@ export async function parseArgs(web3Interface: Web3Interface) {
 
     Promise.all(cmdPromises).then(() =>
         doExit ?
-            exit(1) :
+            exit(0) :
             healthCheck(web3Interface)
     ).catch((e) => {
         archLogger.error(e);
-        exit(1);
+        exit(RPC_EXCEPTION);
     });;
 }
 
