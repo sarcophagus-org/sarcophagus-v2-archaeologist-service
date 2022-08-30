@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "../chalk-theme";
-import { CLI_BAD_REGISTER_PROFILE_ARGUMENT } from "../exit-codes";
+import { CLI_BAD_REGISTER_PROFILE_ARG } from "../exit-codes";
 
 const diggingFee = 'digging-fee';
 const rewrapInterval = 'rewrap-interval';
@@ -17,7 +17,7 @@ export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
 
     if (!argsStr) {
         archLogger.error("Missing arguments to register");
-        exit(CLI_BAD_REGISTER_PROFILE_ARGUMENT);
+        exit(CLI_BAD_REGISTER_PROFILE_ARG);
     }
 
     const args = argsStr.split(",").map(a => a.trim()).filter(a => a !== "");
@@ -35,7 +35,7 @@ export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
 
         if (argData.length !== 2) {
             console.error("Unrecognized argument format:", arg);
-            exit(CLI_BAD_REGISTER_PROFILE_ARGUMENT);
+            exit(CLI_BAD_REGISTER_PROFILE_ARG);
         }
 
         const argName = argData[0];
@@ -43,7 +43,7 @@ export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
 
         if (processedArgs.includes(argName)) {
             console.error("Duplicate argument:", arg);
-            exit(CLI_BAD_REGISTER_PROFILE_ARGUMENT);
+            exit(CLI_BAD_REGISTER_PROFILE_ARG);
         }
 
         switch (argName) {
@@ -64,27 +64,27 @@ export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
 
             default:
                 console.error("Unrecognized argument:", argName);
-                exit(CLI_BAD_REGISTER_PROFILE_ARGUMENT);
+                exit(CLI_BAD_REGISTER_PROFILE_ARG);
         }
     })
 
     // validate arguments
     if (!processedArgs.includes(diggingFee)) {
         archLogger.error(`Missing argument to register: ${diggingFee}`);
-        exit(CLI_BAD_REGISTER_PROFILE_ARGUMENT);
+        exit(CLI_BAD_REGISTER_PROFILE_ARG);
     } else if (registerParams.diggingFee.eq(ethers.constants.Zero)) {
         archLogger.warn(`You are registering without setting a minimum digging fee. You might not receive any rewards!`);
     }
 
     if (!processedArgs.includes(rewrapInterval)) {
         archLogger.error(`Missing arguments to register: ${rewrapInterval}`);
-        exit(CLI_BAD_REGISTER_PROFILE_ARGUMENT);
+        exit(CLI_BAD_REGISTER_PROFILE_ARG);
     } else if (registerParams.rewrapInterval === 0) {
         archLogger.error(`Minumum rewrap interval cannot be 0`);
-        exit(CLI_BAD_REGISTER_PROFILE_ARGUMENT);
+        exit(CLI_BAD_REGISTER_PROFILE_ARG);
     } else if (registerParams[rewrapInterval] === "NaN") {
         archLogger.error(`Invalid \`${rewrapInterval}\` argument: ${processedArgs.push(rewrapInterval)}`);
-        exit(CLI_BAD_REGISTER_PROFILE_ARGUMENT);
+        exit(CLI_BAD_REGISTER_PROFILE_ARG);
     }
 
     return {

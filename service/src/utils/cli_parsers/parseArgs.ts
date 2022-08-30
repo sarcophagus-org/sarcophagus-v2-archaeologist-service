@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "../chalk-theme";
-import { CLI_BAD_STARTUP_ARGUMENT, RPC_EXCEPTION } from "../exit-codes";
+import { CLI_BAD_STARTUP_ARG, RPC_EXCEPTION } from "../exit-codes";
 import { healthCheck } from "../health-check";
 
 export async function parseArgs(web3Interface: Web3Interface) {
@@ -30,7 +30,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
 
         if (argData.length !== 2) {
             console.error("Unrecognized argument format:", arg);
-            exit(CLI_BAD_STARTUP_ARGUMENT);
+            exit(CLI_BAD_STARTUP_ARG);
         }
 
         const argName = argData[0];
@@ -38,7 +38,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
 
         if (processedArgs.includes(argName)) {
             console.error("Duplicate argument:", arg);
-            exit(CLI_BAD_STARTUP_ARGUMENT);
+            exit(CLI_BAD_STARTUP_ARG);
         }
 
         switch (argName) {
@@ -104,7 +104,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
 
             default:
                 console.error("Unrecognized argument:", argName);
-                exit(CLI_BAD_STARTUP_ARGUMENT);
+                exit(CLI_BAD_STARTUP_ARG);
         }
     })
 

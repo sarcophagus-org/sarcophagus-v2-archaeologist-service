@@ -3,7 +3,7 @@ import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
 import { inMemoryStore, retrieveOnchainData } from "utils/onchain-data";
 import { archLogger } from "../chalk-theme";
-import { CLI_BAD_UPDATE_PROFILE_ARGUMENT, NO_ONCHAIN_PROFILE } from "../exit-codes";
+import { CLI_BAD_UPDATE_PROFILE_ARG, NO_ONCHAIN_PROFILE } from "../exit-codes";
 
 const diggingFee = 'digging-fee';
 const rewrapInterval = 'rewrap-interval';
@@ -18,7 +18,7 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
 
     if (!argsStr) {
         archLogger.error("Missing arguments to update");
-        exit(CLI_BAD_UPDATE_PROFILE_ARGUMENT);
+        exit(CLI_BAD_UPDATE_PROFILE_ARG);
     }
 
     const args = argsStr.split(",").map(a => a.trim()).filter(a => a !== "");
@@ -44,7 +44,7 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
 
         if (argData.length !== 2) {
             console.error("Unrecognized argument format:", arg);
-            exit(CLI_BAD_UPDATE_PROFILE_ARGUMENT);
+            exit(CLI_BAD_UPDATE_PROFILE_ARG);
         }
 
         const argName = argData[0];
@@ -52,7 +52,7 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
 
         if (processedArgs.includes(argName)) {
             console.error("Duplicate argument:", arg);
-            exit(CLI_BAD_UPDATE_PROFILE_ARGUMENT);
+            exit(CLI_BAD_UPDATE_PROFILE_ARG);
         }
 
         switch (argName) {
@@ -73,7 +73,7 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
 
             default:
                 console.error("Unrecognized argument:", argName);
-                exit(CLI_BAD_UPDATE_PROFILE_ARGUMENT);
+                exit(CLI_BAD_UPDATE_PROFILE_ARG);
         }
     })
 
@@ -84,10 +84,10 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
 
     if (updateProfileParams.rewrapInterval === 0) {
         archLogger.error(`Minumum rewrap interval cannot be 0`);
-        exit(CLI_BAD_UPDATE_PROFILE_ARGUMENT);
+        exit(CLI_BAD_UPDATE_PROFILE_ARG);
     } else if (updateProfileParams[rewrapInterval] === "NaN") {
         archLogger.error(`Invalid \`${rewrapInterval}\` argument: ${processedArgs.push(rewrapInterval)}`);
-        exit(CLI_BAD_UPDATE_PROFILE_ARGUMENT);
+        exit(CLI_BAD_UPDATE_PROFILE_ARG);
     }
 
     return {
