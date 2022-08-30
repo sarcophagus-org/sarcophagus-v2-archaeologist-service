@@ -5,12 +5,19 @@ import { exit } from 'process'
 import { RPC_EXCEPTION } from '../utils/exit-codes'
 import { archLogger } from '../utils/chalk-theme'
 import { parseRegisterArgs } from 'utils/cli_parsers/parseRegisterArgs'
+import { getOnchainProfile } from 'utils/onchain-data'
 
 validateEnvVars();
 
 const web3Interface = await getWeb3Interface();
+const profile = await getOnchainProfile(web3Interface);
 
 archLogger.notice("Registering your Archaeologist profile...");
+
+if (profile.exists) {
+  archLogger.notice("Already registered!");
+  exit(0);
+}
 
 setInterval(() => process.stdout.write("."), 1000);
 

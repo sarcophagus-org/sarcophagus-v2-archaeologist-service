@@ -17,5 +17,9 @@ export const inMemoryStore: InMemoryStore = {};
 
 export async function retrieveOnchainData(web3Interface: Web3Interface) {
     inMemoryStore.sarcophagi = await web3Interface.viewStateFacet.getArchaeologistSarcophagi(web3Interface.ethWallet.address);
-    inMemoryStore.profile = await web3Interface.viewStateFacet.getArchaeologistProfile(web3Interface.ethWallet.address);
+    inMemoryStore.profile = await getOnchainProfile(web3Interface);
+}
+
+export async function getOnchainProfile(web3Interface: Web3Interface) {
+    return await web3Interface.viewStateFacet.getArchaeologistProfile(web3Interface.ethWallet.address);
 }
