@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "approve": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/approve.js",
     "register": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/register-profile.js",
+    "update": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/update-profile.js",
     "start": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/index.js",
     "start:test": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/test.js",
     "start:debug": "cross-env NODE_ENV=production DEBUG=libp2p:* NODE_PATH=./build node build/src/index.js",

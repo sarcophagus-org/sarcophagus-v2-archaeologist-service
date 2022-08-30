@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
-import { getOnchainProfile } from "utils/onchain-data";
+import { getOnchainProfile } from "../../utils/onchain-data";
 import { archLogger } from "../chalk-theme";
 import { CLI_BAD_UPDATE_PROFILE_ARG, NO_ONCHAIN_PROFILE } from "../exit-codes";
 

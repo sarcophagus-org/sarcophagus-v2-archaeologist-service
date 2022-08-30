@@ -7,7 +7,7 @@ import { archLogger } from '../utils/chalk-theme'
 import { parseRegisterArgs } from '../utils/cli_parsers/parseRegisterArgs'
 import { getOnchainProfile } from '../utils/onchain-data'
 import { ethers } from 'ethers'
-import { requestApproval } from './approve'
+import { requestApproval } from './approve_utils'
 
 validateEnvVars();
 
@@ -33,6 +33,7 @@ let freeBondDeposit = ethers.constants.Zero;
 
 if (freeBond.gt(ethers.constants.Zero)) {
   const approved = await requestApproval(
+    web3Interface,
     "You will need to approve Sarcophagus contracts to use your SARCO in order to deposit free bond.\nEnter 'approve' to authorize this, or else hit <ENTER> to continue without a deposit:"
   )
 
