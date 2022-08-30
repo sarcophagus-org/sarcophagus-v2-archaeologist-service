@@ -56,17 +56,17 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
 
         switch (argName) {
             case diggingFee:
-                updateProfileParams[diggingFee] = ethers.utils.parseEther(argVal);
+                updateProfileParams.diggingFee = ethers.utils.parseEther(argVal);
                 processedArgs.push(argName);
                 break;
 
             case rewrapInterval:
-                updateProfileParams[rewrapInterval] = Number.parseInt(argVal);
+                updateProfileParams.rewrapInterval = Number.parseInt(argVal);
                 processedArgs.push(argName);
                 break;
 
             case freeBond:
-                updateProfileParams[freeBond] = ethers.utils.parseEther(argVal);
+                updateProfileParams.freeBond = ethers.utils.parseEther(argVal);
                 processedArgs.push(argName);
                 break;
 
@@ -82,9 +82,9 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
     }
 
     if (updateProfileParams.rewrapInterval === 0) {
-        archLogger.error(`Minumum rewrap interval cannot be 0`);
+        archLogger.error(`Maximum rewrap interval cannot be 0`);
         exit(CLI_BAD_UPDATE_PROFILE_ARG);
-    } else if (updateProfileParams[rewrapInterval] === "NaN") {
+    } else if (updateProfileParams.rewrapInterval === NaN) {
         archLogger.error(`Invalid \`${rewrapInterval}\` argument: ${processedArgs.push(rewrapInterval)}`);
         exit(CLI_BAD_UPDATE_PROFILE_ARG);
     }

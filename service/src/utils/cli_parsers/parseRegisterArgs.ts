@@ -48,17 +48,17 @@ export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
 
         switch (argName) {
             case diggingFee:
-                registerParams[diggingFee] = ethers.utils.parseEther(argVal);
+                registerParams.diggingFee = ethers.utils.parseEther(argVal);
                 processedArgs.push(argName);
                 break;
 
             case rewrapInterval:
-                registerParams[rewrapInterval] = Number.parseInt(argVal);
+                registerParams.rewrapInterval = Number.parseInt(argVal);
                 processedArgs.push(argName);
                 break;
 
             case freeBond:
-                registerParams[freeBond] = ethers.utils.parseEther(argVal);
+                registerParams.freeBond = ethers.utils.parseEther(argVal);
                 processedArgs.push(argName);
                 break;
 
@@ -80,9 +80,9 @@ export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
         archLogger.error(`Missing arguments to register: ${rewrapInterval}`);
         exit(CLI_BAD_REGISTER_PROFILE_ARG);
     } else if (registerParams.rewrapInterval === 0) {
-        archLogger.error(`Minumum rewrap interval cannot be 0`);
+        archLogger.error(`Maximum rewrap interval cannot be 0`);
         exit(CLI_BAD_REGISTER_PROFILE_ARG);
-    } else if (registerParams[rewrapInterval] === "NaN") {
+    } else if (registerParams.rewrapInterval === NaN) {
         archLogger.error(`Invalid \`${rewrapInterval}\` argument: ${processedArgs.push(rewrapInterval)}`);
         exit(CLI_BAD_REGISTER_PROFILE_ARG);
     }
