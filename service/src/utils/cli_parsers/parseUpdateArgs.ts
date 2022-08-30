@@ -27,8 +27,8 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
 
     const oldProfile = await getOnchainProfile(web3Interface);
 
-    if (!oldProfile) {
-        archLogger.error("Failed to retrieve on-chain profile");
+    if (!oldProfile.exists) {
+        archLogger.error("Profile is not registered. Use `npm run register` to register a profile for your account. See readme for usage.");
         exit(NO_ONCHAIN_PROFILE);
     }
 
