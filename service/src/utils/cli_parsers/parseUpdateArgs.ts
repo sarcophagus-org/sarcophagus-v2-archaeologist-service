@@ -12,7 +12,7 @@ const freeBond = 'free-bond';
 export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
     minimumDiggingFee: ethers.BigNumber;
     maximumRewrapInterval: number;
-    freeBond: number;
+    freeBond: ethers.BigNumber;
 }> {
     const argsStr = process.argv.toString().split("--")[1];
 
@@ -90,9 +90,19 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
         exit(CLI_BAD_UPDATE_PROFILE_ARG);
     }
 
+    if (
+        updateProfileParams.diggingFee.eq(oldProfile.minimumDiggingFee) &&
+        updateProfileParams.rewrapInterval === oldProfile.maximumRewrapInterval.toNumber() &&
+        updateProfileParams.freeBond.eq(oldProfile.freeBond)
+    ) {
+        archLogger.info("No changes to on-chain profile -- skipping update contract call");
+        archLogger.notice("DONE");
+        exit(0);
+    }
+
     return {
         minimumDiggingFee: updateProfileParams.diggingFee,
         maximumRewrapInterval: updateProfileParams.rewrapInterval,
-        freeBond: updateProfileParams.rewrapInterval
+        freeBond: updateProfileParams.freeBond
     }
 }

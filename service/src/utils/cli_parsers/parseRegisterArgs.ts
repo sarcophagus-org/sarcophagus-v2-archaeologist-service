@@ -11,7 +11,7 @@ const freeBond = 'free-bond';
 export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
     minimumDiggingFee: ethers.BigNumber;
     maximumRewrapInterval: number;
-    freeBond: number;
+    freeBond: ethers.BigNumber;
 }> {
     const argsStr = process.argv.toString().split("--")[1];
 
@@ -90,6 +90,6 @@ export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
     return {
         minimumDiggingFee: registerParams.diggingFee,
         maximumRewrapInterval: registerParams.rewrapInterval,
-        freeBond: registerParams.rewrapInterval
+        freeBond: registerParams.freeBond,
     }
 }
