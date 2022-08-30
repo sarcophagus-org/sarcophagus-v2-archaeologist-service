@@ -1,10 +1,10 @@
 import 'dotenv/config'
-import { getWeb3Interface } from './scripts/web3-interface'
-import { validateEnvVars } from './utils/validateEnv'
+import { getWeb3Interface } from './web3-interface'
+import { validateEnvVars } from '../utils/validateEnv'
 import { ethers } from 'ethers'
 import { exit } from 'process'
-import { RPC_EXCEPTION } from './utils/exit-codes'
-import { archLogger } from './utils/chalk-theme'
+import { RPC_EXCEPTION } from '../utils/exit-codes'
+import { archLogger } from '../utils/chalk-theme'
 
 validateEnvVars();
 
