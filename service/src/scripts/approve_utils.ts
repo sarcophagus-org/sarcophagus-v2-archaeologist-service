@@ -1,17 +1,17 @@
 import 'dotenv/config'
 import { Web3Interface } from './web3-interface'
-import { ethers } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { exit } from 'process'
 import { RPC_EXCEPTION } from '../utils/exit-codes'
 import { archLogger } from '../utils/chalk-theme'
-import createpromt from 'prompt-sync';
+import createPrompt from 'prompt-sync';
 
-const prompt = createpromt({ sigint: true });
+const prompt = createPrompt({ sigint: true });
 
-const _hasAllowance = async (web3Interface: Web3Interface) => {
+const _hasAllowance = async (web3Interface: Web3Interface, amt: BigNumber) => {
   const allowance = await web3Interface.sarcoToken.allowance(web3Interface.ethWallet.address, process.env.SARCO_DIAMOND_ADDRESS!);
 
-  if (allowance.eq(ethers.constants.MaxUint256)) {
+  if (allowance.gte(amt)) {
     archLogger.notice("Already approved");
     return true;
   }
@@ -19,10 +19,18 @@ const _hasAllowance = async (web3Interface: Web3Interface) => {
   return false;
 }
 
+/**
+ * Approves Sarcophagus contracts' spending SARCO on the connected account's behalf up to `MaxUint256` tokens.
+ * 
+ * `runApprove` is really only used by the approve script - which IS attempting to approve `MaxUint256` tokens -
+ * or by `requestApproval` when there's either not enough allowance or the previous `MaxUint256` allowance has
+ * somehow dropped so low that the pending transfer exceeds that allowance. So checking for allowance on `MaxUint256`
+ * is exactly what is wanted.
+ */
 export const runApprove = async (web3Interface: Web3Interface) => {
   archLogger.notice("Approving Sarcophagus contracts to spend SARCO on your behalf...");
 
-  if (await _hasAllowance(web3Interface)) {
+  if (await _hasAllowance(web3Interface, ethers.constants.MaxUint256)) {
     return;
   }
 
@@ -43,8 +51,8 @@ export const runApprove = async (web3Interface: Web3Interface) => {
   return tx;
 }
 
-export const requestApproval = async (web3Interface: Web3Interface, reason: string): Promise<boolean> => {
-  if (await _hasAllowance(web3Interface)) {
+export const requestApproval = async (web3Interface: Web3Interface, reason: string, sarcoToTransfer: BigNumber): Promise<boolean> => {
+  if (await _hasAllowance(web3Interface, sarcoToTransfer)) {
     return true;
   }
 
