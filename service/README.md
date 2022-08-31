@@ -37,7 +37,7 @@ While these values may be later updated, the value they are set to during a Curs
 ##### Updating your Archaeologist Profile
 `npm run update -- --digging-fee:<val> rewrap-interval:<val> free-bond:<val>`
 
-Replace each `<val>` with the value you would like to set for each item.
+Replace each `<val>` with the value you would like to set for each item (at least 1)
 
 - `digging-fee`: Optional. The new minimum SARCO tokens you are willing to accept as fee for each rewrap _on all future_ Sarcophgi.
 
