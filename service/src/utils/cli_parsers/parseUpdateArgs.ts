@@ -94,7 +94,7 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
         updateProfileParams.rewrapInterval === oldProfile.maximumRewrapInterval.toNumber() &&
         updateProfileParams.freeBond.eq(oldProfile.freeBond)
     ) {
-        archLogger.info("No changes to on-chain profile -- skipping update contract call");
+        archLogger.info("\nNo changes to on-chain profile - skipping contract call\n");
         archLogger.notice("DONE");
         exit(0);
     }

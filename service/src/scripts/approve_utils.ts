@@ -8,12 +8,21 @@ import createpromt from 'prompt-sync';
 
 const prompt = createpromt({ sigint: true });
 
+const _hasAllowance = async (web3Interface: Web3Interface) => {
+  const allowance = await web3Interface.sarcoToken.allowance(web3Interface.ethWallet.address, process.env.SARCO_DIAMOND_ADDRESS!);
+
+  if (allowance.eq(ethers.constants.MaxUint256)) {
+    archLogger.notice("Already approved");
+    return true;
+  }
+
+  return false;
+}
+
 export const runApprove = async (web3Interface: Web3Interface) => {
   archLogger.notice("Approving Sarcophagus contracts to spend SARCO on your behalf...");
 
-  const allowance = await web3Interface.sarcoToken.allowance(web3Interface.ethWallet.address, process.env.SARCO_DIAMOND_ADDRESS!);
-  if (!allowance.isZero()) {
-    archLogger.notice("Already approved!");
+  if (await _hasAllowance(web3Interface)) {
     return;
   }
 
@@ -35,6 +44,10 @@ export const runApprove = async (web3Interface: Web3Interface) => {
 }
 
 export const requestApproval = async (web3Interface: Web3Interface, reason: string): Promise<boolean> => {
+  if (await _hasAllowance(web3Interface)) {
+    return true;
+  }
+
   archLogger.warn(reason);
   // @ts-ignore
   const response = prompt()
