@@ -4,6 +4,7 @@ import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "./chalk-theme";
 import { CLI_BAD_STARTUP_ARGUMENT, RPC_EXCEPTION } from "./exit-codes";
 import { healthCheck } from "./health-check";
+import { handleRpcError } from "./rpc-error-handler";
 
 export async function parseArgs(web3Interface: Web3Interface) {
     const argsStr = process.argv.toString().split("--")[1];
@@ -162,28 +163,4 @@ export async function parseArgs(web3Interface: Web3Interface) {
         archLogger.error(e);
         exit(1);
     });;
-}
-
-function handleRpcError(error: string) {
-    if (error.includes("NotEnoughFreeBond")) {
-        const a = error.indexOf("(") + 1;
-        const b = error.indexOf(",");
-
-        const available = error.substring(a, b);
-        archLogger.error(`\nNot enough free bond. Available: ${ethers.utils.formatEther(available)} SARCO`,)
-    } else if (error.includes("NotEnoughReward")) {
-        const a = error.indexOf("(") + 1;
-        const b = error.indexOf(",");
-
-        const available = error.substring(a, b);
-        archLogger.error(`\nNot enough reward. Available: ${ethers.utils.formatEther(available)} SARCO`,)
-    } else if (error.includes("insufficient allowance")) {
-        archLogger.error(`\nTransaction reverted: Insufficient allowance`);
-        archLogger.error(`Run \`npm run approve\` to grant Sarcophagus contracts permission to transfer your SARCO tokens.`);
-    } else if (error.includes("transfer amount exceeds balance")) {
-        archLogger.error(`\nInsufficient balance`);
-        archLogger.error(`Add some SARCO to your account to continue`);
-    } else {
-        archLogger.error(`\n${error}`);
-    }
 }

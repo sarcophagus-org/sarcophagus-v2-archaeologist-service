@@ -54,11 +54,21 @@ function validateBlockEnvVars() {
     };
 
     _tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL);
-    _tryReadEnv("SARCO_DIAMOND_ADDRESS", process.env.SARCO_DIAMOND_ADDRESS);
-    _tryReadEnv("SARCO_TOKEN_ADDRESS", process.env.SARCO_TOKEN_ADDRESS);
+
+    _tryReadEnv("SARCO_DIAMOND_ADDRESS", process.env.SARCO_DIAMOND_ADDRESS, (envVar) => {
+        if (!ethers.utils.isAddress(envVar)) throw "";
+    });
+
+    _tryReadEnv("SARCO_TOKEN_ADDRESS", process.env.SARCO_TOKEN_ADDRESS, (envVar) => {
+        if (!ethers.utils.isAddress(envVar)) throw "";
+    });
 
 
-    _tryReadEnv("ETH_PRIVATE_KEY", process.env.ETH_PRIVATE_KEY);
+    _tryReadEnv(
+        "ETH_PRIVATE_KEY",
+        process.env.ETH_PRIVATE_KEY,
+        (envVar) => publicConfig.encryptionPublicKey = new ethers.Wallet(envVar).publicKey,
+    );
 
     _tryReadEnv(
         "ENCRYPTION_PRIVATE_KEY",
