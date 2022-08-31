@@ -25,7 +25,7 @@ export interface Web3Interface {
     viewStateFacet: ViewStateFacet,
 };
 
-export const getWeb3Interface = async () => {
+export const getWeb3Interface = async (): Promise<Web3Interface> => {
     const rpcProvider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_URL);
     const ethWallet = new ethers.Wallet(process.env.ETH_PRIVATE_KEY!, rpcProvider);
     const encryptionWallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!, rpcProvider);

@@ -12,7 +12,11 @@ const arweave = Arweave.init({
     logging: false, // Enable network request logging
 });
 
-export const fetchAndValidateArweaveShard = async (arweaveTxId: string, expectedUnencryptedHash: string, publicKey: string) => {
+export const fetchAndValidateArweaveShard = async (
+    arweaveTxId: string,
+    expectedUnencryptedHash: string,
+    publicKey: string
+): Promise<boolean> => {
     try {
         const data = await arweave.transactions.getData(arweaveTxId, { decode: true, string: true });
 
