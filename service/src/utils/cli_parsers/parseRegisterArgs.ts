@@ -34,7 +34,7 @@ export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
         const argData = arg.split(":");
 
         if (argData.length !== 2) {
-            console.error("Unrecognized argument format:", arg);
+            archLogger.error(`Unrecognized argument format: ${arg}`);
             exit(CLI_BAD_REGISTER_PROFILE_ARG);
         }
 
@@ -42,7 +42,7 @@ export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
         const argVal = argData[1];
 
         if (processedArgs.includes(argName)) {
-            console.error("Duplicate argument:", arg);
+            archLogger.error(`Duplicate argument: ${arg}`);
             exit(CLI_BAD_REGISTER_PROFILE_ARG);
         }
 
@@ -63,7 +63,7 @@ export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
                 break;
 
             default:
-                console.error("Unrecognized argument:", argName);
+                archLogger.error(`Unrecognized argument: ${argName}`);
                 exit(CLI_BAD_REGISTER_PROFILE_ARG);
         }
     })

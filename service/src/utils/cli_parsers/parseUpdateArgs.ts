@@ -35,14 +35,14 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
     const updateProfileParams = {
         diggingFee: oldProfile.minimumDiggingFee,
         rewrapInterval: oldProfile.maximumRewrapInterval.toNumber(),
-        freeBond: oldProfile.freeBond,
+        freeBond: ethers.constants.Zero,
     }
 
     args.forEach(arg => {
         const argData = arg.split(":");
 
         if (argData.length !== 2) {
-            console.error("Unrecognized argument format:", arg);
+            archLogger.error(`Unrecognized argument format: ${arg}`);
             exit(CLI_BAD_UPDATE_PROFILE_ARG);
         }
 
@@ -50,7 +50,7 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
         const argVal = argData[1];
 
         if (processedArgs.includes(argName)) {
-            console.error("Duplicate argument:", arg);
+            archLogger.error(`Duplicate argument: ${arg}`);
             exit(CLI_BAD_UPDATE_PROFILE_ARG);
         }
 
@@ -71,7 +71,7 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
                 break;
 
             default:
-                console.error("Unrecognized argument:", argName);
+                archLogger.error(`Unrecognized argument: ${argName}`);
                 exit(CLI_BAD_UPDATE_PROFILE_ARG);
         }
     })
@@ -91,11 +91,15 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
 
     if (
         updateProfileParams.diggingFee.eq(oldProfile.minimumDiggingFee) &&
-        updateProfileParams.rewrapInterval === oldProfile.maximumRewrapInterval.toNumber() &&
-        updateProfileParams.freeBond.eq(oldProfile.freeBond)
+        updateProfileParams.rewrapInterval === oldProfile.maximumRewrapInterval.toNumber()
     ) {
         archLogger.info("\nNo changes to on-chain profile - skipping contract call\n");
-        archLogger.notice("DONE");
+
+        if (updateProfileParams.freeBond.gt(ethers.constants.Zero) && !updateProfileParams.freeBond.eq(oldProfile.freeBond)) {
+            archLogger.warn("If you intended to simply add to your free bond, use `npm run start -- --deposit-bond:<amount>` instead\n");
+        }
+
+        archLogger.notice("NO CHANGES WERE MADE");
         exit(0);
     }
 

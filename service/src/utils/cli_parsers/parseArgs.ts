@@ -29,7 +29,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
         const argData = arg.split(":");
 
         if (argData.length !== 2) {
-            console.error("Unrecognized argument format:", arg);
+            archLogger.error(`Unrecognized argument format: ${arg}`);
             exit(CLI_BAD_STARTUP_ARG);
         }
 
@@ -37,7 +37,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
         const argVal = argData[1];
 
         if (processedArgs.includes(argName)) {
-            console.error("Duplicate argument:", arg);
+            archLogger.error(`Duplicate argument: ${arg}`);
             exit(CLI_BAD_STARTUP_ARG);
         }
 
@@ -103,7 +103,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
                 break;
 
             default:
-                console.error("Unrecognized argument:", argName);
+                archLogger.error(`Unrecognized argument: ${argName}`);
                 exit(CLI_BAD_STARTUP_ARG);
         }
     })
@@ -141,7 +141,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
                         handleRpcError(e.reason);
                     }
                     else {
-                        console.error(e);
+                        archLogger.error(e);
                     }
                     exit(RPC_EXCEPTION);
                 });
