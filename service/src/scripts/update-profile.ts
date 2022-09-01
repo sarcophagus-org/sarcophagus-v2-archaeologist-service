@@ -33,7 +33,7 @@ if (freeBond.gt(ethers.constants.Zero)) {
   if (approved) {
     freeBondDeposit = freeBond;
   } else {
-    archLogger.info("Skipping free bond depoist");
+    archLogger.info("Skipping free bond deposit");
   }
 }
 
