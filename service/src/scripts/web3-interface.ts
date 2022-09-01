@@ -13,7 +13,7 @@ import {
     ThirdPartyFacet,
     ThirdPartyFacet__factory
 } from "../abi_interfaces";
-import { BAD_ENV } from "utils/exit-codes";
+import { BAD_ENV } from "../utils/exit-codes";
 
 
 export interface Web3Interface {
