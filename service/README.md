@@ -17,6 +17,36 @@ Configure the .env file as necessary:
 _This only needs to be run once_
 
 ---
+##### Register your Archaeologist Profile
+`npm run register -- --digging-fee:<val> rewrap-interval:<val>`
+
+_This only needs to be run once_
+
+Replace each `<val>` with the value you would like to set for each item.
+
+- `digging-fee`: This indicates the minimum SARCO tokens you are willing to accept as fee for each rewrap on a sarcophagus.
+
+- `rewrap-interval`: This indicates the maximum time (in milliseconds) between rewraps you are willing to accept on a Sarcophagus.
+
+While these values may be later updated, the value they are set to during a Curse on a Sarcophagus will remain constant for the lifetime of that Sarcophagus.
+
+- You may optionally run the register script with an additional `free-bond:<val>` argument to have the contract also deposit free bond into your account.
+
+---
+
+##### Updating your Archaeologist Profile
+`npm run update -- --digging-fee:<val> rewrap-interval:<val> free-bond:<val>`
+
+Replace each `<val>` with the value you would like to set for each item (at least 1)
+
+- `digging-fee`: Optional. The new minimum SARCO tokens you are willing to accept as fee for each rewrap _on all future_ Sarcophgi.
+
+- `rewrap-interval`: Optional. The new maximum time between rewraps you are willing to accept _on all future_ Sarcophagi.
+
+- `free-bond`: Optional. Free bond in SARCO tokens to deposit. Adds to your existing free bond.
+
+---
+
 ##### Build and Start
 `npm run build`
 
@@ -29,6 +59,8 @@ The service will still build despite these typescript errors._
 Before your node can execute any contract call that sends SARCO tokens to the contract, you must
 approve the contract's spending SARCO on your behalf. This is a standard step. To do this, run:
 `npm run approve`
+
+---
 
 ##### Command Line Arguments
 Certain arguments may be passed into the process to trigger certain tasks on node startup.

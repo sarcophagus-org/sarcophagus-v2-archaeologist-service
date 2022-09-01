@@ -13,6 +13,7 @@ import {
     ThirdPartyFacet,
     ThirdPartyFacet__factory
 } from "../abi_interfaces";
+import { BAD_ENV } from "../utils/exit-codes";
 
 
 export interface Web3Interface {
@@ -27,7 +28,7 @@ export interface Web3Interface {
     viewStateFacet: ViewStateFacet,
 };
 
-export const getWeb3Interface = async () => {
+export const getWeb3Interface = async (): Promise<Web3Interface> => {
     try {
         const rpcProvider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_URL);
         const ethWallet = new ethers.Wallet(process.env.ETH_PRIVATE_KEY!, rpcProvider);
@@ -59,6 +60,6 @@ export const getWeb3Interface = async () => {
     } catch (e) {
         archLogger.error(e);
         archLogger.error("Confirm PROVIDER_URL in .env is a valid RPC Provider URL");
-        exit(1);
+        exit(BAD_ENV);
     }
 }

@@ -1,10 +1,10 @@
 import { ethers } from "ethers";
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
-import { archLogger } from "./chalk-theme";
-import { CLI_BAD_STARTUP_ARGUMENT, RPC_EXCEPTION } from "./exit-codes";
-import { healthCheck } from "./health-check";
-import { handleRpcError } from "./rpc-error-handler";
+import { archLogger } from "../chalk-theme";
+import { CLI_BAD_STARTUP_ARG, RPC_EXCEPTION } from "../exit-codes";
+import { healthCheck } from "../health-check";
+import { handleRpcError } from "../rpc-error-handler";
 
 export async function parseArgs(web3Interface: Web3Interface) {
     const argsStr = process.argv.toString().split("--")[1];
@@ -30,16 +30,16 @@ export async function parseArgs(web3Interface: Web3Interface) {
         const argData = arg.split(":");
 
         if (argData.length !== 2) {
-            console.error("Unrecognized argument format:", arg);
-            exit(CLI_BAD_STARTUP_ARGUMENT);
+            archLogger.error(`Unrecognized argument format: ${arg}`);
+            exit(CLI_BAD_STARTUP_ARG);
         }
 
         const argName = argData[0];
         const argVal = argData[1];
 
         if (processedArgs.includes(argName)) {
-            console.error("Duplicate argument:", arg);
-            exit(CLI_BAD_STARTUP_ARGUMENT);
+            archLogger.error(`Duplicate argument: ${arg}`);
+            exit(CLI_BAD_STARTUP_ARG);
         }
 
         switch (argName) {
@@ -104,8 +104,8 @@ export async function parseArgs(web3Interface: Web3Interface) {
                 break;
 
             default:
-                console.error("Unrecognized argument:", argName);
-                exit(CLI_BAD_STARTUP_ARGUMENT);
+                archLogger.error(`Unrecognized argument: ${argName}`);
+                exit(CLI_BAD_STARTUP_ARG);
         }
     })
 
@@ -142,7 +142,7 @@ export async function parseArgs(web3Interface: Web3Interface) {
                         handleRpcError(e.reason);
                     }
                     else {
-                        console.error(e);
+                        archLogger.error(e);
                     }
                     exit(RPC_EXCEPTION);
                 });
@@ -157,10 +157,10 @@ export async function parseArgs(web3Interface: Web3Interface) {
 
     Promise.all(cmdPromises).then(() =>
         doExit ?
-            exit(1) :
+            exit(0) :
             healthCheck(web3Interface)
     ).catch((e) => {
         archLogger.error(e);
-        exit(1);
+        exit(RPC_EXCEPTION);
     });;
 }

@@ -23,7 +23,9 @@ interface ArchaeologistFacetInterface extends ethers.utils.Interface {
   functions: {
     "depositFreeBond(uint256)": FunctionFragment;
     "finalizeTransfer(bytes32,string,(uint8,bytes32,bytes32))": FunctionFragment;
+    "registerArchaeologist(uint256,uint256,uint256)": FunctionFragment;
     "unwrapSarcophagus(bytes32,bytes)": FunctionFragment;
+    "updateArchaeologist(uint256,uint256,uint256)": FunctionFragment;
     "withdrawFreeBond(uint256)": FunctionFragment;
     "withdrawReward(uint256)": FunctionFragment;
   };
@@ -37,8 +39,16 @@ interface ArchaeologistFacetInterface extends ethers.utils.Interface {
     values: [BytesLike, string, { v: BigNumberish; r: BytesLike; s: BytesLike }]
   ): string;
   encodeFunctionData(
+    functionFragment: "registerArchaeologist",
+    values: [BigNumberish, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "unwrapSarcophagus",
     values: [BytesLike, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateArchaeologist",
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawFreeBond",
@@ -58,7 +68,15 @@ interface ArchaeologistFacetInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "registerArchaeologist",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "unwrapSarcophagus",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateArchaeologist",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -73,14 +91,18 @@ interface ArchaeologistFacetInterface extends ethers.utils.Interface {
   events: {
     "DepositFreeBond(address,uint256)": EventFragment;
     "FinalizeTransfer(bytes32,string,address,address,uint256)": EventFragment;
+    "RegisterArchaeologist(address,uint256,uint256,uint256)": EventFragment;
     "UnwrapSarcophagus(bytes32,bytes)": EventFragment;
+    "UpdateArchaeologist(address,uint256,uint256,uint256)": EventFragment;
     "WithdrawFreeBond(address,uint256)": EventFragment;
     "WithdrawReward(address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "DepositFreeBond"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FinalizeTransfer"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RegisterArchaeologist"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "UnwrapSarcophagus"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "UpdateArchaeologist"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "WithdrawFreeBond"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "WithdrawReward"): EventFragment;
 }
@@ -99,8 +121,26 @@ export type FinalizeTransferEvent = TypedEvent<
   }
 >;
 
+export type RegisterArchaeologistEvent = TypedEvent<
+  [string, BigNumber, BigNumber, BigNumber] & {
+    archaeologist: string;
+    minimumDiggingFee: BigNumber;
+    maximumRewrapInterval: BigNumber;
+    freeBond: BigNumber;
+  }
+>;
+
 export type UnwrapSarcophagusEvent = TypedEvent<
   [string, string] & { sarcoId: string; unencryptedShard: string }
+>;
+
+export type UpdateArchaeologistEvent = TypedEvent<
+  [string, BigNumber, BigNumber, BigNumber] & {
+    archaeologist: string;
+    minimumDiggingFee: BigNumber;
+    maximumRewrapInterval: BigNumber;
+    freeBond: BigNumber;
+  }
 >;
 
 export type WithdrawFreeBondEvent = TypedEvent<
@@ -167,9 +207,23 @@ export class ArchaeologistFacet extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    registerArchaeologist(
+      minimumDiggingFee: BigNumberish,
+      maximumRewrapInterval: BigNumberish,
+      freeBond: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     unwrapSarcophagus(
       sarcoId: BytesLike,
       unencryptedShard: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    updateArchaeologist(
+      minimumDiggingFee: BigNumberish,
+      maximumRewrapInterval: BigNumberish,
+      freeBond: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -196,9 +250,23 @@ export class ArchaeologistFacet extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  registerArchaeologist(
+    minimumDiggingFee: BigNumberish,
+    maximumRewrapInterval: BigNumberish,
+    freeBond: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   unwrapSarcophagus(
     sarcoId: BytesLike,
     unencryptedShard: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  updateArchaeologist(
+    minimumDiggingFee: BigNumberish,
+    maximumRewrapInterval: BigNumberish,
+    freeBond: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -225,9 +293,23 @@ export class ArchaeologistFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    registerArchaeologist(
+      minimumDiggingFee: BigNumberish,
+      maximumRewrapInterval: BigNumberish,
+      freeBond: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     unwrapSarcophagus(
       sarcoId: BytesLike,
       unencryptedShard: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateArchaeologist(
+      minimumDiggingFee: BigNumberish,
+      maximumRewrapInterval: BigNumberish,
+      freeBond: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -293,6 +375,36 @@ export class ArchaeologistFacet extends BaseContract {
       }
     >;
 
+    "RegisterArchaeologist(address,uint256,uint256,uint256)"(
+      archaeologist?: string | null,
+      minimumDiggingFee?: null,
+      maximumRewrapInterval?: null,
+      freeBond?: null
+    ): TypedEventFilter<
+      [string, BigNumber, BigNumber, BigNumber],
+      {
+        archaeologist: string;
+        minimumDiggingFee: BigNumber;
+        maximumRewrapInterval: BigNumber;
+        freeBond: BigNumber;
+      }
+    >;
+
+    RegisterArchaeologist(
+      archaeologist?: string | null,
+      minimumDiggingFee?: null,
+      maximumRewrapInterval?: null,
+      freeBond?: null
+    ): TypedEventFilter<
+      [string, BigNumber, BigNumber, BigNumber],
+      {
+        archaeologist: string;
+        minimumDiggingFee: BigNumber;
+        maximumRewrapInterval: BigNumber;
+        freeBond: BigNumber;
+      }
+    >;
+
     "UnwrapSarcophagus(bytes32,bytes)"(
       sarcoId?: BytesLike | null,
       unencryptedShard?: null
@@ -307,6 +419,36 @@ export class ArchaeologistFacet extends BaseContract {
     ): TypedEventFilter<
       [string, string],
       { sarcoId: string; unencryptedShard: string }
+    >;
+
+    "UpdateArchaeologist(address,uint256,uint256,uint256)"(
+      archaeologist?: string | null,
+      minimumDiggingFee?: null,
+      maximumRewrapInterval?: null,
+      freeBond?: null
+    ): TypedEventFilter<
+      [string, BigNumber, BigNumber, BigNumber],
+      {
+        archaeologist: string;
+        minimumDiggingFee: BigNumber;
+        maximumRewrapInterval: BigNumber;
+        freeBond: BigNumber;
+      }
+    >;
+
+    UpdateArchaeologist(
+      archaeologist?: string | null,
+      minimumDiggingFee?: null,
+      maximumRewrapInterval?: null,
+      freeBond?: null
+    ): TypedEventFilter<
+      [string, BigNumber, BigNumber, BigNumber],
+      {
+        archaeologist: string;
+        minimumDiggingFee: BigNumber;
+        maximumRewrapInterval: BigNumber;
+        freeBond: BigNumber;
+      }
     >;
 
     "WithdrawFreeBond(address,uint256)"(
@@ -355,9 +497,23 @@ export class ArchaeologistFacet extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    registerArchaeologist(
+      minimumDiggingFee: BigNumberish,
+      maximumRewrapInterval: BigNumberish,
+      freeBond: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     unwrapSarcophagus(
       sarcoId: BytesLike,
       unencryptedShard: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    updateArchaeologist(
+      minimumDiggingFee: BigNumberish,
+      maximumRewrapInterval: BigNumberish,
+      freeBond: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -385,9 +541,23 @@ export class ArchaeologistFacet extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    registerArchaeologist(
+      minimumDiggingFee: BigNumberish,
+      maximumRewrapInterval: BigNumberish,
+      freeBond: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     unwrapSarcophagus(
       sarcoId: BytesLike,
       unencryptedShard: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateArchaeologist(
+      minimumDiggingFee: BigNumberish,
+      maximumRewrapInterval: BigNumberish,
+      freeBond: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
