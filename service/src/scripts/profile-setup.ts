@@ -9,6 +9,12 @@ import { requestApproval } from './approve_utils'
 
 validateEnvVars();
 
+export enum ProfileArgNames {
+  DIGGING_FEE = 'digging-fee',
+  REWRAP_INTERVAL = 'rewrap-interval',
+  FREE_BOND = 'free-bond'
+}
+
 export interface ProfileParams {
   diggingFee: BigNumber,
   rewrapInterval: number,

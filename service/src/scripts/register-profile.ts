@@ -19,6 +19,6 @@ if (profile.exists) {
   exit(0);
 }
 
-const profileParams = await parseRegisterArgs(web3Interface);
+const profileParams = await parseRegisterArgs();
 
 await profileSetup(profileParams, false);

@@ -1,14 +1,10 @@
 import { ethers } from "ethers";
 import { exit } from "process";
-import { ProfileParams } from "scripts/profile-setup";
-import { Web3Interface } from "scripts/web3-interface";
+import { ProfileArgNames, ProfileParams } from "../../scripts/profile-setup";
+import { Web3Interface } from "../../scripts/web3-interface";
 import { getOnchainProfile } from "../../utils/onchain-data";
 import { archLogger } from "../chalk-theme";
 import { CLI_BAD_UPDATE_PROFILE_ARG, NO_ONCHAIN_PROFILE } from "../exit-codes";
-
-const diggingFee = 'digging-fee';
-const rewrapInterval = 'rewrap-interval';
-const freeBond = 'free-bond';
 
 export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<ProfileParams> {
     const argsStr = process.argv.toString().split("--")[1];
@@ -52,17 +48,17 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<Pro
         }
 
         switch (argName) {
-            case diggingFee:
+            case ProfileArgNames.DIGGING_FEE:
                 updateProfileParams.diggingFee = ethers.utils.parseEther(argVal);
                 processedArgs.push(argName);
                 break;
 
-            case rewrapInterval:
+            case ProfileArgNames.REWRAP_INTERVAL:
                 updateProfileParams.rewrapInterval = Number.parseInt(argVal);
                 processedArgs.push(argName);
                 break;
 
-            case freeBond:
+            case ProfileArgNames.FREE_BOND:
                 updateProfileParams.freeBond = ethers.utils.parseEther(argVal);
                 processedArgs.push(argName);
                 break;
@@ -81,8 +77,8 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<Pro
     if (updateProfileParams.rewrapInterval === 0) {
         archLogger.error(`Maximum rewrap interval cannot be 0`);
         exit(CLI_BAD_UPDATE_PROFILE_ARG);
-    } else if (updateProfileParams.rewrapInterval === NaN) {
-        archLogger.error(`Invalid \`${rewrapInterval}\` argument: ${processedArgs.push(rewrapInterval)}`);
+    } else if (Number.isNaN(updateProfileParams.rewrapInterval)) {
+        archLogger.error(`Invalid value provided for argument \`${ProfileArgNames.REWRAP_INTERVAL}\``);
         exit(CLI_BAD_UPDATE_PROFILE_ARG);
     }
 
