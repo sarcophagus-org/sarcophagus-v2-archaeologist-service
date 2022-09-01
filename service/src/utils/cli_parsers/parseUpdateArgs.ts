@@ -95,7 +95,7 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<{
     ) {
         archLogger.info("\nNo changes to on-chain profile - skipping contract call\n");
 
-        if (updateProfileParams.freeBond.gt(ethers.constants.Zero) && !updateProfileParams.freeBond.eq(oldProfile.freeBond)) {
+        if (updateProfileParams.freeBond.gt(ethers.constants.Zero)) {
             archLogger.warn("If you intended to simply add to your free bond, use `npm run start -- --deposit-bond:<amount>` instead\n");
         }
 
