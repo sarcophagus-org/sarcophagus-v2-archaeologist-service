@@ -9,7 +9,7 @@ import { requestApproval } from './approve_utils'
 
 validateEnvVars();
 
-export interface ProfileArgs {
+export interface ProfileParams {
   diggingFee: BigNumber,
   rewrapInterval: number,
   freeBond: BigNumber
@@ -23,7 +23,7 @@ const handleException = (e) => {
   exit(RPC_EXCEPTION);
 }
 
-export async function profileSetup(args: ProfileArgs, isUpdate: boolean) {
+export async function profileSetup(args: ProfileParams, isUpdate: boolean) {
   const { diggingFee, rewrapInterval, freeBond } = args;
   let freeBondDeposit = ethers.constants.Zero;
 

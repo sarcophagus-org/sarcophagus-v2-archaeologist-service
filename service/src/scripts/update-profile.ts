@@ -11,6 +11,6 @@ const web3Interface = await getWeb3Interface();
 
 archLogger.notice("Updating your Archaeologist profile...");
 
-const { minimumDiggingFee, maximumRewrapInterval, freeBond } = await parseUpdateArgs(web3Interface);
+const profileParams = await parseUpdateArgs(web3Interface);
 
-await profileSetup({ diggingFee: minimumDiggingFee, rewrapInterval: maximumRewrapInterval, freeBond }, true);
+await profileSetup(profileParams, true);

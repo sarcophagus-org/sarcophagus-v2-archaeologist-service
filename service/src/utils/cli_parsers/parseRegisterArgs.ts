@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import { exit } from "process";
+import { ProfileParams } from "scripts/profile-setup";
 import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "../chalk-theme";
 import { CLI_BAD_REGISTER_PROFILE_ARG } from "../exit-codes";
@@ -8,11 +9,7 @@ const diggingFee = 'digging-fee';
 const rewrapInterval = 'rewrap-interval';
 const freeBond = 'free-bond';
 
-export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
-    minimumDiggingFee: ethers.BigNumber;
-    maximumRewrapInterval: number;
-    freeBond: ethers.BigNumber;
-}> {
+export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<ProfileParams> {
     const argsStr = process.argv.toString().split("--")[1];
 
     if (!argsStr) {
@@ -24,7 +21,7 @@ export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
 
     const processedArgs: string[] = [];
 
-    const registerParams = {
+    const registerParams: ProfileParams = {
         diggingFee: ethers.constants.Zero,
         rewrapInterval: 0,
         freeBond: ethers.constants.Zero,
@@ -88,8 +85,8 @@ export async function parseRegisterArgs(web3Interface: Web3Interface): Promise<{
     }
 
     return {
-        minimumDiggingFee: registerParams.diggingFee,
-        maximumRewrapInterval: registerParams.rewrapInterval,
+        diggingFee: registerParams.diggingFee,
+        rewrapInterval: registerParams.rewrapInterval,
         freeBond: registerParams.freeBond,
     }
 }

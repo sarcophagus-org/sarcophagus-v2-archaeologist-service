@@ -19,6 +19,6 @@ if (profile.exists) {
   exit(0);
 }
 
-const { minimumDiggingFee, maximumRewrapInterval, freeBond } = await parseRegisterArgs(web3Interface);
+const profileParams = await parseRegisterArgs(web3Interface);
 
-await profileSetup({ diggingFee: minimumDiggingFee, rewrapInterval: maximumRewrapInterval, freeBond }, false);
+await profileSetup(profileParams, false);
