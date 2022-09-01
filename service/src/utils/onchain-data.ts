@@ -1,7 +1,7 @@
 import { BigNumber } from "ethers";
 import { Web3Interface } from "scripts/web3-interface";
 
-export interface OnchainProfile {
+interface OnchainProfile {
     exists: boolean;
     minimumDiggingFee: BigNumber;
     maximumRewrapInterval: BigNumber;
@@ -10,20 +10,29 @@ export interface OnchainProfile {
     rewards: BigNumber;
 }
 
-interface SarchophagusData {
+export interface SarcophagusData {
     id: string,
     resurrectionTime: Date
 }
 
 interface InMemoryStore {
-    sarcophagi?: SarchophagusData[],
+    sarcophagi?: SarcophagusData[],
     profile?: OnchainProfile
 }
 
 export const inMemoryStore: InMemoryStore = {};
 
 export async function retrieveOnchainData(web3Interface: Web3Interface) {
-    const archSarco: SarchophagusData[] = [];
+    inMemoryStore.sarcophagi = await getOnchainCursedSarcophagi(web3Interface);
+    inMemoryStore.profile = await getOnchainProfile(web3Interface);
+}
+
+export async function getOnchainProfile(web3Interface: Web3Interface): Promise<OnchainProfile> {
+    return await web3Interface.viewStateFacet.getArchaeologistProfile(web3Interface.ethWallet.address);
+}
+
+export async function getOnchainCursedSarcophagi(web3Interface: Web3Interface): Promise<SarcophagusData[]> {
+    const archSarco: SarcophagusData[] = [];
 
     const sarcoIds = await web3Interface.viewStateFacet.getArchaeologistSarcophagi(web3Interface.ethWallet.address);
     sarcoIds.map(async sarcoId => {
@@ -34,10 +43,5 @@ export async function retrieveOnchainData(web3Interface: Web3Interface) {
         });
     });
 
-    inMemoryStore.sarcophagi = archSarco;
-    inMemoryStore.profile = await getOnchainProfile(web3Interface);
-}
-
-export async function getOnchainProfile(web3Interface: Web3Interface): Promise<OnchainProfile> {
-    return await web3Interface.viewStateFacet.getArchaeologistProfile(web3Interface.ethWallet.address);
+    return archSarco;
 }

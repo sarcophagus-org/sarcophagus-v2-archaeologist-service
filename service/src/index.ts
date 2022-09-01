@@ -28,4 +28,5 @@ parseArgs(web3Interface);
 
 retrieveOnchainData(web3Interface);
 
+setInterval(() => retrieveOnchainData(web3Interface), 300000); // refetch every 5mins
 setupEventListeners(web3Interface);

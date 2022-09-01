@@ -1,9 +1,9 @@
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
 import { RPC_EXCEPTION } from "./exit-codes";
-import { inMemoryStore } from "./onchain-data";
+import { inMemoryStore, SarcophagusData } from "./onchain-data";
 
-const waitingForFinalise: string[] = [];
+const waitingForFinalise: SarcophagusData[] = [];
 
 export async function setupEventListeners(web3Interface: Web3Interface) {
     try {
@@ -23,17 +23,18 @@ export async function setupEventListeners(web3Interface: Web3Interface) {
         ) => {
             const isCursed = (cursedArchs as string[]).includes(archAddress);
             if (isCursed) {
-                waitingForFinalise.push(sarcoId);
+                waitingForFinalise.push({ id: sarcoId, resurrectionTime });
             }
         }
         );
 
         const finaliseFilter = web3Interface.embalmerFacet.filters.FinalizeSarcophagus();
-        web3Interface.embalmerFacet.on(finaliseFilter, (sarcoId, arweaveTxId) => {
-            if (waitingForFinalise.includes(sarcoId)) {
-                const i = waitingForFinalise.indexOf(sarcoId);
-                waitingForFinalise.splice(i, 1);
-                inMemoryStore.sarcophagi?.push(sarcoId);
+        web3Interface.embalmerFacet.on(finaliseFilter, (sarcoId: string, arweaveTxId) => {
+            // TODO: waitingForFinalise to be removed when contracts merge initialize and finalize
+            const i = waitingForFinalise.findIndex(s => s.id === sarcoId);
+            if (i !== -1) {
+                const sarco = waitingForFinalise.splice(i, 1)[0];
+                inMemoryStore.sarcophagi?.push(sarco);
             }
         });
 
