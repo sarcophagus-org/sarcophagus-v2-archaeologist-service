@@ -10,15 +10,31 @@ export interface OnchainProfile {
     rewards: BigNumber;
 }
 
+interface SarchophagusData {
+    id: string,
+    resurrectionTime: Date
+}
+
 interface InMemoryStore {
-    sarcophagi?: string[],
+    sarcophagi?: SarchophagusData[],
     profile?: OnchainProfile
 }
 
 export const inMemoryStore: InMemoryStore = {};
 
 export async function retrieveOnchainData(web3Interface: Web3Interface) {
-    inMemoryStore.sarcophagi = await web3Interface.viewStateFacet.getArchaeologistSarcophagi(web3Interface.ethWallet.address);
+    const archSarco: SarchophagusData[] = [];
+
+    const sarcoIds = await web3Interface.viewStateFacet.getArchaeologistSarcophagi(web3Interface.ethWallet.address);
+    sarcoIds.map(async sarcoId => {
+        const sarco = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
+        archSarco.push({
+            id: sarcoId,
+            resurrectionTime: new Date(sarco.resurrectionTime.toNumber() * 1000),
+        });
+    });
+
+    inMemoryStore.sarcophagi = archSarco;
     inMemoryStore.profile = await getOnchainProfile(web3Interface);
 }
 
