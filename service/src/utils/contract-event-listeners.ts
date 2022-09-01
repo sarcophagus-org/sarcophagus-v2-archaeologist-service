@@ -1,5 +1,6 @@
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
+import { archLogger } from "./chalk-theme";
 import { RPC_EXCEPTION } from "./exit-codes";
 import { inMemoryStore, SarcophagusData } from "./onchain-data";
 
@@ -29,12 +30,12 @@ export async function setupEventListeners(web3Interface: Web3Interface) {
         );
 
         const finaliseFilter = web3Interface.embalmerFacet.filters.FinalizeSarcophagus();
-        web3Interface.embalmerFacet.on(finaliseFilter, (sarcoId: string, arweaveTxId) => {
+        web3Interface.embalmerFacet.on(finaliseFilter, (sarcoId: string, _) => {
             // TODO: waitingForFinalise to be removed when contracts merge initialize and finalize
             const i = waitingForFinalise.findIndex(s => s.id === sarcoId);
             if (i !== -1) {
                 const sarco = waitingForFinalise.splice(i, 1)[0];
-                inMemoryStore.sarcophagi?.push(sarco);
+                inMemoryStore.sarcophagi.push(sarco);
             }
         });
 
@@ -45,13 +46,16 @@ export async function setupEventListeners(web3Interface: Web3Interface) {
         });
 
         const cleanFilter = web3Interface.thirdPartyFacet.filters.CleanUpSarcophagus();
-        web3Interface.embalmerFacet.on(cleanFilter, (_, __) => console.log(`On clean \n${_}\n${__}`));
+        web3Interface.embalmerFacet.on(cleanFilter, (sarcoId: string, _) => {
+            archLogger.info(`Sarcophagus cleaned: ${sarcoId}`);
+            inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
+        });
 
         const buryFilter = web3Interface.embalmerFacet.filters.BurySarcophagus();
-        web3Interface.embalmerFacet.on(buryFilter, (_, __) => console.log(`On bury \n${_}\n${__}`));
-
-        const cancelFilter = web3Interface.embalmerFacet.filters.CancelSarcophagus();
-        web3Interface.embalmerFacet.on(cancelFilter, (_, __) => console.log(`On cancel \n${_}\n${__}`));
+        web3Interface.embalmerFacet.on(buryFilter, (sarcoId: string, _) => {
+            archLogger.info(`Sarcophagus buried: ${sarcoId}`);
+            inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
+        });
     } catch (e) {
         console.error(e);
         exit(RPC_EXCEPTION);
