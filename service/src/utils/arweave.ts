@@ -5,11 +5,11 @@ import { solidityKeccak256 } from 'ethers/lib/utils';
 import { archLogger } from './chalk-theme';
 
 const arweave = Arweave.init({
-    host: 'localhost', // 'arweave.net', // Hostname or IP address for a Arweave host
-    port: 1984, //443, // Port
-    protocol: 'http', // 'https', // Network protocol http or https
-    timeout: 20000, // Network request timeouts in milliseconds
-    logging: false, // Enable network request logging
+    host: process.env.ARWEAVE_HOST,
+    port: process.env.ARWEAVE_PORT,
+    protocol: process.env.ARWEAVE_PROTOCOL,
+    timeout: Number.parseInt(process.env.ARWEAVE_TIMEOUT!),
+    logging: process.env.ARWEAVE_LOGGING === "true",
 });
 
 export const fetchAndValidateArweaveShard = async (
