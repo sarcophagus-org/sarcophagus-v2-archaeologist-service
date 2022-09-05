@@ -1,5 +1,8 @@
 import { BigNumber } from "ethers";
 import { Web3Interface } from "scripts/web3-interface";
+import { fetchAndDecryptShard } from "./arweave";
+import { archLogger } from "./chalk-theme";
+import { handleRpcError } from "./rpc-error-handler";
 
 interface OnchainProfile {
     exists: boolean;
@@ -17,11 +20,13 @@ export interface SarcophagusData {
 
 interface InMemoryStore {
     sarcophagi: SarcophagusData[],
+    unwrappedSarcophagi: string[],
     profile?: OnchainProfile
 }
 
 export const inMemoryStore: InMemoryStore = {
     sarcophagi: [],
+    unwrappedSarcophagi: [],
 };
 
 export async function retrieveOnchainData(web3Interface: Web3Interface) {
@@ -52,7 +57,29 @@ export async function getOnchainCursedSarcophagi(web3Interface: Web3Interface): 
     return archSarco;
 }
 
-enum SarcophagusState {
+export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: string) {
+    archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`);
+
+    const decryptedShard = await fetchAndDecryptShard(web3Interface, sarcoId);
+
+    if (!decryptedShard) {
+        archLogger.error("Unwrap failed -- unable to decrypt shard");
+        return;
+    }
+
+    try {
+        await web3Interface.archaeologistFacet.unwrapSarcophagus(sarcoId, decryptedShard);
+
+        inMemoryStore.unwrappedSarcophagi.push(sarcoId);
+        archLogger.notice("Unwrapped successfully!");
+    } catch (e) {
+        archLogger.error(e);
+        archLogger.error("Unwrap failed");
+        handleRpcError(e.reason);
+    }
+}
+
+export enum SarcophagusState {
     DoesNotExist,
     Exists,
     Done
