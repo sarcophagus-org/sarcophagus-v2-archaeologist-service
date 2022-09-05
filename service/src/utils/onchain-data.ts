@@ -73,7 +73,6 @@ export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: s
         inMemoryStore.unwrappedSarcophagi.push(sarcoId);
         archLogger.notice("Unwrapped successfully!");
     } catch (e) {
-        archLogger.error(e);
         archLogger.error("Unwrap failed");
         handleRpcError(e.reason);
     }
