@@ -60,7 +60,6 @@ interface EmbalmerFacetInterface extends ethers.utils.Interface {
         archAddress: string;
         storageFee: BigNumberish;
         diggingFee: BigNumberish;
-        bounty: BigNumberish;
         hashedShard: BytesLike;
       }[],
       string
@@ -227,7 +226,6 @@ export class EmbalmerFacet extends BaseContract {
         archAddress: string;
         storageFee: BigNumberish;
         diggingFee: BigNumberish;
-        bounty: BigNumberish;
         hashedShard: BytesLike;
       }[],
       arweaveArchaeologist: string,
@@ -281,7 +279,6 @@ export class EmbalmerFacet extends BaseContract {
       archAddress: string;
       storageFee: BigNumberish;
       diggingFee: BigNumberish;
-      bounty: BigNumberish;
       hashedShard: BytesLike;
     }[],
     arweaveArchaeologist: string,
@@ -335,7 +332,6 @@ export class EmbalmerFacet extends BaseContract {
         archAddress: string;
         storageFee: BigNumberish;
         diggingFee: BigNumberish;
-        bounty: BigNumberish;
         hashedShard: BytesLike;
       }[],
       arweaveArchaeologist: string,
@@ -510,7 +506,6 @@ export class EmbalmerFacet extends BaseContract {
         archAddress: string;
         storageFee: BigNumberish;
         diggingFee: BigNumberish;
-        bounty: BigNumberish;
         hashedShard: BytesLike;
       }[],
       arweaveArchaeologist: string,
@@ -565,7 +560,6 @@ export class EmbalmerFacet extends BaseContract {
         archAddress: string;
         storageFee: BigNumberish;
         diggingFee: BigNumberish;
-        bounty: BigNumberish;
         hashedShard: BytesLike;
       }[],
       arweaveArchaeologist: string,

@@ -276,7 +276,6 @@ export class ViewStateFacet extends BaseContract {
       [
         [BigNumber, BigNumber, string, string, BigNumber] & {
           diggingFee: BigNumber;
-          bounty: BigNumber;
           doubleHashedShard: string;
           unencryptedShard: string;
           curseTokenId: BigNumber;
@@ -375,7 +374,7 @@ export class ViewStateFacet extends BaseContract {
   ): Promise<
     [BigNumber, BigNumber, string, string, BigNumber] & {
       diggingFee: BigNumber;
-      bounty: BigNumber;
+      diggingFeesPaid: BigNumber;
       doubleHashedShard: string;
       unencryptedShard: string;
       curseTokenId: BigNumber;
@@ -473,7 +472,7 @@ export class ViewStateFacet extends BaseContract {
     ): Promise<
       [BigNumber, BigNumber, string, string, BigNumber] & {
         diggingFee: BigNumber;
-        bounty: BigNumber;
+        diggingFeesPaid: BigNumber;
         doubleHashedShard: string;
         unencryptedShard: string;
         curseTokenId: BigNumber;
