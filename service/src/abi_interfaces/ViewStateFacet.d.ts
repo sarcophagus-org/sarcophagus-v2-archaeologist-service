@@ -22,14 +22,16 @@ interface ViewStateFacetInterface extends ethers.utils.Interface {
   functions: {
     "getArchaeologistAccusals(address)": FunctionFragment;
     "getArchaeologistCleanups(address)": FunctionFragment;
+    "getArchaeologistProfile(address)": FunctionFragment;
+    "getArchaeologistProfileAddressAtIndex(uint256)": FunctionFragment;
+    "getArchaeologistSarcophagi(address)": FunctionFragment;
     "getArchaeologistSuccessOnSarcophagus(address,bytes32)": FunctionFragment;
-    "getArchaeologistsarcophagi(address)": FunctionFragment;
     "getAvailableRewards(address)": FunctionFragment;
     "getCursedBond(address)": FunctionFragment;
-    "getEmbalmersarcophagi(address)": FunctionFragment;
+    "getEmbalmerSarcophagi(address)": FunctionFragment;
     "getFreeBond(address)": FunctionFragment;
     "getProtocolFeeAmount()": FunctionFragment;
-    "getRecipientsarcophagi(address)": FunctionFragment;
+    "getRecipientSarcophagi(address)": FunctionFragment;
     "getSarcophagus(bytes32)": FunctionFragment;
     "getSarcophagusArchaeologist(bytes32,address)": FunctionFragment;
     "getTotalProtocolFees()": FunctionFragment;
@@ -44,12 +46,20 @@ interface ViewStateFacetInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "getArchaeologistSuccessOnSarcophagus",
-    values: [string, BytesLike]
+    functionFragment: "getArchaeologistProfile",
+    values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "getArchaeologistsarcophagi",
+    functionFragment: "getArchaeologistProfileAddressAtIndex",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getArchaeologistSarcophagi",
     values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getArchaeologistSuccessOnSarcophagus",
+    values: [string, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getAvailableRewards",
@@ -60,7 +70,7 @@ interface ViewStateFacetInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "getEmbalmersarcophagi",
+    functionFragment: "getEmbalmerSarcophagi",
     values: [string]
   ): string;
   encodeFunctionData(functionFragment: "getFreeBond", values: [string]): string;
@@ -69,7 +79,7 @@ interface ViewStateFacetInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getRecipientsarcophagi",
+    functionFragment: "getRecipientSarcophagi",
     values: [string]
   ): string;
   encodeFunctionData(
@@ -94,11 +104,19 @@ interface ViewStateFacetInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getArchaeologistSuccessOnSarcophagus",
+    functionFragment: "getArchaeologistProfile",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getArchaeologistsarcophagi",
+    functionFragment: "getArchaeologistProfileAddressAtIndex",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getArchaeologistSarcophagi",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getArchaeologistSuccessOnSarcophagus",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -110,7 +128,7 @@ interface ViewStateFacetInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getEmbalmersarcophagi",
+    functionFragment: "getEmbalmerSarcophagi",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -122,7 +140,7 @@ interface ViewStateFacetInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getRecipientsarcophagi",
+    functionFragment: "getRecipientSarcophagi",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -195,16 +213,37 @@ export class ViewStateFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string[]]>;
 
+    getArchaeologistProfile(
+      archaeologist: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        [boolean, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+          exists: boolean;
+          minimumDiggingFee: BigNumber;
+          maximumRewrapInterval: BigNumber;
+          freeBond: BigNumber;
+          cursedBond: BigNumber;
+          rewards: BigNumber;
+        }
+      ]
+    >;
+
+    getArchaeologistProfileAddressAtIndex(
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    getArchaeologistSarcophagi(
+      archaeologist: string,
+      overrides?: CallOverrides
+    ): Promise<[string[]]>;
+
     getArchaeologistSuccessOnSarcophagus(
       archaeologist: string,
       sarcoId: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    getArchaeologistsarcophagi(
-      archaeologist: string,
-      overrides?: CallOverrides
-    ): Promise<[string[]]>;
 
     getAvailableRewards(
       archaeologist: string,
@@ -216,7 +255,7 @@ export class ViewStateFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    getEmbalmersarcophagi(
+    getEmbalmerSarcophagi(
       embalmer: string,
       overrides?: CallOverrides
     ): Promise<[string[]]>;
@@ -228,7 +267,7 @@ export class ViewStateFacet extends BaseContract {
 
     getProtocolFeeAmount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    getRecipientsarcophagi(
+    getRecipientSarcophagi(
       recipient: string,
       overrides?: CallOverrides
     ): Promise<[string[]]>;
@@ -274,7 +313,7 @@ export class ViewStateFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [BigNumber, BigNumber, string, string, BigNumber] & {
+        [BigNumber, BigNumber, BigNumber, string, string, BigNumber] & {
           diggingFee: BigNumber;
           doubleHashedShard: string;
           unencryptedShard: string;
@@ -296,16 +335,35 @@ export class ViewStateFacet extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string[]>;
 
+  getArchaeologistProfile(
+    archaeologist: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      exists: boolean;
+      minimumDiggingFee: BigNumber;
+      maximumRewrapInterval: BigNumber;
+      freeBond: BigNumber;
+      cursedBond: BigNumber;
+      rewards: BigNumber;
+    }
+  >;
+
+  getArchaeologistProfileAddressAtIndex(
+    index: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  getArchaeologistSarcophagi(
+    archaeologist: string,
+    overrides?: CallOverrides
+  ): Promise<string[]>;
+
   getArchaeologistSuccessOnSarcophagus(
     archaeologist: string,
     sarcoId: BytesLike,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  getArchaeologistsarcophagi(
-    archaeologist: string,
-    overrides?: CallOverrides
-  ): Promise<string[]>;
 
   getAvailableRewards(
     archaeologist: string,
@@ -317,7 +375,7 @@ export class ViewStateFacet extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  getEmbalmersarcophagi(
+  getEmbalmerSarcophagi(
     embalmer: string,
     overrides?: CallOverrides
   ): Promise<string[]>;
@@ -329,7 +387,7 @@ export class ViewStateFacet extends BaseContract {
 
   getProtocolFeeAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
-  getRecipientsarcophagi(
+  getRecipientSarcophagi(
     recipient: string,
     overrides?: CallOverrides
   ): Promise<string[]>;
@@ -372,7 +430,7 @@ export class ViewStateFacet extends BaseContract {
     archaeologist: string,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, string, string, BigNumber] & {
+    [BigNumber, BigNumber, BigNumber, string, string, BigNumber] & {
       diggingFee: BigNumber;
       diggingFeesPaid: BigNumber;
       doubleHashedShard: string;
@@ -394,16 +452,35 @@ export class ViewStateFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string[]>;
 
+    getArchaeologistProfile(
+      archaeologist: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+        exists: boolean;
+        minimumDiggingFee: BigNumber;
+        maximumRewrapInterval: BigNumber;
+        freeBond: BigNumber;
+        cursedBond: BigNumber;
+        rewards: BigNumber;
+      }
+    >;
+
+    getArchaeologistProfileAddressAtIndex(
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    getArchaeologistSarcophagi(
+      archaeologist: string,
+      overrides?: CallOverrides
+    ): Promise<string[]>;
+
     getArchaeologistSuccessOnSarcophagus(
       archaeologist: string,
       sarcoId: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    getArchaeologistsarcophagi(
-      archaeologist: string,
-      overrides?: CallOverrides
-    ): Promise<string[]>;
 
     getAvailableRewards(
       archaeologist: string,
@@ -415,7 +492,7 @@ export class ViewStateFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getEmbalmersarcophagi(
+    getEmbalmerSarcophagi(
       embalmer: string,
       overrides?: CallOverrides
     ): Promise<string[]>;
@@ -427,7 +504,7 @@ export class ViewStateFacet extends BaseContract {
 
     getProtocolFeeAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getRecipientsarcophagi(
+    getRecipientSarcophagi(
       recipient: string,
       overrides?: CallOverrides
     ): Promise<string[]>;
@@ -470,7 +547,7 @@ export class ViewStateFacet extends BaseContract {
       archaeologist: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, string, string, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, string, string, BigNumber] & {
         diggingFee: BigNumber;
         diggingFeesPaid: BigNumber;
         doubleHashedShard: string;
@@ -495,14 +572,24 @@ export class ViewStateFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getArchaeologistSuccessOnSarcophagus(
+    getArchaeologistProfile(
       archaeologist: string,
-      sarcoId: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getArchaeologistsarcophagi(
+    getArchaeologistProfileAddressAtIndex(
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getArchaeologistSarcophagi(
       archaeologist: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getArchaeologistSuccessOnSarcophagus(
+      archaeologist: string,
+      sarcoId: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -516,7 +603,7 @@ export class ViewStateFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getEmbalmersarcophagi(
+    getEmbalmerSarcophagi(
       embalmer: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -528,7 +615,7 @@ export class ViewStateFacet extends BaseContract {
 
     getProtocolFeeAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getRecipientsarcophagi(
+    getRecipientSarcophagi(
       recipient: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -558,14 +645,24 @@ export class ViewStateFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getArchaeologistSuccessOnSarcophagus(
+    getArchaeologistProfile(
       archaeologist: string,
-      sarcoId: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getArchaeologistsarcophagi(
+    getArchaeologistProfileAddressAtIndex(
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getArchaeologistSarcophagi(
       archaeologist: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getArchaeologistSuccessOnSarcophagus(
+      archaeologist: string,
+      sarcoId: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -579,7 +676,7 @@ export class ViewStateFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getEmbalmersarcophagi(
+    getEmbalmerSarcophagi(
       embalmer: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -593,7 +690,7 @@ export class ViewStateFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getRecipientsarcophagi(
+    getRecipientSarcophagi(
       recipient: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

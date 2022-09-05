@@ -39,8 +39,7 @@ export function validateEnvVars(): PublicEnvConfig {
         _tryReadEnv("BOOTSTRAP_LIST", process.env.BOOTSTRAP_LIST);
     }
 
-    const publicConfig = validateBlockEnvVars();
-    return publicConfig;
+    return validateBlockEnvVars();
 }
 
 function validateBlockEnvVars() {
