@@ -3,6 +3,7 @@ import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "./chalk-theme";
 import { RPC_EXCEPTION } from "./exit-codes";
 import { inMemoryStore, SarcophagusData } from "./onchain-data";
+import { scheduleUnwrap } from "./scheduler";
 
 const waitingForFinalise: SarcophagusData[] = [];
 
@@ -36,6 +37,8 @@ export async function setupEventListeners(web3Interface: Web3Interface) {
             if (i !== -1) {
                 const sarco = waitingForFinalise.splice(i, 1)[0];
                 inMemoryStore.sarcophagi.push(sarco);
+
+                scheduleUnwrap(web3Interface, sarcoId, sarco.resurrectionTime);
             }
         });
 
