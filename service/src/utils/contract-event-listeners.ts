@@ -3,6 +3,7 @@ import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "./chalk-theme";
 import { RPC_EXCEPTION } from "./exit-codes";
 import { inMemoryStore, SarcophagusData } from "./onchain-data";
+import { rescheduleUnwrap, scheduleUnwrap } from "./scheduler";
 
 const waitingForFinalise: SarcophagusData[] = [];
 
@@ -24,7 +25,7 @@ export async function setupEventListeners(web3Interface: Web3Interface) {
         ) => {
             const isCursed = (cursedArchs as string[]).includes(archAddress);
             if (isCursed) {
-                waitingForFinalise.push({ id: sarcoId, resurrectionTime });
+                waitingForFinalise.push({ id: sarcoId, resurrectionTime: new Date(resurrectionTime as number) });
             }
         }
         );
@@ -36,13 +37,14 @@ export async function setupEventListeners(web3Interface: Web3Interface) {
             if (i !== -1) {
                 const sarco = waitingForFinalise.splice(i, 1)[0];
                 inMemoryStore.sarcophagi.push(sarco);
+
+                scheduleUnwrap(web3Interface, sarcoId, sarco.resurrectionTime);
             }
         });
 
         const rewrapFilter = web3Interface.embalmerFacet.filters.RewrapSarcophagus();
         web3Interface.embalmerFacet.on(rewrapFilter, (sarcoId, newResurrectionTime) => {
-            console.log(`On rewrap \n${newResurrectionTime}`);
-            // do sth with newResurrectionTime
+            rescheduleUnwrap(web3Interface, sarcoId, new Date(newResurrectionTime as number));
         });
 
         const cleanFilter = web3Interface.thirdPartyFacet.filters.CleanUpSarcophagus();

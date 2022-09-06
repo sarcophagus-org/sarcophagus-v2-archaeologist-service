@@ -35,11 +35,13 @@
     "it-pushable": "^3.1.0",
     "jsonfile": "^6.1.0",
     "libp2p": "^0.37.2",
+    "node-schedule": "^2.1.0",
     "peer-id": "^0.16.0",
     "prompt-sync": "^4.2.0"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
+    "@types/node-schedule": "^2.1.0",
     "@types/prompt-sync": "^4.1.1",
     "arweave": "^1.11.6",
     "cross-env": "^7.0.3",
