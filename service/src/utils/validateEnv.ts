@@ -1,6 +1,5 @@
 import "dotenv/config";
 import { PublicEnvConfig } from "models/env-config";
-import { constants } from "ethers"
 
 import ethers from "ethers";
 import { archLogger } from "./chalk-theme";
@@ -45,11 +44,6 @@ export function validateEnvVars(): PublicEnvConfig {
 function validateBlockEnvVars() {
     const publicConfig: PublicEnvConfig = {
         encryptionPublicKey: "",
-        maxResurrectionTime: 0,
-        minBounty: constants.Zero,
-        minDiggingFees: constants.Zero,
-        isArweaver: false,
-        feePerByte: constants.Zero,
     };
 
     _tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL);
@@ -66,42 +60,13 @@ function validateBlockEnvVars() {
     _tryReadEnv(
         "ETH_PRIVATE_KEY",
         process.env.ETH_PRIVATE_KEY,
-        (envVar) => publicConfig.encryptionPublicKey = new ethers.Wallet(envVar).publicKey,
+        (envVar) => new ethers.Wallet(envVar).publicKey,
     );
 
     _tryReadEnv(
         "ENCRYPTION_PRIVATE_KEY",
         process.env.ENCRYPTION_PRIVATE_KEY,
         (envVar) => publicConfig.encryptionPublicKey = new ethers.Wallet(envVar).publicKey,
-    );
-
-    _tryReadEnv(
-        "MAX_RESURRECTION_TIME",
-        process.env.MAX_RESURRECTION_TIME,
-        (envVar) => {
-            if (Number.isNaN(Number.parseInt(envVar))) throw "";
-            publicConfig.maxResurrectionTime = Number.parseInt(envVar)
-        }
-    );
-    _tryReadEnv(
-        "MIN_BOUNTY",
-        process.env.MIN_BOUNTY,
-        (envVar) => publicConfig.minBounty = ethers.utils.parseEther(envVar)
-    );
-    _tryReadEnv(
-        "MIN_DIGGING_FEES",
-        process.env.MIN_DIGGING_FEES,
-        (envVar) => publicConfig.minDiggingFees = ethers.utils.parseEther(envVar)
-    );
-    _tryReadEnv(
-        "FEE_PER_BYTE",
-        process.env.FEE_PER_BYTE,
-        (envVar) => publicConfig.feePerByte = ethers.utils.parseEther(envVar)
-    );
-    _tryReadEnv(
-        "IS_ARWEAVER",
-        process.env.IS_ARWEAVER,
-        (envVar) => publicConfig.isArweaver = envVar === "true"
     );
 
     return publicConfig;
