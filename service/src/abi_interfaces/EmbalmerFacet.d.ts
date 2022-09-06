@@ -222,7 +222,7 @@ export class EmbalmerFacet extends BaseContract {
         canBeTransferred: boolean;
         minShards: BigNumberish;
       },
-      archaeologists: {
+      selectedArchaeologists: {
         archAddress: string;
         storageFee: BigNumberish;
         diggingFee: BigNumberish;
@@ -275,7 +275,7 @@ export class EmbalmerFacet extends BaseContract {
       canBeTransferred: boolean;
       minShards: BigNumberish;
     },
-    archaeologists: {
+    selectedArchaeologists: {
       archAddress: string;
       storageFee: BigNumberish;
       diggingFee: BigNumberish;
@@ -328,7 +328,7 @@ export class EmbalmerFacet extends BaseContract {
         canBeTransferred: boolean;
         minShards: BigNumberish;
       },
-      archaeologists: {
+      selectedArchaeologists: {
         archAddress: string;
         storageFee: BigNumberish;
         diggingFee: BigNumberish;
@@ -502,7 +502,7 @@ export class EmbalmerFacet extends BaseContract {
         canBeTransferred: boolean;
         minShards: BigNumberish;
       },
-      archaeologists: {
+      selectedArchaeologists: {
         archAddress: string;
         storageFee: BigNumberish;
         diggingFee: BigNumberish;
@@ -556,7 +556,7 @@ export class EmbalmerFacet extends BaseContract {
         canBeTransferred: boolean;
         minShards: BigNumberish;
       },
-      archaeologists: {
+      selectedArchaeologists: {
         archAddress: string;
         storageFee: BigNumberish;
         diggingFee: BigNumberish;

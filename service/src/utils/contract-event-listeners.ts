@@ -1,7 +1,7 @@
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
 import { RPC_EXCEPTION } from "./exit-codes";
-import { storage } from "./onchain-data";
+import { inMemoryStore } from "./onchain-data";
 
 const waitingForFinalise: string[] = [];
 
@@ -33,7 +33,7 @@ export async function setupEventListeners(web3Interface: Web3Interface) {
             if (waitingForFinalise.includes(sarcoId)) {
                 const i = waitingForFinalise.indexOf(sarcoId);
                 waitingForFinalise.splice(i, 1);
-                storage.sarcophagi?.push(sarcoId);
+                inMemoryStore.sarcophagi?.push(sarcoId);
             }
         });
 

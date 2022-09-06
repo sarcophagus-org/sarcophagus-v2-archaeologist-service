@@ -55,18 +55,64 @@ const _abi = [
         name: "archaeologist",
         type: "address",
       },
-      {
-        internalType: "bytes32",
-        name: "sarcoId",
-        type: "bytes32",
-      },
     ],
-    name: "getArchaeologistSuccessOnSarcophagus",
+    name: "getArchaeologistProfile",
     outputs: [
       {
-        internalType: "bool",
+        components: [
+          {
+            internalType: "bool",
+            name: "exists",
+            type: "bool",
+          },
+          {
+            internalType: "uint256",
+            name: "minimumDiggingFee",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "maximumRewrapInterval",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "freeBond",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "cursedBond",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "rewards",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct LibTypes.ArchaeologistProfile",
         name: "",
-        type: "bool",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "index",
+        type: "uint256",
+      },
+    ],
+    name: "getArchaeologistProfileAddressAtIndex",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",
@@ -80,12 +126,36 @@ const _abi = [
         type: "address",
       },
     ],
-    name: "getArchaeologistsarcophagi",
+    name: "getArchaeologistSarcophagi",
     outputs: [
       {
         internalType: "bytes32[]",
         name: "",
         type: "bytes32[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "archaeologist",
+        type: "address",
+      },
+      {
+        internalType: "bytes32",
+        name: "sarcoId",
+        type: "bytes32",
+      },
+    ],
+    name: "getArchaeologistSuccessOnSarcophagus",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -137,7 +207,7 @@ const _abi = [
         type: "address",
       },
     ],
-    name: "getEmbalmersarcophagi",
+    name: "getEmbalmerSarcophagi",
     outputs: [
       {
         internalType: "bytes32[]",
@@ -188,7 +258,7 @@ const _abi = [
         type: "address",
       },
     ],
-    name: "getRecipientsarcophagi",
+    name: "getRecipientSarcophagi",
     outputs: [
       {
         internalType: "bytes32[]",
@@ -300,6 +370,11 @@ const _abi = [
           {
             internalType: "uint256",
             name: "diggingFee",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "diggingFeesPaid",
             type: "uint256",
           },
           {

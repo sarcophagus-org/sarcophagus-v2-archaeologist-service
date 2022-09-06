@@ -491,8 +491,8 @@ const _abi = [
             type: "bytes32",
           },
         ],
-        internalType: "struct LibTypes.ArchaeologistMemory[]",
-        name: "archaeologists",
+        internalType: "struct LibTypes.SelectedArchaeologistMemory[]",
+        name: "selectedArchaeologists",
         type: "tuple[]",
       },
       {
