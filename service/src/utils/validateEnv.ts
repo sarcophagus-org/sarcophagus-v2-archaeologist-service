@@ -87,11 +87,6 @@ function validateBlockEnvVars() {
         process.env.MIN_DIGGING_FEES,
         (envVar) => publicConfig.minDiggingFees = ethers.utils.parseEther(envVar)
     );
-    _tryReadEnv(
-        "FEE_PER_BYTE",
-        process.env.FEE_PER_BYTE,
-        (envVar) => publicConfig.feePerByte = ethers.utils.parseEther(envVar)
-    );
 
     return publicConfig;
 }
