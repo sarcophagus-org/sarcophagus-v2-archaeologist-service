@@ -52,9 +52,12 @@ export const fetchAndDecryptShard = async (
             throw "Sarcophagus does not exist";
         }
 
-        const arweaveTxId = sarco.arweaveTxIds[0];
+        // TODO: Potential for this arch's shards to be referenced by
+        // arweaveTxIds on higher indices, if R&R was previously transferred
+        // from a previous arch to this one.
+        const shardsArweaveTxId = sarco.arweaveTxIds[1];
 
-        const data = await arweaveService.transactions.getData(arweaveTxId, { decode: true, string: true });
+        const data = await arweaveService.transactions.getData(shardsArweaveTxId, { decode: true, string: true });
 
         const shards = JSON.parse(data as string);
         const encryptedShard = shards[web3Interface.encryptionWallet.publicKey];
