@@ -7,7 +7,7 @@ import { setupNodeEventListeners } from "./node-event-listeners";
  *
  * @param name - name of the node, purely for logging purposes
  * @param configOptions - Libp2p config
- *
+ * @param connectCallback
  */
 export async function createNode(
   name: string,
@@ -18,10 +18,9 @@ export async function createNode(
   setupNodeEventListeners(node, name, connectCallback);
 
   const peerId = node.peerId.toString();
-  archLogger.info(`${name} starting...`);
-
   await node.start();
-  archLogger.notice(`Node started with id: ${peerId.slice(peerId.length - 5)}`);
+
+  archLogger.notice(`${name} started with id: ${peerId.slice(peerId.length - 5)}`);
 
   return node;
 }

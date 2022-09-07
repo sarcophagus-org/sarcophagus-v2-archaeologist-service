@@ -3,7 +3,12 @@ import { archLogger } from "./chalk-theme";
 
 const idTruncateLimit = 5;
 
-const discoverPeers: string[] = [];
+// <nodeName>:<peerId>[]
+const discoveredPeers: string[] = [];
+
+function formatDP(name, peerId) {
+    return `${name}:${peerId}`
+}
 
 export function setupNodeEventListeners(
     node: Libp2p,
@@ -12,9 +17,10 @@ export function setupNodeEventListeners(
 ) {
     node.addEventListener('peer:discovery', (evt) => {
         const peerId = evt.detail.id.toString();
+        const formattedPeerId = formatDP(name, peerId);
 
-        if (discoverPeers.find((p) => p === peerId) === undefined) {
-            discoverPeers.push(peerId);
+        if (discoveredPeers.find((p) => p === formattedPeerId) === undefined) {
+            discoveredPeers.push(formattedPeerId);
             archLogger.info(`${name}: discovered ${peerId.slice(peerId.length - idTruncateLimit)}`)
         }
     })

@@ -11,16 +11,20 @@ import { ethers } from 'ethers';
  * Set numOfArchsToGenerate for how many archaeologists to generate
  */
 
-const numOfArchsToGenerate = 4
+const numOfArchsToGenerate = 3
 const startingTcpPort = 8000
 const startingWsPort = 10000
+const encryptionWallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!);
 
 const config = validateEnvVars(true);
-
 let archInitNodePromises: Promise<Libp2p>[] = [];
-const { peerId, listenAddresses } = await randomArchVals(startingTcpPort, startingWsPort)
 
-const encryptionWallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!);
+
+/**
+ * Setup and start Bootstrap Node
+ */
+
+const { peerId, listenAddresses } = await randomArchVals(startingTcpPort, startingWsPort)
 
 const bootstrap = new Archaeologist({
   name: "bootstrap",
@@ -30,6 +34,11 @@ const bootstrap = new Archaeologist({
 })
 
 await bootstrap.initNode({ config, encryptionWallet })
+
+
+/**
+ * Setup and start non-bootstrap nodes
+ */
 
 const bootstrapList = getMultiAddresses(bootstrap.node)
 const archs: Archaeologist[] = []
@@ -48,6 +57,11 @@ for (let i = 1; i <= numOfArchsToGenerate; i++) {
 }
 
 await Promise.all(archInitNodePromises);
+
+
+/**
+ * Handle streams for all non-bootstrap nodes
+ */
 
 for (let i = 0; i < numOfArchsToGenerate; i++) {
   archs[i].setupIncomingConfigStream()

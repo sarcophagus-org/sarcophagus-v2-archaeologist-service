@@ -38,7 +38,7 @@ export class NodeConfig {
       new Mplex()
     ],
     dht: new KadDHT({
-      protocolPrefix: PROTOCOL_PREFIX,
+      protocolPrefix: process.env.DHT_PROTOCOL_PREFIX || PROTOCOL_PREFIX,
       clientMode: false
     }),
     peerDiscovery: [
