@@ -140,5 +140,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     log(`from ${sourceId.slice(sourceId.length - idTruncateLimit)}: ${msg}`)
   })
 
-  // browserNode.pubsub.subscribe("env-config")
+  browserNode.pubsub.subscribe("env-config")
 });
