@@ -11,11 +11,11 @@ import { ethers } from 'ethers';
  * Set numOfArchsToGenerate for how many archaeologists to generate
  */
 
-const numOfArchsToGenerate = 1
+const numOfArchsToGenerate = 4
 const startingTcpPort = 8000
 const startingWsPort = 10000
 
-const config = validateEnvVars();
+const config = validateEnvVars(true);
 
 let archInitNodePromises: Promise<Libp2p>[] = [];
 const { peerId, listenAddresses } = await randomArchVals(startingTcpPort, startingWsPort)

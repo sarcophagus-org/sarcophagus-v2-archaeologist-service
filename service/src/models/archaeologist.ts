@@ -58,6 +58,7 @@ export class Archaeologist {
   }
 
   async setupIncomingConfigStream() {
+    // TODO: Do we need this get-file protocol anymore?
     this.node.handle(['/get-file/1.0.0'], async ({ stream }) => {
       try {
         await pipe(stream, async (source) => {
