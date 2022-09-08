@@ -1,18 +1,16 @@
 import { Buffer } from 'buffer'
-import { pushable } from "it-pushable";
 globalThis.Buffer = Buffer
 
+import { pushable } from "it-pushable";
 import { createLibp2p } from 'libp2p'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { Mplex } from '@libp2p/mplex'
-import { Bootstrap } from '@libp2p/bootstrap'
 import { KadDHT } from "@libp2p/kad-dht";
 import { WebSockets } from "@libp2p/websockets";
 import { WebRTCStar } from '@libp2p/webrtc-star';
 
 import { FloodSub } from '@libp2p/floodsub'
 import { pipe } from "it-pipe";
-import { solidityKeccak256 } from "ethers/lib/utils";
 
 if (!import.meta.env.VITE_BOOTSTRAP_NODE_LIST) {
   throw Error("VITE_BOOTSTRAP_NODE_LIST not set in .env")
@@ -29,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const dht = new KadDHT({
-    protocolPrefix: "/archaeologist-service",
+    protocolPrefix: import.meta.env.VITE_DHT_PROTOCOL_PREFIX || "/archaeologist-service",
     clientMode: false
   })
 
@@ -56,9 +54,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     ],
     peerDiscovery: [
       webRtcStar.discovery,
-      new Bootstrap({
-        list: import.meta.env.VITE_BOOTSTRAP_NODE_LIST.split(",").map(s => s.trim())
-      }),
     ],
     dht,
     connectionManager: {
