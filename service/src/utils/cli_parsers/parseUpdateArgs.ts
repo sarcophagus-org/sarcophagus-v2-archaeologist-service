@@ -10,7 +10,7 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<Pro
     const argsStr = process.argv.toString().split("--")[1];
 
     if (!argsStr) {
-        archLogger.error("Missing arguments to update");
+        archLogger.error("Missing arguments to update. See the README for usage.");
         exit(CLI_BAD_UPDATE_PROFILE_ARG);
     }
 
@@ -21,7 +21,7 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<Pro
     const oldProfile = await getOnchainProfile(web3Interface);
 
     if (!oldProfile.exists) {
-        archLogger.error("Profile is not registered. Use `npm run register` to register a profile for your account. See readme for usage.");
+        archLogger.error("Profile is not registered. Use `npm run register` to register a profile for your account. See the README for usage.");
         exit(NO_ONCHAIN_PROFILE);
     }
 
@@ -35,7 +35,7 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<Pro
         const argData = arg.split(":");
 
         if (argData.length !== 2) {
-            archLogger.error(`Unrecognized argument format: ${arg}`);
+            archLogger.error(`Unrecognized argument format: ${arg}. See the README for usage.`);
             exit(CLI_BAD_UPDATE_PROFILE_ARG);
         }
 
@@ -64,7 +64,7 @@ export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<Pro
                 break;
 
             default:
-                archLogger.error(`Unrecognized argument: ${argName}`);
+                archLogger.error(`Unrecognized argument: ${argName}. See the README for usage.`);
                 exit(CLI_BAD_UPDATE_PROFILE_ARG);
         }
     })
