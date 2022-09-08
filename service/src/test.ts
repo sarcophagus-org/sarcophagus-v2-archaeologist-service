@@ -5,6 +5,7 @@ import { randomArchVals } from "./utils/random-arch-gen.js";
 import { Archaeologist } from "./models/archaeologist";
 import { Libp2p } from "libp2p";
 import { ethers } from 'ethers';
+import { getWeb3Interface } from './scripts/web3-interface';
 
 /**
  * This file is used to test multiple archaeologists locally
@@ -33,7 +34,10 @@ const bootstrap = new Archaeologist({
   isBootstrap: true
 })
 
-await bootstrap.initNode({ config, encryptionWallet })
+await bootstrap.initNode({
+  config: { encryptionPublicKey: encryptionWallet.publicKey },
+  web3Interface: await getWeb3Interface(true),
+});
 
 
 /**
@@ -52,7 +56,10 @@ for (let i = 1; i <= numOfArchsToGenerate; i++) {
     bootstrapList
   })
 
-  archInitNodePromises.push(arch.initNode({ config, encryptionWallet }))
+  archInitNodePromises.push(arch.initNode({
+    config: { encryptionPublicKey: encryptionWallet.publicKey },
+    web3Interface: await getWeb3Interface(true),
+  }))
   archs.push(arch)
 }
 

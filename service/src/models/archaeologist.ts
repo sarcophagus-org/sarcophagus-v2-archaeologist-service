@@ -11,6 +11,7 @@ import { archLogger } from "../utils/chalk-theme";
 import { ethers, Wallet } from "ethers";
 import { fetchAndValidateArweaveShard } from "../utils/arweave";
 import { pushable } from "it-pushable";
+import { getWeb3Interface, Web3Interface } from "scripts/web3-interface";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -37,7 +38,7 @@ export class Archaeologist {
   private listenAddresses: string[] | undefined
   private listenAddressesConfig: ListenAddressesConfig | undefined
   public envConfig: PublicEnvConfig;
-  public encryptionWallet: Wallet;
+  public web3Interface: Web3Interface;
 
   public envTopic = "env-config";
 
@@ -92,11 +93,14 @@ export class Archaeologist {
             const txId = jsonData.arweaveTxId;
             const unencryptedShardHash = jsonData.unencryptedShardHash;
 
-            const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, this.encryptionWallet.publicKey);
+            const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, this.web3Interface.encryptionWallet.publicKey);
 
             if (isValidShard) {
-              const msg = ethers.utils.solidityPack(['string', 'string'], [txId, unencryptedShardHash])
-              const signature = await this.encryptionWallet.signMessage(msg);
+              const msg = ethers.utils.solidityPack(
+                ['string', 'string', 'string'],
+                [txId, unencryptedShardHash, this.web3Interface.ethWallet.address]
+              )
+              const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
 
               streamToBrowser(signature);
             } else {
@@ -110,10 +114,10 @@ export class Archaeologist {
     })
   }
 
-  async initNode(arg: { config: PublicEnvConfig, encryptionWallet: Wallet, idFilePath?: string }) {
+  async initNode(arg: { config: PublicEnvConfig, web3Interface: Web3Interface, idFilePath?: string }) {
     this.node = await this.createLibp2pNode(arg.idFilePath)
     this.envConfig = arg.config;
-    this.encryptionWallet = arg.encryptionWallet;
+    this.web3Interface = arg.web3Interface;
 
     return this.node;
   }
