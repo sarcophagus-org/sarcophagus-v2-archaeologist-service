@@ -7,7 +7,7 @@ import { setupNodeEventListeners } from "./node-event-listeners";
  *
  * @param name - name of the node, purely for logging purposes
  * @param configOptions - Libp2p config
- * @param connectCallback
+ * @param connectCallback callback to execute each time this node connects to another
  */
 export async function createNode(
   name: string,
