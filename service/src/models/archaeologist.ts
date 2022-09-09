@@ -137,8 +137,8 @@ export class Archaeologist {
   // TODO temporary function for testing streaming
   async setupMessageStream() {
     const msgProtocol = `/message/${this.truncatedId(this.peerId.toString())}`
-    console.log('my message protocol:', msgProtocol)
-    this.node.handle([msgProtocol], ({ protocol, stream }) => {
+    archLogger.info(`listening to stream on protocol: ${msgProtocol}`)
+    this.node.handle([msgProtocol], ({ stream }) => {
       pipe(
         stream,
         async function (source) {
@@ -155,8 +155,8 @@ export class Archaeologist {
   }
 
   // TODO - pubsub is currently disabled,
-  // determine if we want to re-enable it or clean related pubsub
-  // functions up (either make pubsub optional or remove the functions)
+  // determine if we want to re-enable it, make it optional or
+  // remove the related functions
   async publishEnvConfig() {
     const configStr = JSON.stringify(this.envConfig);
     this.publish(this.envTopic, configStr).catch(err => {

@@ -27,9 +27,9 @@ let archInitNodePromises: Promise<void | Libp2p>[] = [];
  * Setup and start Bootstrap Node
  */
 
-// const peerId = await loadPeerIdFromFile();
+const peerId = await loadPeerIdFromFile();
 
-const { listenAddresses, peerId } = await randomArchVals(
+const { listenAddresses } = await randomArchVals(
   startingTcpPort, startingWsPort
 )
 
