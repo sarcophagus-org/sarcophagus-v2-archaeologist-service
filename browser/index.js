@@ -30,7 +30,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Send text entered into input to connections
   messageInput.addEventListener("change", async (event) => {
-    console.log("all connections:", browserNode.getConnections().map(conn => conn.toString()))
     for(let peer of browserNode.getConnections()) {
       try {
         log(`attempting to send message ${event.target.value} to /message/${truncatedId(peer.remotePeer.toString())}`)
