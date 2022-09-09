@@ -30,3 +30,11 @@ retrieveOnchainData(web3Interface);
 
 setInterval(() => retrieveOnchainData(web3Interface), 300000); // refetch every 5mins
 setupEventListeners(web3Interface);
+
+[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
+  process.on(eventType, async () => {
+    console.log(`received exit event: ${eventType}`)
+    await arch.shutdown();
+    process.exit(2);
+  });
+})

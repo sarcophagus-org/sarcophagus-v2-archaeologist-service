@@ -1,5 +1,4 @@
 import { TCP } from "@libp2p/tcp";
-import { WebSockets } from "@libp2p/websockets";
 import { WebRTCStar } from "@libp2p/webrtc-star";
 import wrtc from '@koush/wrtc'
 import { KadDHT } from "@libp2p/kad-dht";
@@ -7,9 +6,6 @@ import { Noise } from "@chainsafe/libp2p-noise";
 import { Mplex } from "@libp2p/mplex";
 import { Bootstrap } from "@libp2p/bootstrap";
 import { Libp2pOptions } from "libp2p";
-
-
-import { FloodSub } from '@libp2p/floodsub'
 
 interface NodeConfigParams {
   bootstrapList?: string[],
@@ -22,12 +18,8 @@ const webRtcStar = new WebRTCStar({ wrtc });
 
 export class NodeConfig {
   public configObj: Libp2pOptions = {
-    // There are some type issues in libp2p interfaces
-    // which necessitate these ts-ignore statements
     transports: [
       new TCP(),
-      // @ts-ignore
-      new WebSockets(),
       // @ts-ignore
       webRtcStar,
     ],
@@ -44,11 +36,9 @@ export class NodeConfig {
     peerDiscovery: [
       webRtcStar.discovery
     ],
-    pubsub: new FloodSub({
-      enabled: true,
-      canRelayMessage: true,
-      emitSelf: false
-    }),
+    connectionManager: {
+      autoDial: false
+    },
   }
 
   constructor(options: NodeConfigParams = {}) {
