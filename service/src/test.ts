@@ -5,6 +5,7 @@ import { randomArchVals } from "./utils/random-arch-gen.js";
 import { Archaeologist } from "./models/archaeologist";
 import { Libp2p } from "libp2p";
 import { ethers } from 'ethers';
+import { getWeb3Interface } from './scripts/web3-interface';
 
 function randomIntFromInterval(min, max) { // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min)
@@ -40,7 +41,10 @@ const bootstrap = new Archaeologist({
   isBootstrap: true
 })
 
-await bootstrap.initNode({ config, encryptionWallet })
+await bootstrap.initNode({
+  config: { encryptionPublicKey: encryptionWallet.publicKey },
+  web3Interface: await getWeb3Interface(true),
+});
 
 /**
  * Setup and start non-bootstrap nodes
@@ -65,7 +69,10 @@ for (let i = 1; i <= numOfArchsToGenerate; i++) {
   archInitNodePromises.push(
     new Promise(resolve => setTimeout(resolve, delay))
       .then(() => {
-        return arch.initNode({ config, encryptionWallet })
+        return arch.initNode({
+          config: { encryptionPublicKey: encryptionWallet.publicKey },
+          web3Interface: await getWeb3Interface(true),
+        })
       })
   )
   archs.push(arch)

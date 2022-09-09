@@ -28,11 +28,11 @@ export interface Web3Interface {
     viewStateFacet: ViewStateFacet,
 };
 
-export const getWeb3Interface = async (): Promise<Web3Interface> => {
+export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface> => {
     try {
         const rpcProvider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_URL);
-        const ethWallet = new ethers.Wallet(process.env.ETH_PRIVATE_KEY!, rpcProvider);
-        const encryptionWallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!, rpcProvider);
+        const ethWallet = isTest ? ethers.Wallet.createRandom() : new ethers.Wallet(process.env.ETH_PRIVATE_KEY!, rpcProvider);
+        const encryptionWallet = isTest ? ethers.Wallet.createRandom() : new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!, rpcProvider);
         const signer = rpcProvider.getSigner(ethWallet.address);
 
         const network = await rpcProvider.detectNetwork()
