@@ -5,7 +5,6 @@ import { createNode } from "../utils/create-node";
 import { NodeConfig } from "./node-config";
 import { PublicEnvConfig } from "./env-config";
 import { pipe } from "it-pipe";
-import { solidityKeccak256 } from "ethers/lib/utils";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../utils/chalk-theme";
 import { ethers, Wallet } from "ethers";
@@ -57,26 +56,22 @@ export class Archaeologist {
     this.listenAddressesConfig = options.listenAddressesConfig
   }
 
-  async setupIncomingConfigStream() {
-    // TODO: Do we need this get-file protocol anymore?
-    this.node.handle(['/get-file/1.0.0'], async ({ stream }) => {
-      try {
-        await pipe(stream, async (source) => {
-          for await (const data of source) {
-            const decoded = new TextDecoder().decode(data);
-            const hashed = solidityKeccak256(["string"], [decoded]);
+  truncatedId(id, limit = 5): string {
+    return id.slice(id.length - limit)
+  }
 
-            console.log("arch hashed", hashed);
-          }
-        })
-      } catch (err) {
-        console.log("problem with pipe", err)
-      }
-    });
+  async setupIncomingConfigStream() {
+    // TODO temporary function for testing
+    await this.setupMessageStream();
 
     this.node.handle(['/validate-arweave'], async ({ stream }) => {
       try {
         const streamToBrowser = (result: string) => {
+          // TODO -- outboundStream can possibly be replaced (in pipe) with:
+          // pipe(
+          //   [new TextEncoder().encode(result)],
+          //   stream
+          // )
           const outboundStream = pushable({})
           outboundStream.push(new TextEncoder().encode(result))
           pipe(
@@ -105,7 +100,7 @@ export class Archaeologist {
           }
         })
       } catch (err) {
-        console.log("problem with pipe", err)
+        archLogger.error(`problem with pipe in validate-arweave: ${err}`)
       }
     })
   }
@@ -118,6 +113,50 @@ export class Archaeologist {
     return this.node;
   }
 
+  async createLibp2pNode(idFilePath?: string): Promise<Libp2p> {
+    this.peerId = this.peerId ?? await loadPeerIdFromFile(idFilePath)
+
+    if (this.listenAddressesConfig) {
+      const { ipAddress, tcpPort, wsPort, signalServerList } = this.listenAddressesConfig!
+      this.listenAddresses = genListenAddresses(
+        ipAddress, tcpPort, signalServerList, this.peerId.toJSON().id
+      )
+    }
+
+    this.nodeConfig.add("peerId", this.peerId)
+    this.nodeConfig.add("addresses", { listen: this.listenAddresses })
+
+    return createNode(this.name, this.nodeConfig.configObj);
+  }
+
+  async shutdown() {
+    archLogger.info(`${this.name} is stopping...`)
+    await this.node.stop()
+  }
+
+  // TODO temporary function for testing streaming
+  async setupMessageStream() {
+    const msgProtocol = `/message/${this.truncatedId(this.peerId.toString())}`
+    archLogger.info(`listening to stream on protocol: ${msgProtocol}`)
+    this.node.handle([msgProtocol], ({ stream }) => {
+      pipe(
+        stream,
+        async function (source) {
+          for await (const msg of source) {
+            const decoded = new TextDecoder().decode(msg);
+            archLogger.notice( `received message ${decoded}`);
+          }
+        }
+      ).finally(() => {
+        // clean up resources
+        stream.close()
+      })
+    })
+  }
+
+  // TODO - pubsub is currently disabled,
+  // determine if we want to re-enable it, make it optional or
+  // remove the related functions
   async publishEnvConfig() {
     const configStr = JSON.stringify(this.envConfig);
     this.publish(this.envTopic, configStr).catch(err => {
@@ -133,21 +172,5 @@ export class Archaeologist {
     catch (err) {
       archLogger.error(err);
     }
-  }
-
-  async createLibp2pNode(idFilePath?: string): Promise<Libp2p> {
-    this.peerId = this.peerId ?? await loadPeerIdFromFile(idFilePath)
-
-    if (this.listenAddressesConfig) {
-      const { ipAddress, tcpPort, wsPort, signalServerList } = this.listenAddressesConfig!
-      this.listenAddresses = genListenAddresses(
-        ipAddress, tcpPort, wsPort, signalServerList, this.peerId.toJSON().id
-      )
-    }
-
-    this.nodeConfig.add("peerId", this.peerId)
-    this.nodeConfig.add("addresses", { listen: this.listenAddresses })
-
-    return createNode(this.name, this.nodeConfig.configObj, () => setTimeout(() => this.publishEnvConfig(), 400));
   }
 }

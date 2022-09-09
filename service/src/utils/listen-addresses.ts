@@ -1,16 +1,11 @@
 export const genListenAddresses = (
   ipAddress: string,
   tcpPort: number | string,
-  wsPort: number | string,
   servers: string[],
   peerId?: string
 ): string[] => {
-  return [
-    tcpListenAddress(ipAddress, tcpPort),
-    wsListenAddress(ipAddress, wsPort),
-  ].concat(
-    ssListenAddresses(servers, peerId)
-  )
+  return [tcpListenAddress(ipAddress, tcpPort)]
+    .concat(ssListenAddresses(servers, peerId))
 }
 
 export const tcpListenAddress = (
@@ -18,13 +13,6 @@ export const tcpListenAddress = (
   port: number | string
 ) => {
   return `/ip4/${ipAddress}/tcp/${port}`
-}
-
-export const wsListenAddress = (
-  ipAddress: string,
-  port: number | string
-): string => {
-  return `/ip4/${ipAddress}/tcp/${port}/ws`
 }
 
 export const ssListenAddresses = (
