@@ -66,12 +66,13 @@ for (let i = 1; i <= numOfArchsToGenerate; i++) {
     bootstrapList,
   })
 
+  const web3Interface = await getWeb3Interface(true);
   archInitNodePromises.push(
     new Promise(resolve => setTimeout(resolve, delay))
       .then(() => {
         return arch.initNode({
           config: { encryptionPublicKey: encryptionWallet.publicKey },
-          web3Interface: await getWeb3Interface(true),
+          web3Interface,
         })
       })
   )

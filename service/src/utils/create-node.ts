@@ -12,7 +12,7 @@ import { setupNodeEventListeners } from "./node-event-listeners";
 export async function createNode(
   name: string,
   configOptions: Libp2pOptions,
-  connectCallback?: () => void,
+  connectCallback?: (connection) => void,
 ): Promise<Libp2p> {
   const node = await createLibp2p(configOptions);
   setupNodeEventListeners(node, name, connectCallback);
