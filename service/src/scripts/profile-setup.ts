@@ -7,6 +7,8 @@ import { archLogger } from '../utils/chalk-theme'
 import { BigNumber, ethers } from 'ethers'
 import { requestApproval } from './approve_utils'
 
+import jsonfile from "jsonfile"
+
 validateEnvVars();
 
 export enum ProfileArgNames {
@@ -47,9 +49,12 @@ export async function profileSetup(args: ProfileParams, isUpdate: boolean) {
     }
   }
 
+  const peerIdFile = './peer-id.json';
+  const file = await jsonfile.readFile(peerIdFile);
+
   const tx = isUpdate ?
     await web3Interface.archaeologistFacet.updateArchaeologist(diggingFee, rewrapInterval, freeBondDeposit) :
-    await web3Interface.archaeologistFacet.registerArchaeologist(diggingFee, rewrapInterval, freeBondDeposit);
+    await web3Interface.archaeologistFacet.registerArchaeologist(diggingFee, rewrapInterval, freeBondDeposit, file.id);
 
   archLogger.info("Waiting for transaction");
   setInterval(() => process.stdout.write("."), 1000);

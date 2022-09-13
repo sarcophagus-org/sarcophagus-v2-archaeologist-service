@@ -11,6 +11,7 @@ interface OnchainProfile {
     freeBond: BigNumber;
     cursedBond: BigNumber;
     rewards: BigNumber;
+    peerId: string;
 }
 
 export interface SarcophagusData {

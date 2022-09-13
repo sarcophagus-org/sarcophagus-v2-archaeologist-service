@@ -24,6 +24,7 @@ interface ViewStateFacetInterface extends ethers.utils.Interface {
     "getArchaeologistCleanups(address)": FunctionFragment;
     "getArchaeologistProfile(address)": FunctionFragment;
     "getArchaeologistProfileAddressAtIndex(uint256)": FunctionFragment;
+    "getArchaeologistProfileAddresses()": FunctionFragment;
     "getArchaeologistSarcophagi(address)": FunctionFragment;
     "getArchaeologistSuccessOnSarcophagus(address,bytes32)": FunctionFragment;
     "getAvailableRewards(address)": FunctionFragment;
@@ -52,6 +53,10 @@ interface ViewStateFacetInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "getArchaeologistProfileAddressAtIndex",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getArchaeologistProfileAddresses",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getArchaeologistSarcophagi",
@@ -109,6 +114,10 @@ interface ViewStateFacetInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getArchaeologistProfileAddressAtIndex",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getArchaeologistProfileAddresses",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -218,13 +227,22 @@ export class ViewStateFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [boolean, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+        [
+          boolean,
+          BigNumber,
+          BigNumber,
+          BigNumber,
+          BigNumber,
+          BigNumber,
+          string
+        ] & {
           exists: boolean;
           minimumDiggingFee: BigNumber;
           maximumRewrapInterval: BigNumber;
           freeBond: BigNumber;
           cursedBond: BigNumber;
           rewards: BigNumber;
+          peerId: string;
         }
       ]
     >;
@@ -233,6 +251,10 @@ export class ViewStateFacet extends BaseContract {
       index: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    getArchaeologistProfileAddresses(
+      overrides?: CallOverrides
+    ): Promise<[string[]]>;
 
     getArchaeologistSarcophagi(
       archaeologist: string,
@@ -313,8 +335,9 @@ export class ViewStateFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [BigNumber, BigNumber, BigNumber, string, string, BigNumber] & {
+        [BigNumber, BigNumber, string, string, BigNumber] & {
           diggingFee: BigNumber;
+          diggingFeesPaid: BigNumber;
           doubleHashedShard: string;
           unencryptedShard: string;
           curseTokenId: BigNumber;
@@ -339,13 +362,14 @@ export class ViewStateFacet extends BaseContract {
     archaeologist: string,
     overrides?: CallOverrides
   ): Promise<
-    [boolean, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+    [boolean, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, string] & {
       exists: boolean;
       minimumDiggingFee: BigNumber;
       maximumRewrapInterval: BigNumber;
       freeBond: BigNumber;
       cursedBond: BigNumber;
       rewards: BigNumber;
+      peerId: string;
     }
   >;
 
@@ -353,6 +377,10 @@ export class ViewStateFacet extends BaseContract {
     index: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  getArchaeologistProfileAddresses(
+    overrides?: CallOverrides
+  ): Promise<string[]>;
 
   getArchaeologistSarcophagi(
     archaeologist: string,
@@ -430,7 +458,7 @@ export class ViewStateFacet extends BaseContract {
     archaeologist: string,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, string, string, BigNumber] & {
+    [BigNumber, BigNumber, string, string, BigNumber] & {
       diggingFee: BigNumber;
       diggingFeesPaid: BigNumber;
       doubleHashedShard: string;
@@ -456,13 +484,22 @@ export class ViewStateFacet extends BaseContract {
       archaeologist: string,
       overrides?: CallOverrides
     ): Promise<
-      [boolean, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [
+        boolean,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        string
+      ] & {
         exists: boolean;
         minimumDiggingFee: BigNumber;
         maximumRewrapInterval: BigNumber;
         freeBond: BigNumber;
         cursedBond: BigNumber;
         rewards: BigNumber;
+        peerId: string;
       }
     >;
 
@@ -470,6 +507,10 @@ export class ViewStateFacet extends BaseContract {
       index: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    getArchaeologistProfileAddresses(
+      overrides?: CallOverrides
+    ): Promise<string[]>;
 
     getArchaeologistSarcophagi(
       archaeologist: string,
@@ -547,7 +588,7 @@ export class ViewStateFacet extends BaseContract {
       archaeologist: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, string, string, BigNumber] & {
+      [BigNumber, BigNumber, string, string, BigNumber] & {
         diggingFee: BigNumber;
         diggingFeesPaid: BigNumber;
         doubleHashedShard: string;
@@ -579,6 +620,10 @@ export class ViewStateFacet extends BaseContract {
 
     getArchaeologistProfileAddressAtIndex(
       index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getArchaeologistProfileAddresses(
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -652,6 +697,10 @@ export class ViewStateFacet extends BaseContract {
 
     getArchaeologistProfileAddressAtIndex(
       index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getArchaeologistProfileAddresses(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
