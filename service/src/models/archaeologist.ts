@@ -158,10 +158,16 @@ export class Archaeologist {
   }
 
   async publishEnvConfig(connection) {
-    const configStr = JSON.stringify({
-      ...this.envConfig,
-      address: this.web3Interface.ethWallet.address,
+    const envConfig = {
+      encryptionPublicKey: this.envConfig.encryptionPublicKey,
       peerId: this.peerId.toString(),
+    };
+
+    const signature = await this.web3Interface.signer.signMessage(JSON.stringify(envConfig));
+
+    const configStr = JSON.stringify({
+      signature,
+      ...envConfig
     });
 
     const { stream } = await connection.newStream(`/env-config`);
