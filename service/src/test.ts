@@ -1,6 +1,5 @@
 import 'dotenv/config'
 import { getMultiAddresses, loadPeerIdFromFile } from "./utils";
-import { validateEnvVars } from "./utils/validateEnv";
 import { randomArchVals } from "./utils/random-arch-gen.js";
 import { Archaeologist } from "./models/archaeologist";
 import { Libp2p } from "libp2p";

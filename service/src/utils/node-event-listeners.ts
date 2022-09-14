@@ -38,22 +38,4 @@ export function setupNodeEventListeners(
         const peerId = evt.detail.remotePeer.toString()
         archLogger.info(`${name}: Connection dropped from ${peerId.slice(peerId.length - idTruncateLimit)}`)
     })
-
-    node.pubsub.addEventListener("message", (evt) => {
-        const topic = new TextDecoder().decode(evt.detail.topic);
-        const msg = new TextDecoder().decode(evt.detail.data);
-
-        processMessage(topic, msg);
-    })
-}
-
-function processMessage(topic, msg) {
-    archLogger.info(`${this.name} received a msg on topic ${topic}: ${msg}`);
-    switch (msg.topic) {
-        case "some-topic":
-            break;
-
-        default:
-            break;
-    }
 }
