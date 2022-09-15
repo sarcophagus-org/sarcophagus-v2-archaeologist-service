@@ -8,7 +8,7 @@ export async function parseRegisterArgs(): Promise<ProfileParams> {
     const argsStr = process.argv.toString().split("--")[1];
 
     if (!argsStr) {
-        archLogger.error("Missing arguments to register");
+        archLogger.error("Missing arguments to register. See the README for usage.");
         exit(CLI_BAD_REGISTER_PROFILE_ARG);
     }
 
@@ -26,7 +26,7 @@ export async function parseRegisterArgs(): Promise<ProfileParams> {
         const argData = arg.split(":");
 
         if (argData.length !== 2) {
-            archLogger.error(`Unrecognized argument format: ${arg}`);
+            archLogger.error(`Unrecognized argument format: ${arg}. See the README for usage.`);
             exit(CLI_BAD_REGISTER_PROFILE_ARG);
         }
 
@@ -55,7 +55,7 @@ export async function parseRegisterArgs(): Promise<ProfileParams> {
                 break;
 
             default:
-                archLogger.error(`Unrecognized argument: ${argName}`);
+                archLogger.error(`Unrecognized argument: ${argName}. See the README for usage.`);
                 exit(CLI_BAD_REGISTER_PROFILE_ARG);
         }
     })
@@ -69,7 +69,7 @@ export async function parseRegisterArgs(): Promise<ProfileParams> {
     }
 
     if (!processedArgs.includes(ProfileArgNames.REWRAP_INTERVAL)) {
-        archLogger.error(`Missing arguments to register: ${ProfileArgNames.REWRAP_INTERVAL}`);
+        archLogger.error(`Missing argument to register: ${ProfileArgNames.REWRAP_INTERVAL}`);
         exit(CLI_BAD_REGISTER_PROFILE_ARG);
     } else if (registerParams.rewrapInterval === 0) {
         archLogger.error(`Maximum rewrap interval cannot be 0`);

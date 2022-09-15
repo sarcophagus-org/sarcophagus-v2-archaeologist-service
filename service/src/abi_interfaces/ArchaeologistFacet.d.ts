@@ -23,7 +23,7 @@ interface ArchaeologistFacetInterface extends ethers.utils.Interface {
   functions: {
     "depositFreeBond(uint256)": FunctionFragment;
     "finalizeTransfer(bytes32,string,(uint8,bytes32,bytes32))": FunctionFragment;
-    "registerArchaeologist(uint256,uint256,uint256)": FunctionFragment;
+    "registerArchaeologist(uint256,uint256,uint256,string)": FunctionFragment;
     "unwrapSarcophagus(bytes32,bytes)": FunctionFragment;
     "updateArchaeologist(uint256,uint256,uint256)": FunctionFragment;
     "withdrawFreeBond(uint256)": FunctionFragment;
@@ -40,7 +40,7 @@ interface ArchaeologistFacetInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "registerArchaeologist",
-    values: [BigNumberish, BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish, BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "unwrapSarcophagus",
@@ -211,6 +211,7 @@ export class ArchaeologistFacet extends BaseContract {
       minimumDiggingFee: BigNumberish,
       maximumRewrapInterval: BigNumberish,
       freeBond: BigNumberish,
+      peerId: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -254,6 +255,7 @@ export class ArchaeologistFacet extends BaseContract {
     minimumDiggingFee: BigNumberish,
     maximumRewrapInterval: BigNumberish,
     freeBond: BigNumberish,
+    peerId: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -297,6 +299,7 @@ export class ArchaeologistFacet extends BaseContract {
       minimumDiggingFee: BigNumberish,
       maximumRewrapInterval: BigNumberish,
       freeBond: BigNumberish,
+      peerId: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -501,6 +504,7 @@ export class ArchaeologistFacet extends BaseContract {
       minimumDiggingFee: BigNumberish,
       maximumRewrapInterval: BigNumberish,
       freeBond: BigNumberish,
+      peerId: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -545,6 +549,7 @@ export class ArchaeologistFacet extends BaseContract {
       minimumDiggingFee: BigNumberish,
       maximumRewrapInterval: BigNumberish,
       freeBond: BigNumberish,
+      peerId: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

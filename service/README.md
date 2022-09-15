@@ -26,7 +26,7 @@ Replace each `<val>` with the value you would like to set for each item.
 
 - `digging-fee`: This indicates the minimum SARCO tokens you are willing to accept as fee for each rewrap on a sarcophagus.
 
-- `rewrap-interval`: This indicates the maximum time (in milliseconds) between rewraps you are willing to accept on a Sarcophagus.
+- `rewrap-interval`: This indicates the maximum time (in seconds) between rewraps you are willing to accept on a Sarcophagus.
 
 While these values may be later updated, the value they are set to during a Curse on a Sarcophagus will remain constant for the lifetime of that Sarcophagus.
 

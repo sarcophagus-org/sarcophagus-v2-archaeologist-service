@@ -1,6 +1,5 @@
 import 'dotenv/config'
 import { getMultiAddresses, loadPeerIdFromFile } from "./utils";
-import { validateEnvVars } from "./utils/validateEnv";
 import { randomArchVals } from "./utils/random-arch-gen.js";
 import { Archaeologist } from "./models/archaeologist";
 import { Libp2p } from "libp2p";
@@ -19,9 +18,8 @@ function randomIntFromInterval(min, max) { // min and max included
 const numOfArchsToGenerate = 1
 const startingTcpPort = randomIntFromInterval(10000, 15000)
 const startingWsPort = randomIntFromInterval(15001, 20000)
-const encryptionWallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!);
+const bootstrapEncryptionWallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!);
 
-const config = validateEnvVars(true);
 let archInitNodePromises: Promise<void | Libp2p>[] = [];
 
 /**
@@ -42,7 +40,7 @@ const bootstrap = new Archaeologist({
 })
 
 await bootstrap.initNode({
-  config: { encryptionPublicKey: encryptionWallet.publicKey },
+  config: { encryptionPublicKey: bootstrapEncryptionWallet.publicKey },
   web3Interface: await getWeb3Interface(true),
 });
 
@@ -58,6 +56,7 @@ const delayIncrement = 2000;
 let delay = 0;
 
 for (let i = 1; i <= numOfArchsToGenerate; i++) {
+  const encryptionWallet = ethers.Wallet.createRandom();
   const { peerId, listenAddresses } = await randomArchVals(startingTcpPort + i, startingWsPort + i)
   const arch = new Archaeologist({
     name: `arch${i}`,
@@ -66,12 +65,13 @@ for (let i = 1; i <= numOfArchsToGenerate; i++) {
     bootstrapList,
   })
 
+  const web3Interface = await getWeb3Interface(true);
   archInitNodePromises.push(
     new Promise(resolve => setTimeout(resolve, delay))
       .then(() => {
         return arch.initNode({
           config: { encryptionPublicKey: encryptionWallet.publicKey },
-          web3Interface: await getWeb3Interface(true),
+          web3Interface,
         })
       })
   )

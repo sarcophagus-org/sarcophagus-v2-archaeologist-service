@@ -7,10 +7,10 @@ import { PublicEnvConfig } from "./env-config";
 import { pipe } from "it-pipe";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../utils/chalk-theme";
-import { ethers, Wallet } from "ethers";
+import { ethers } from "ethers";
 import { fetchAndValidateArweaveShard } from "../utils/arweave";
 import { pushable } from "it-pushable";
-import { getWeb3Interface, Web3Interface } from "scripts/web3-interface";
+import { Web3Interface } from "scripts/web3-interface";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -39,7 +39,6 @@ export class Archaeologist {
   public envConfig: PublicEnvConfig;
   public web3Interface: Web3Interface;
 
-  public envTopic = "env-config";
 
   constructor(options: ArchaeologistInit) {
     if (!options.listenAddresses && !options.listenAddressesConfig) {
@@ -130,7 +129,7 @@ export class Archaeologist {
     this.nodeConfig.add("peerId", this.peerId)
     this.nodeConfig.add("addresses", { listen: this.listenAddresses })
 
-    return createNode(this.name, this.nodeConfig.configObj);
+    return createNode(this.name, this.nodeConfig.configObj, (connection) => this.publishEnvConfig(connection));
   }
 
   async shutdown() {
@@ -140,7 +139,7 @@ export class Archaeologist {
 
   // TODO temporary function for testing streaming
   async setupMessageStream() {
-    const msgProtocol = `/message/${this.truncatedId(this.peerId.toString())}`
+    const msgProtocol = `/message`
     archLogger.info(`listening to stream on protocol: ${msgProtocol}`)
     this.node.handle([msgProtocol], ({ stream }) => {
       pipe(
@@ -148,7 +147,7 @@ export class Archaeologist {
         async function (source) {
           for await (const msg of source) {
             const decoded = new TextDecoder().decode(msg);
-            archLogger.notice( `received message ${decoded}`);
+            archLogger.notice(`received message ${decoded}`);
           }
         }
       ).finally(() => {
@@ -158,23 +157,30 @@ export class Archaeologist {
     })
   }
 
-  // TODO - pubsub is currently disabled,
-  // determine if we want to re-enable it, make it optional or
-  // remove the related functions
-  async publishEnvConfig() {
-    const configStr = JSON.stringify(this.envConfig);
-    this.publish(this.envTopic, configStr).catch(err => {
-      console.info(err)
-    })
-  }
+  async publishEnvConfig(connection) {
+    const envConfig = {
+      encryptionPublicKey: this.envConfig.encryptionPublicKey,
+      peerId: this.peerId.toString(),
+    };
 
-  async publish(topic: string, msg: string) {
-    try {
-      const data = new TextEncoder().encode(msg);
-      await this.node.pubsub.publish(topic, data);
-    }
-    catch (err) {
-      archLogger.error(err);
-    }
+    const signature = await this.web3Interface.signer.signMessage(JSON.stringify(envConfig));
+
+    const configStr = JSON.stringify({
+      signature,
+      ...envConfig
+    });
+
+    const { stream } = await connection.newStream(`/env-config`);
+
+    pipe(
+      [new TextEncoder().encode(configStr)],
+      stream,
+      async (source) => {
+        for await (const data of source) {
+          const dataStr = new TextDecoder().decode(data as BufferSource | undefined);
+          console.log('dataStr', dataStr);
+        }
+      }
+    );
   }
 }
