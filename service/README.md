@@ -55,6 +55,8 @@ The service will still build despite these typescript errors._
 
 `npm run start`
 
+---
+
 #### Approve
 Before your node can execute any contract call that sends SARCO tokens to the contract, you must
 approve the contract's spending SARCO on your behalf. This is a standard step. To do this, run:
@@ -62,7 +64,7 @@ approve the contract's spending SARCO on your behalf. This is a standard step. T
 
 ---
 
-#### Command Line Arguments
+#### Startup Command Line Arguments
 Certain arguments may be passed into the process to trigger certain tasks on node startup.
 
 To use, run:
