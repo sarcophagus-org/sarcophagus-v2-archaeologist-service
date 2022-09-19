@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { getWeb3Interface } from './web3-interface'
 import { validateEnvVars } from '../utils/validateEnv'
 import { exit } from 'process'
-import { RPC_EXCEPTION } from '../utils/exit-codes'
+import { FILE_READ_EXCEPTION, RPC_EXCEPTION } from '../utils/exit-codes'
 import { archLogger } from '../utils/chalk-theme'
 import { BigNumber, ethers } from 'ethers'
 import { requestApproval } from './approve_utils'
@@ -49,12 +49,18 @@ export async function profileSetup(args: ProfileParams, isUpdate: boolean) {
     }
   }
 
-  const peerIdFile = './peer-id.json';
-  const file = await jsonfile.readFile(peerIdFile);
+  let peerIdJson;
+
+  try {
+    peerIdJson = await jsonfile.readFile('./peer-id.json');
+  } catch (e) {
+    archLogger.error(`Error reading file: ${e}`);
+    exit(FILE_READ_EXCEPTION);
+  }
 
   const tx = isUpdate ?
-    await web3Interface.archaeologistFacet.updateArchaeologist(diggingFee, rewrapInterval, freeBondDeposit) :
-    await web3Interface.archaeologistFacet.registerArchaeologist(diggingFee, rewrapInterval, freeBondDeposit, file.id);
+    await web3Interface.archaeologistFacet.updateArchaeologist(peerIdJson.id, diggingFee, rewrapInterval, freeBondDeposit) :
+    await web3Interface.archaeologistFacet.registerArchaeologist(peerIdJson.id, diggingFee, rewrapInterval, freeBondDeposit);
 
   archLogger.info("Waiting for transaction");
   setInterval(() => process.stdout.write("."), 1000);

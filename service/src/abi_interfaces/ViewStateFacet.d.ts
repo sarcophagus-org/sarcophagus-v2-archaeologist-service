@@ -229,20 +229,20 @@ export class ViewStateFacet extends BaseContract {
       [
         [
           boolean,
+          string,
           BigNumber,
           BigNumber,
           BigNumber,
           BigNumber,
-          BigNumber,
-          string
+          BigNumber
         ] & {
           exists: boolean;
+          peerId: string;
           minimumDiggingFee: BigNumber;
           maximumRewrapInterval: BigNumber;
           freeBond: BigNumber;
           cursedBond: BigNumber;
           rewards: BigNumber;
-          peerId: string;
         }
       ]
     >;
@@ -307,8 +307,6 @@ export class ViewStateFacet extends BaseContract {
           BigNumber,
           BigNumber,
           string[],
-          BigNumber,
-          string,
           string,
           string,
           string[]
@@ -320,10 +318,8 @@ export class ViewStateFacet extends BaseContract {
           resurrectionTime: BigNumber;
           resurrectionWindow: BigNumber;
           arweaveTxIds: string[];
-          storageFee: BigNumber;
           embalmer: string;
           recipientAddress: string;
-          arweaveArchaeologist: string;
           archaeologists: string[];
         }
       ]
@@ -338,7 +334,7 @@ export class ViewStateFacet extends BaseContract {
         [BigNumber, BigNumber, string, string, BigNumber] & {
           diggingFee: BigNumber;
           diggingFeesPaid: BigNumber;
-          doubleHashedShard: string;
+          unencryptedShardDoubleHash: string;
           unencryptedShard: string;
           curseTokenId: BigNumber;
         }
@@ -362,14 +358,14 @@ export class ViewStateFacet extends BaseContract {
     archaeologist: string,
     overrides?: CallOverrides
   ): Promise<
-    [boolean, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, string] & {
+    [boolean, string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
       exists: boolean;
+      peerId: string;
       minimumDiggingFee: BigNumber;
       maximumRewrapInterval: BigNumber;
       freeBond: BigNumber;
       cursedBond: BigNumber;
       rewards: BigNumber;
-      peerId: string;
     }
   >;
 
@@ -432,8 +428,6 @@ export class ViewStateFacet extends BaseContract {
       BigNumber,
       BigNumber,
       string[],
-      BigNumber,
-      string,
       string,
       string,
       string[]
@@ -445,10 +439,8 @@ export class ViewStateFacet extends BaseContract {
       resurrectionTime: BigNumber;
       resurrectionWindow: BigNumber;
       arweaveTxIds: string[];
-      storageFee: BigNumber;
       embalmer: string;
       recipientAddress: string;
-      arweaveArchaeologist: string;
       archaeologists: string[];
     }
   >;
@@ -461,7 +453,7 @@ export class ViewStateFacet extends BaseContract {
     [BigNumber, BigNumber, string, string, BigNumber] & {
       diggingFee: BigNumber;
       diggingFeesPaid: BigNumber;
-      doubleHashedShard: string;
+      unencryptedShardDoubleHash: string;
       unencryptedShard: string;
       curseTokenId: BigNumber;
     }
@@ -486,20 +478,20 @@ export class ViewStateFacet extends BaseContract {
     ): Promise<
       [
         boolean,
+        string,
         BigNumber,
         BigNumber,
         BigNumber,
         BigNumber,
-        BigNumber,
-        string
+        BigNumber
       ] & {
         exists: boolean;
+        peerId: string;
         minimumDiggingFee: BigNumber;
         maximumRewrapInterval: BigNumber;
         freeBond: BigNumber;
         cursedBond: BigNumber;
         rewards: BigNumber;
-        peerId: string;
       }
     >;
 
@@ -562,8 +554,6 @@ export class ViewStateFacet extends BaseContract {
         BigNumber,
         BigNumber,
         string[],
-        BigNumber,
-        string,
         string,
         string,
         string[]
@@ -575,10 +565,8 @@ export class ViewStateFacet extends BaseContract {
         resurrectionTime: BigNumber;
         resurrectionWindow: BigNumber;
         arweaveTxIds: string[];
-        storageFee: BigNumber;
         embalmer: string;
         recipientAddress: string;
-        arweaveArchaeologist: string;
         archaeologists: string[];
       }
     >;
@@ -591,7 +579,7 @@ export class ViewStateFacet extends BaseContract {
       [BigNumber, BigNumber, string, string, BigNumber] & {
         diggingFee: BigNumber;
         diggingFeesPaid: BigNumber;
-        doubleHashedShard: string;
+        unencryptedShardDoubleHash: string;
         unencryptedShard: string;
         curseTokenId: BigNumber;
       }

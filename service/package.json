@@ -7,6 +7,8 @@
     "dev": "cross-env NODE_ENV=development nodemon --watch 'src/**' index.ts",
     "build": "tsc -p tsconfig.json",
     "approve": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/approve.js",
+    "clean": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/third_party/clean.js",
+    "accuse": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/third_party/accuse.js",
     "register": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/register-profile.js",
     "update": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/update-profile.js",
     "start": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/index.js",
