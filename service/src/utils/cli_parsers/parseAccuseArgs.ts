@@ -100,8 +100,8 @@ export async function parseAccuseArgs(): Promise<AccuseContractParams> {
         exit(CLI_BAD_ACCUSE_ARG);
     } else {
         try {
-            const csv = await jsonfile.readFile(accuseParams.shardHashesCsvFilePath);
-            unencryptedShardHashes = csv.split(',').map(hash => hash.trim());
+            const csvJson = await jsonfile.readFile(accuseParams.shardHashesCsvFilePath);
+            unencryptedShardHashes = csvJson.map(hash => hash.trim());
         } catch (e) {
             archLogger.error(`Error reading file: ${e}`);
             exit(FILE_READ_EXCEPTION);
