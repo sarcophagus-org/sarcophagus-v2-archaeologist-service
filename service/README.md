@@ -1,5 +1,5 @@
 ## Getting started
-##### Setup env file
+#### Setup env file
 `cp .env.example .env`
 
 Configure the .env file as necessary:
@@ -7,17 +7,17 @@ Configure the .env file as necessary:
 2. If you would like to run the node as a bootstrap node, set `IS_BOOSTRAP=true`
 
 ---
-##### Install dependencies
+#### Install dependencies
 `nvm use && npm install`
 
 ---
-##### Generate a Peer ID file for your node
+#### Generate a Peer ID file for your node
 `npm peer-id-gen`
 
 _This only needs to be run once_
 
 ---
-##### Register your Archaeologist Profile
+#### Register your Archaeologist Profile
 `npm run register -- --digging-fee:<val> rewrap-interval:<val>`
 
 _This only needs to be run once_
@@ -34,7 +34,7 @@ While these values may be later updated, the value they are set to during a Curs
 
 ---
 
-##### Updating your Archaeologist Profile
+#### Updating your Archaeologist Profile
 `npm run update -- --digging-fee:<val> rewrap-interval:<val> free-bond:<val>`
 
 Replace each `<val>` with the value you would like to set for each item (at least 1)
@@ -47,7 +47,7 @@ Replace each `<val>` with the value you would like to set for each item (at leas
 
 ---
 
-##### Build and Start
+#### Build and Start
 `npm run build`
 
 _There are some typescript errors when building (these are in libp2p core modules).
@@ -55,14 +55,14 @@ The service will still build despite these typescript errors._
 
 `npm run start`
 
-##### Approve
+#### Approve
 Before your node can execute any contract call that sends SARCO tokens to the contract, you must
 approve the contract's spending SARCO on your behalf. This is a standard step. To do this, run:
 `npm run approve`
 
 ---
 
-##### Command Line Arguments
+#### Command Line Arguments
 Certain arguments may be passed into the process to trigger certain tasks on node startup.
 
 To use, run:
@@ -109,7 +109,7 @@ Indicate that the process should termite as soon as other commands have complete
 #### Clean and Accuse
 For convenience, scripts are provided for executing the third party clean and accuse contract calls
 
-**Clean** 
+##### Clean
 You may clean a sarcophagus if it has not been unwrapped and it is past its resurrection window.
 
 Run the following command:
@@ -118,7 +118,7 @@ Run the following command:
 Replace `<sarcophagud-id>` and `<payment-address>` with the ID of the sarcophagus to clean, and the address
 to which you would like rewards to be sent to, respectively.
 
-**Accuse** 
+##### Accuse
 You may call accuse on a sarcophagus if you have access to enough of the number of unencrypted shard hashes required to
 unwrap the sarcophagus *before* the time set by its embalmer to unwrap it, because of some sort of leak by the
 archaeologists responsible for the sarcophagus.
