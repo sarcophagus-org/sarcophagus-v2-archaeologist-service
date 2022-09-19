@@ -62,8 +62,7 @@ export class Archaeologist {
 
   async setupCommunicationStreams() {
     await this._setupMessageStream();
-
-
+    await this._setupArweaveStream();
   }
 
   async initNode(arg: { config: PublicEnvConfig, web3Interface: Web3Interface, idFilePath?: string }) {

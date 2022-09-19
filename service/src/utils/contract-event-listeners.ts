@@ -2,49 +2,36 @@ import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "./chalk-theme";
 import { RPC_EXCEPTION } from "./exit-codes";
-import { inMemoryStore, SarcophagusData } from "./onchain-data";
+import { inMemoryStore } from "./onchain-data";
 import { rescheduleUnwrap, scheduleUnwrap } from "./scheduler";
-
-const waitingForFinalise: SarcophagusData[] = [];
 
 export async function setupEventListeners(web3Interface: Web3Interface) {
     try {
         const archAddress = web3Interface.ethWallet.address;
 
-        const initialiseFilter = web3Interface.embalmerFacet.filters.InitializeSarcophagus();
-        web3Interface.embalmerFacet.on(initialiseFilter, (
+        const createSarcoFilter = web3Interface.embalmerFacet.filters.CreateSarcophagus();
+        web3Interface.embalmerFacet.on(createSarcoFilter, (
             sarcoId,
             sarcoName,
             transferrable,
             resurrectionTime,
             embalmer,
             recipient,
-            arweaveArch,
             cursedArchs,
-            totalFees
+            totalFees,
+            arweaveTxIds
         ) => {
             const isCursed = (cursedArchs as string[]).includes(archAddress);
             if (isCursed) {
-                waitingForFinalise.push({ id: sarcoId, resurrectionTime: new Date(resurrectionTime as number) });
-            }
-        }
-        );
-
-        const finaliseFilter = web3Interface.embalmerFacet.filters.FinalizeSarcophagus();
-        web3Interface.embalmerFacet.on(finaliseFilter, (sarcoId: string, _) => {
-            // TODO: waitingForFinalise to be removed when contracts merge initialize and finalize
-            const i = waitingForFinalise.findIndex(s => s.id === sarcoId);
-            if (i !== -1) {
-                const sarco = waitingForFinalise.splice(i, 1)[0];
-                inMemoryStore.sarcophagi.push(sarco);
-
-                scheduleUnwrap(web3Interface, sarcoId, sarco.resurrectionTime);
+                const resurrectionDate = new Date(resurrectionTime as number);
+                scheduleUnwrap(web3Interface, sarcoId, resurrectionDate);
             }
         });
 
         const rewrapFilter = web3Interface.embalmerFacet.filters.RewrapSarcophagus();
         web3Interface.embalmerFacet.on(rewrapFilter, (sarcoId, newResurrectionTime) => {
-            rescheduleUnwrap(web3Interface, sarcoId, new Date(newResurrectionTime as number));
+            const newResurrectionDate = new Date(newResurrectionTime as number);
+            rescheduleUnwrap(web3Interface, sarcoId, newResurrectionDate);
         });
 
         const cleanFilter = web3Interface.thirdPartyFacet.filters.CleanUpSarcophagus();
