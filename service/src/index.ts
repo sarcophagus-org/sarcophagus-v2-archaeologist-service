@@ -22,7 +22,7 @@ const arch = new Archaeologist({
 const web3Interface = await getWeb3Interface();
 
 await arch.initNode({ config, web3Interface })
-arch.setupIncomingConfigStream();
+arch.setupCommunicationStreams();
 
 parseArgs(web3Interface);
 

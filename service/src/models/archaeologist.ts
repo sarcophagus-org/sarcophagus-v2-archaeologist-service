@@ -60,52 +60,10 @@ export class Archaeologist {
     return id.slice(id.length - limit)
   }
 
-  async setupIncomingConfigStream() {
-    // TODO temporary function for testing
-    await this.setupMessageStream();
+  async setupCommunicationStreams() {
+    await this._setupMessageStream();
 
-    this.node.handle(['/validate-arweave'], async ({ stream }) => {
-      try {
-        const streamToBrowser = (result: string) => {
-          // TODO -- outboundStream can possibly be replaced (in pipe) with:
-          // pipe(
-          //   [new TextEncoder().encode(result)],
-          //   stream
-          // )
-          const outboundStream = pushable({})
-          outboundStream.push(new TextEncoder().encode(result))
-          pipe(
-            outboundStream,
-            stream
-          )
-        }
 
-        await pipe(stream, async (source) => {
-          for await (const data of source) {
-            const jsonData = JSON.parse(new TextDecoder().decode(data));
-
-            const txId = jsonData.arweaveTxId;
-            const unencryptedShardHash = jsonData.unencryptedShardHash;
-
-            const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, this.web3Interface.encryptionWallet.publicKey);
-
-            if (isValidShard) {
-              const msg = ethers.utils.solidityPack(
-                ['string', 'string', 'string'],
-                [txId, unencryptedShardHash, this.web3Interface.ethWallet.address]
-              )
-              const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
-
-              streamToBrowser(signature);
-            } else {
-              streamToBrowser('0');
-            }
-          }
-        })
-      } catch (err) {
-        archLogger.error(`problem with pipe in validate-arweave: ${err}`)
-      }
-    })
   }
 
   async initNode(arg: { config: PublicEnvConfig, web3Interface: Web3Interface, idFilePath?: string }) {
@@ -137,9 +95,8 @@ export class Archaeologist {
     await this.node.stop()
   }
 
-  // TODO temporary function for testing streaming
-  async setupMessageStream() {
-    const msgProtocol = `/message`
+  async _setupMessageStream() {
+    const msgProtocol = '/message';
     archLogger.info(`listening to stream on protocol: ${msgProtocol}`)
     this.node.handle([msgProtocol], ({ stream }) => {
       pipe(
@@ -151,9 +108,49 @@ export class Archaeologist {
           }
         }
       ).finally(() => {
-        // clean up resources
         stream.close()
       })
+    })
+  }
+
+  async _setupArweaveStream() {
+    this.node.handle(['/validate-arweave'], async ({ stream }) => {
+      const streamToBrowser = (result: string) => {
+        pipe(
+          [new TextEncoder().encode(result)],
+          stream,
+        )
+      }
+
+      try {
+        await pipe(
+          stream,
+          async (source) => {
+            for await (const data of source) {
+              const jsonData = JSON.parse(new TextDecoder().decode(data));
+
+              const txId = jsonData.arweaveTxId;
+              const unencryptedShardHash = jsonData.unencryptedShardHash;
+
+              const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, this.web3Interface.encryptionWallet.publicKey);
+
+              if (isValidShard) {
+                const msg = ethers.utils.solidityPack(
+                  ['string', 'string', 'string'],
+                  [txId, unencryptedShardHash, this.web3Interface.ethWallet.address]
+                )
+                const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
+
+                streamToBrowser(signature);
+              } else {
+                streamToBrowser('0');
+              }
+            }
+          },
+        )
+      } catch (err) {
+        archLogger.error(`problem with pipe in validate-arweave: ${err}`)
+      }
     })
   }
 
