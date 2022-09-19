@@ -23,9 +23,9 @@ interface ArchaeologistFacetInterface extends ethers.utils.Interface {
   functions: {
     "depositFreeBond(uint256)": FunctionFragment;
     "finalizeTransfer(bytes32,string,(uint8,bytes32,bytes32))": FunctionFragment;
-    "registerArchaeologist(uint256,uint256,uint256,string)": FunctionFragment;
+    "registerArchaeologist(string,uint256,uint256,uint256)": FunctionFragment;
     "unwrapSarcophagus(bytes32,bytes)": FunctionFragment;
-    "updateArchaeologist(uint256,uint256,uint256)": FunctionFragment;
+    "updateArchaeologist(string,uint256,uint256,uint256)": FunctionFragment;
     "withdrawFreeBond(uint256)": FunctionFragment;
     "withdrawReward(uint256)": FunctionFragment;
   };
@@ -40,7 +40,7 @@ interface ArchaeologistFacetInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "registerArchaeologist",
-    values: [BigNumberish, BigNumberish, BigNumberish, string]
+    values: [string, BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "unwrapSarcophagus",
@@ -48,7 +48,7 @@ interface ArchaeologistFacetInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "updateArchaeologist",
-    values: [BigNumberish, BigNumberish, BigNumberish]
+    values: [string, BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawFreeBond",
@@ -91,9 +91,9 @@ interface ArchaeologistFacetInterface extends ethers.utils.Interface {
   events: {
     "DepositFreeBond(address,uint256)": EventFragment;
     "FinalizeTransfer(bytes32,string,address,address,uint256)": EventFragment;
-    "RegisterArchaeologist(address,uint256,uint256,uint256)": EventFragment;
+    "RegisterArchaeologist(address,string,uint256,uint256,uint256)": EventFragment;
     "UnwrapSarcophagus(bytes32,bytes)": EventFragment;
-    "UpdateArchaeologist(address,uint256,uint256,uint256)": EventFragment;
+    "UpdateArchaeologist(address,string,uint256,uint256,uint256)": EventFragment;
     "WithdrawFreeBond(address,uint256)": EventFragment;
     "WithdrawReward(address,uint256)": EventFragment;
   };
@@ -122,8 +122,9 @@ export type FinalizeTransferEvent = TypedEvent<
 >;
 
 export type RegisterArchaeologistEvent = TypedEvent<
-  [string, BigNumber, BigNumber, BigNumber] & {
+  [string, string, BigNumber, BigNumber, BigNumber] & {
     archaeologist: string;
+    peerId: string;
     minimumDiggingFee: BigNumber;
     maximumRewrapInterval: BigNumber;
     freeBond: BigNumber;
@@ -135,8 +136,9 @@ export type UnwrapSarcophagusEvent = TypedEvent<
 >;
 
 export type UpdateArchaeologistEvent = TypedEvent<
-  [string, BigNumber, BigNumber, BigNumber] & {
+  [string, string, BigNumber, BigNumber, BigNumber] & {
     archaeologist: string;
+    peerId: string;
     minimumDiggingFee: BigNumber;
     maximumRewrapInterval: BigNumber;
     freeBond: BigNumber;
@@ -208,10 +210,10 @@ export class ArchaeologistFacet extends BaseContract {
     ): Promise<ContractTransaction>;
 
     registerArchaeologist(
+      peerId: string,
       minimumDiggingFee: BigNumberish,
       maximumRewrapInterval: BigNumberish,
       freeBond: BigNumberish,
-      peerId: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -222,6 +224,7 @@ export class ArchaeologistFacet extends BaseContract {
     ): Promise<ContractTransaction>;
 
     updateArchaeologist(
+      peerId: string,
       minimumDiggingFee: BigNumberish,
       maximumRewrapInterval: BigNumberish,
       freeBond: BigNumberish,
@@ -252,10 +255,10 @@ export class ArchaeologistFacet extends BaseContract {
   ): Promise<ContractTransaction>;
 
   registerArchaeologist(
+    peerId: string,
     minimumDiggingFee: BigNumberish,
     maximumRewrapInterval: BigNumberish,
     freeBond: BigNumberish,
-    peerId: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -266,6 +269,7 @@ export class ArchaeologistFacet extends BaseContract {
   ): Promise<ContractTransaction>;
 
   updateArchaeologist(
+    peerId: string,
     minimumDiggingFee: BigNumberish,
     maximumRewrapInterval: BigNumberish,
     freeBond: BigNumberish,
@@ -296,10 +300,10 @@ export class ArchaeologistFacet extends BaseContract {
     ): Promise<void>;
 
     registerArchaeologist(
+      peerId: string,
       minimumDiggingFee: BigNumberish,
       maximumRewrapInterval: BigNumberish,
       freeBond: BigNumberish,
-      peerId: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -310,6 +314,7 @@ export class ArchaeologistFacet extends BaseContract {
     ): Promise<void>;
 
     updateArchaeologist(
+      peerId: string,
       minimumDiggingFee: BigNumberish,
       maximumRewrapInterval: BigNumberish,
       freeBond: BigNumberish,
@@ -378,15 +383,17 @@ export class ArchaeologistFacet extends BaseContract {
       }
     >;
 
-    "RegisterArchaeologist(address,uint256,uint256,uint256)"(
+    "RegisterArchaeologist(address,string,uint256,uint256,uint256)"(
       archaeologist?: string | null,
+      peerId?: null,
       minimumDiggingFee?: null,
       maximumRewrapInterval?: null,
       freeBond?: null
     ): TypedEventFilter<
-      [string, BigNumber, BigNumber, BigNumber],
+      [string, string, BigNumber, BigNumber, BigNumber],
       {
         archaeologist: string;
+        peerId: string;
         minimumDiggingFee: BigNumber;
         maximumRewrapInterval: BigNumber;
         freeBond: BigNumber;
@@ -395,13 +402,15 @@ export class ArchaeologistFacet extends BaseContract {
 
     RegisterArchaeologist(
       archaeologist?: string | null,
+      peerId?: null,
       minimumDiggingFee?: null,
       maximumRewrapInterval?: null,
       freeBond?: null
     ): TypedEventFilter<
-      [string, BigNumber, BigNumber, BigNumber],
+      [string, string, BigNumber, BigNumber, BigNumber],
       {
         archaeologist: string;
+        peerId: string;
         minimumDiggingFee: BigNumber;
         maximumRewrapInterval: BigNumber;
         freeBond: BigNumber;
@@ -424,15 +433,17 @@ export class ArchaeologistFacet extends BaseContract {
       { sarcoId: string; unencryptedShard: string }
     >;
 
-    "UpdateArchaeologist(address,uint256,uint256,uint256)"(
+    "UpdateArchaeologist(address,string,uint256,uint256,uint256)"(
       archaeologist?: string | null,
+      peerId?: null,
       minimumDiggingFee?: null,
       maximumRewrapInterval?: null,
       freeBond?: null
     ): TypedEventFilter<
-      [string, BigNumber, BigNumber, BigNumber],
+      [string, string, BigNumber, BigNumber, BigNumber],
       {
         archaeologist: string;
+        peerId: string;
         minimumDiggingFee: BigNumber;
         maximumRewrapInterval: BigNumber;
         freeBond: BigNumber;
@@ -441,13 +452,15 @@ export class ArchaeologistFacet extends BaseContract {
 
     UpdateArchaeologist(
       archaeologist?: string | null,
+      peerId?: null,
       minimumDiggingFee?: null,
       maximumRewrapInterval?: null,
       freeBond?: null
     ): TypedEventFilter<
-      [string, BigNumber, BigNumber, BigNumber],
+      [string, string, BigNumber, BigNumber, BigNumber],
       {
         archaeologist: string;
+        peerId: string;
         minimumDiggingFee: BigNumber;
         maximumRewrapInterval: BigNumber;
         freeBond: BigNumber;
@@ -501,10 +514,10 @@ export class ArchaeologistFacet extends BaseContract {
     ): Promise<BigNumber>;
 
     registerArchaeologist(
+      peerId: string,
       minimumDiggingFee: BigNumberish,
       maximumRewrapInterval: BigNumberish,
       freeBond: BigNumberish,
-      peerId: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -515,6 +528,7 @@ export class ArchaeologistFacet extends BaseContract {
     ): Promise<BigNumber>;
 
     updateArchaeologist(
+      peerId: string,
       minimumDiggingFee: BigNumberish,
       maximumRewrapInterval: BigNumberish,
       freeBond: BigNumberish,
@@ -546,10 +560,10 @@ export class ArchaeologistFacet extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     registerArchaeologist(
+      peerId: string,
       minimumDiggingFee: BigNumberish,
       maximumRewrapInterval: BigNumberish,
       freeBond: BigNumberish,
-      peerId: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -560,6 +574,7 @@ export class ArchaeologistFacet extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     updateArchaeologist(
+      peerId: string,
       minimumDiggingFee: BigNumberish,
       maximumRewrapInterval: BigNumberish,
       freeBond: BigNumberish,
