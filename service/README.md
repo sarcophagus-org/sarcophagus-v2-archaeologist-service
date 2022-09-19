@@ -106,6 +106,43 @@ Indicate that the process should termite as soon as other commands have complete
 
 ---
 
+#### Clean and Accuse
+For convenience, scripts are provided for executing the third party clean and accuse contract calls
+
+**Clean** 
+You may clean a sarcophagus if it has not been unwrapped and it is past its resurrection window.
+
+Run the following command:
+`npm run clean -- --id:<sarcophagus-id> pay:<payment-address>`
+
+Replace `<sarcophagud-id>` and `<payment-address>` with the ID of the sarcophagus to clean, and the address
+to which you would like rewards to be sent to, respectively.
+
+**Accuse** 
+You may call accuse on a sarcophagus if you have access to enough of the number of unencrypted shard hashes required to
+unwrap the sarcophagus *before* the time set by its embalmer to unwrap it, because of some sort of leak by the
+archaeologists responsible for the sarcophagus.
+
+Run the following command:
+`npm run accuse -- --id:<sarcophagus-id> pay:<payment-address> shards-filepath:<path-to-shards-file>`
+
+Replace `<sarcophagud-id>`, `<payment-address>` and `<path-to-shards-file>` with the ID of the sarcophagus to clean, the address
+to which you would like rewards to be sent to, and the path to the file containing your proofs, respectively.
+
+The file at `<path-to-shards-file>` should be a `.json` file containing a list of leaked unencrypted shard hashes: 
+```
+[
+    "shard1",
+    "shard2",
+    .
+    .
+    .
+    "shardM",
+]
+```
+
+---
+
 ## Notes
 Both the signalling server and boostrap node list are using live services.
 

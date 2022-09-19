@@ -8,13 +8,13 @@ import jsonfile from "jsonfile";
 export enum AccuseArgNames {
     SARCO_ID = 'id',
     PAYMENT_ADDRESS = 'pay',
-    CSV_PATH = 'csv-path',
+    SHARDS_FILEPATH = 'shards-filepath',
 }
 
 interface AccuseCliParams {
     sarcoId: string,
     paymentAddress: string,
-    shardHashesCsvFilePath: string,
+    shardHashesFilePath: string,
 }
 
 export interface AccuseContractParams {
@@ -38,7 +38,7 @@ export async function parseAccuseArgs(): Promise<AccuseContractParams> {
     const accuseParams: AccuseCliParams = {
         sarcoId: '',
         paymentAddress: '',
-        shardHashesCsvFilePath: '',
+        shardHashesFilePath: '',
     }
 
     args.forEach(arg => {
@@ -68,8 +68,8 @@ export async function parseAccuseArgs(): Promise<AccuseContractParams> {
                 processedArgs.push(argName);
                 break;
 
-            case AccuseArgNames.CSV_PATH:
-                accuseParams.shardHashesCsvFilePath = argVal;
+            case AccuseArgNames.SHARDS_FILEPATH:
+                accuseParams.shardHashesFilePath = argVal;
                 processedArgs.push(argName);
                 break;
 
@@ -95,12 +95,12 @@ export async function parseAccuseArgs(): Promise<AccuseContractParams> {
 
     let unencryptedShardHashes: string[];
 
-    if (!processedArgs.includes(AccuseArgNames.CSV_PATH)) {
-        archLogger.error(`Missing argument to accuse: ${AccuseArgNames.CSV_PATH}`);
+    if (!processedArgs.includes(AccuseArgNames.SHARDS_FILEPATH)) {
+        archLogger.error(`Missing argument to accuse: ${AccuseArgNames.SHARDS_FILEPATH}`);
         exit(CLI_BAD_ACCUSE_ARG);
     } else {
         try {
-            const csvJson = await jsonfile.readFile(accuseParams.shardHashesCsvFilePath);
+            const csvJson = await jsonfile.readFile(accuseParams.shardHashesFilePath);
             unencryptedShardHashes = csvJson.map(hash => hash.trim());
         } catch (e) {
             archLogger.error(`Error reading file: ${e}`);
