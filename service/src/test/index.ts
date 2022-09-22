@@ -1,1 +1,2 @@
-import './env_validation'
+// import './env_validation'
+import './node_start'
