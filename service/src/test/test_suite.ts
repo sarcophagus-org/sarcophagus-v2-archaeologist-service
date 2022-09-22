@@ -108,8 +108,6 @@ export class TestSuite {
     }
 
     async expectOutput(expectedOutput: string, opts: { sourceFile: string, timeout?: number, toNotShow?: boolean, }) {
-        console.log('toNotShow', opts.toNotShow);
-
         await waitForOutput(expectedOutput, 'node', ['--experimental-specifier-resolution=node', path.join(this.workingDirectory, opts.sourceFile)], {
             outputTimeout: opts.timeout || 30000,
             shouldNotShow: opts.toNotShow || false,
