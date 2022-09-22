@@ -22,15 +22,11 @@ const _tryReadEnv = (envName: string, envVar: string | undefined, callback?: (en
     }
 }
 
-export function validateEnvVars(
-  skipValidateBlockEnvVars?: boolean
-): PublicEnvConfig {
+export function validateEnvVars(): PublicEnvConfig {
     validateLibp2pEnvVars();
     validateArweaveEnvVars();
 
-    return skipValidateBlockEnvVars ?
-      { encryptionPublicKey: new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!).publicKey }:
-      validateBlockEnvVars();
+    return validateBlockEnvVars();
 }
 
 function validateLibp2pEnvVars() {

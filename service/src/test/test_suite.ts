@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import { archLogger } from '../utils/chalk-theme';
 import which from 'which';
 import path from 'path';
+import * as dotenv from 'dotenv';
 
 async function isExecutable(command) {
     try {
@@ -21,7 +22,6 @@ async function isExecutable(command) {
         throw err
     }
 }
-
 
 async function waitForOutput(expectedOutput: string, command: string, args: any[] = [], opts = {}) {
     archLogger.info(`Waiting for output...`)
@@ -66,12 +66,12 @@ async function waitForOutput(expectedOutput: string, command: string, args: any[
     }
 }
 
-
 export class TestSuite {
     private workingDirectory: string;
 
     constructor(workingDirectory: string) {
         this.workingDirectory = workingDirectory;
+        dotenv.config({ path: '.env.test', override: true });
     }
 
     setWorkingDirectory(dir: string) {
@@ -79,6 +79,7 @@ export class TestSuite {
     }
 
     async expectOutput(expectedOutput: string, opts: { sourceFile: string, timeout?: number }) {
+
         await waitForOutput(expectedOutput, 'node', ['--experimental-specifier-resolution=node', path.join(this.workingDirectory, opts.sourceFile)], {
             timeout: opts.timeout || 30000
         })
