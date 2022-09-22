@@ -1,14 +1,14 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { archLogger } from '../../utils/chalk-theme';
-import { TestSuite } from '../test_suite';
+import { archLogger } from '../utils/chalk-theme';
+import { TestSuite } from './test_suite';
 import 'dotenv/config';
 
 
 archLogger.warn("\n\nVerify service outputs errors for invalid environment variables");
 
 const cwd = path.dirname(fileURLToPath(import.meta.url));
-const opts = { sourceFile: '../../index.js', timeout: 3000 };
+const opts = { sourceFile: '../index.js', timeout: 3000 };
 
 let testSuite: TestSuite;
 

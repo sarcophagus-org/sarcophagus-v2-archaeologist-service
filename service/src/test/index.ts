@@ -1,1 +1,1 @@
-import './test_env_validation/env_validation'
+import './env_validation'

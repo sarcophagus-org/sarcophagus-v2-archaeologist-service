@@ -1,10 +1,10 @@
 import 'dotenv/config'
-import { getMultiAddresses, loadPeerIdFromFile } from "../utils";
-import { randomArchVals } from "../utils/random-arch-gen.js";
-import { Archaeologist } from "../models/archaeologist";
+import { getMultiAddresses, loadPeerIdFromFile } from "./utils";
+import { randomArchVals } from "./utils/random-arch-gen.js";
+import { Archaeologist } from "./models/archaeologist";
 import { Libp2p } from "libp2p";
 import { ethers } from 'ethers';
-import { getWeb3Interface } from '../scripts/web3-interface';
+import { getWeb3Interface } from './scripts/web3-interface';
 
 function randomIntFromInterval(min, max) { // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min)
