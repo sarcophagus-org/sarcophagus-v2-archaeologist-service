@@ -34,6 +34,7 @@ function validateLibp2pEnvVars() {
     _tryReadEnv("TCP_PORT", process.env.TCP_PORT);
     _tryReadEnv("WS_PORT", process.env.WS_PORT);
     _tryReadEnv("SIGNAL_SERVER_LIST", process.env.SIGNAL_SERVER_LIST);
+    _tryReadEnv("DHT_PROTOCOL_PREFIX", process.env.DHT_PROTOCOL_PREFIX);
     if (process.env.IS_BOOTSTRAP !== "true") {
         _tryReadEnv("BOOTSTRAP_LIST", process.env.BOOTSTRAP_LIST);
     }
