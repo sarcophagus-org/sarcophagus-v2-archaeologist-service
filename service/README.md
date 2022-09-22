@@ -145,6 +145,16 @@ The file at `<path-to-shards-file>` should be a `.json` file containing a list o
 
 ---
 
+## Running tests
+Make sure you have the `TEST_DEPLOYER_PRIVATE_KEY` environment variable set in `.env`, and have the contracts deployed on 
+a newly spawned local network.
+
+Set `TEST_DEPLOYER_PRIVATE_KEY` to the private key logged in the node's logs  (private key of Account #0).
+
+Run `npm run test` to run all tests.
+
+Test files loaded from `index.ts` in `service/src/test`.
+
 ## Notes
 Both the signalling server and boostrap node list are using live services.
 
