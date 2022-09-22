@@ -100,7 +100,7 @@ export class TestSuite {
 
     constructor(workingDirectory: string) {
         this.workingDirectory = workingDirectory;
-        dotenv.config({ path: '.env.test', override: true });
+        dotenv.config({ override: true });
     }
 
     setWorkingDirectory(dir: string) {

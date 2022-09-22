@@ -15,7 +15,7 @@
     "start:test": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/start_multiple.js",
     "start:debug": "cross-env NODE_ENV=production DEBUG=libp2p:* NODE_PATH=./build node build/src/index.js",
     "peer-id-gen": "node ./src/scripts/peer-id-gen.js",
-    "test": "cross-env NODE_ENV=test NODE_PATH=./build node -r dotenv/config --experimental-specifier-resolution=node build/src/test/index.js dotenv_config_path=.env.test",
+    "test": "cross-env NODE_ENV=test NODE_PATH=./build node -r dotenv/config --experimental-specifier-resolution=node build/src/test/index.js dotenv_config_path=.env",
     "test:all": "node ./test-all.js"
   },
   "license": "MIT",
