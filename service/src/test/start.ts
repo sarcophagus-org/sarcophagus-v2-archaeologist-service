@@ -86,7 +86,7 @@ await Promise.all(archInitNodePromises);
  */
 
 for (let i = 0; i < numOfArchsToGenerate; i++) {
-  archs[i].setupIncomingConfigStream()
+  archs[i].setupCommunicationStreams()
 }
 
 [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {

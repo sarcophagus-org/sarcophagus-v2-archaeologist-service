@@ -14,7 +14,7 @@ interface OnchainProfile {
     peerId: string;
 }
 
-export interface SarcophagusData {
+interface SarcophagusData {
     id: string,
     resurrectionTime: Date
 }

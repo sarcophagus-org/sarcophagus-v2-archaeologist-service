@@ -22,9 +22,7 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 interface EmbalmerFacetInterface extends ethers.utils.Interface {
   functions: {
     "burySarcophagus(bytes32)": FunctionFragment;
-    "cancelSarcophagus(bytes32)": FunctionFragment;
-    "finalizeSarcophagus(bytes32,tuple[],(uint8,bytes32,bytes32),string)": FunctionFragment;
-    "initializeSarcophagus(bytes32,(string,address,uint256,bool,uint8),tuple[],address)": FunctionFragment;
+    "createSarcophagus(bytes32,(string,address,uint256,bool,uint8),tuple[],string[])": FunctionFragment;
     "rewrapSarcophagus(bytes32,uint256)": FunctionFragment;
   };
 
@@ -33,20 +31,7 @@ interface EmbalmerFacetInterface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "cancelSarcophagus",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "finalizeSarcophagus",
-    values: [
-      BytesLike,
-      { account: string; v: BigNumberish; r: BytesLike; s: BytesLike }[],
-      { v: BigNumberish; r: BytesLike; s: BytesLike },
-      string
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "initializeSarcophagus",
+    functionFragment: "createSarcophagus",
     values: [
       BytesLike,
       {
@@ -58,11 +43,13 @@ interface EmbalmerFacetInterface extends ethers.utils.Interface {
       },
       {
         archAddress: string;
-        storageFee: BigNumberish;
         diggingFee: BigNumberish;
-        hashedShard: BytesLike;
+        unencryptedShardDoubleHash: BytesLike;
+        v: BigNumberish;
+        r: BytesLike;
+        s: BytesLike;
       }[],
-      string
+      string[]
     ]
   ): string;
   encodeFunctionData(
@@ -75,15 +62,7 @@ interface EmbalmerFacetInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "cancelSarcophagus",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "finalizeSarcophagus",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "initializeSarcophagus",
+    functionFragment: "createSarcophagus",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -93,28 +72,18 @@ interface EmbalmerFacetInterface extends ethers.utils.Interface {
 
   events: {
     "BurySarcophagus(bytes32)": EventFragment;
-    "CancelSarcophagus(bytes32)": EventFragment;
-    "FinalizeSarcophagus(bytes32,string)": EventFragment;
-    "InitializeSarcophagus(bytes32,string,bool,uint256,address,address,address,address[],uint256)": EventFragment;
+    "CreateSarcophagus(bytes32,string,bool,uint256,address,address,address[],uint256,string[])": EventFragment;
     "RewrapSarcophagus(bytes32,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "BurySarcophagus"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "CancelSarcophagus"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "FinalizeSarcophagus"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "InitializeSarcophagus"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "CreateSarcophagus"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RewrapSarcophagus"): EventFragment;
 }
 
 export type BurySarcophagusEvent = TypedEvent<[string] & { sarcoId: string }>;
 
-export type CancelSarcophagusEvent = TypedEvent<[string] & { sarcoId: string }>;
-
-export type FinalizeSarcophagusEvent = TypedEvent<
-  [string, string] & { sarcoId: string; arweaveTxId: string }
->;
-
-export type InitializeSarcophagusEvent = TypedEvent<
+export type CreateSarcophagusEvent = TypedEvent<
   [
     string,
     string,
@@ -122,9 +91,9 @@ export type InitializeSarcophagusEvent = TypedEvent<
     BigNumber,
     string,
     string,
-    string,
     string[],
-    BigNumber
+    BigNumber,
+    string[]
   ] & {
     sarcoId: string;
     name: string;
@@ -132,9 +101,9 @@ export type InitializeSarcophagusEvent = TypedEvent<
     resurrectionTime: BigNumber;
     embalmer: string;
     recipient: string;
-    arweaveArchaeologist: string;
     cursedArchaeologists: string[];
     totalFees: BigNumber;
+    arweaveTxIds: string[];
   }
 >;
 
@@ -191,29 +160,7 @@ export class EmbalmerFacet extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    cancelSarcophagus(
-      sarcoId: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    finalizeSarcophagus(
-      sarcoId: BytesLike,
-      archaeologistSignatures: {
-        account: string;
-        v: BigNumberish;
-        r: BytesLike;
-        s: BytesLike;
-      }[],
-      arweaveArchaeologistSignature: {
-        v: BigNumberish;
-        r: BytesLike;
-        s: BytesLike;
-      },
-      arweaveTxId: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    initializeSarcophagus(
+    createSarcophagus(
       sarcoId: BytesLike,
       sarcophagus: {
         name: string;
@@ -224,11 +171,13 @@ export class EmbalmerFacet extends BaseContract {
       },
       selectedArchaeologists: {
         archAddress: string;
-        storageFee: BigNumberish;
         diggingFee: BigNumberish;
-        hashedShard: BytesLike;
+        unencryptedShardDoubleHash: BytesLike;
+        v: BigNumberish;
+        r: BytesLike;
+        s: BytesLike;
       }[],
-      arweaveArchaeologist: string,
+      arweaveTxIds: string[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -244,29 +193,7 @@ export class EmbalmerFacet extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  cancelSarcophagus(
-    sarcoId: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  finalizeSarcophagus(
-    sarcoId: BytesLike,
-    archaeologistSignatures: {
-      account: string;
-      v: BigNumberish;
-      r: BytesLike;
-      s: BytesLike;
-    }[],
-    arweaveArchaeologistSignature: {
-      v: BigNumberish;
-      r: BytesLike;
-      s: BytesLike;
-    },
-    arweaveTxId: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  initializeSarcophagus(
+  createSarcophagus(
     sarcoId: BytesLike,
     sarcophagus: {
       name: string;
@@ -277,11 +204,13 @@ export class EmbalmerFacet extends BaseContract {
     },
     selectedArchaeologists: {
       archAddress: string;
-      storageFee: BigNumberish;
       diggingFee: BigNumberish;
-      hashedShard: BytesLike;
+      unencryptedShardDoubleHash: BytesLike;
+      v: BigNumberish;
+      r: BytesLike;
+      s: BytesLike;
     }[],
-    arweaveArchaeologist: string,
+    arweaveTxIds: string[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -297,29 +226,7 @@ export class EmbalmerFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    cancelSarcophagus(
-      sarcoId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    finalizeSarcophagus(
-      sarcoId: BytesLike,
-      archaeologistSignatures: {
-        account: string;
-        v: BigNumberish;
-        r: BytesLike;
-        s: BytesLike;
-      }[],
-      arweaveArchaeologistSignature: {
-        v: BigNumberish;
-        r: BytesLike;
-        s: BytesLike;
-      },
-      arweaveTxId: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    initializeSarcophagus(
+    createSarcophagus(
       sarcoId: BytesLike,
       sarcophagus: {
         name: string;
@@ -330,11 +237,13 @@ export class EmbalmerFacet extends BaseContract {
       },
       selectedArchaeologists: {
         archAddress: string;
-        storageFee: BigNumberish;
         diggingFee: BigNumberish;
-        hashedShard: BytesLike;
+        unencryptedShardDoubleHash: BytesLike;
+        v: BigNumberish;
+        r: BytesLike;
+        s: BytesLike;
       }[],
-      arweaveArchaeologist: string,
+      arweaveTxIds: string[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -354,40 +263,16 @@ export class EmbalmerFacet extends BaseContract {
       sarcoId?: BytesLike | null
     ): TypedEventFilter<[string], { sarcoId: string }>;
 
-    "CancelSarcophagus(bytes32)"(
-      sarcoId?: BytesLike | null
-    ): TypedEventFilter<[string], { sarcoId: string }>;
-
-    CancelSarcophagus(
-      sarcoId?: BytesLike | null
-    ): TypedEventFilter<[string], { sarcoId: string }>;
-
-    "FinalizeSarcophagus(bytes32,string)"(
-      sarcoId?: BytesLike | null,
-      arweaveTxId?: null
-    ): TypedEventFilter<
-      [string, string],
-      { sarcoId: string; arweaveTxId: string }
-    >;
-
-    FinalizeSarcophagus(
-      sarcoId?: BytesLike | null,
-      arweaveTxId?: null
-    ): TypedEventFilter<
-      [string, string],
-      { sarcoId: string; arweaveTxId: string }
-    >;
-
-    "InitializeSarcophagus(bytes32,string,bool,uint256,address,address,address,address[],uint256)"(
+    "CreateSarcophagus(bytes32,string,bool,uint256,address,address,address[],uint256,string[])"(
       sarcoId?: BytesLike | null,
       name?: null,
       canBeTransferred?: null,
       resurrectionTime?: null,
       embalmer?: null,
       recipient?: null,
-      arweaveArchaeologist?: null,
       cursedArchaeologists?: null,
-      totalFees?: null
+      totalFees?: null,
+      arweaveTxIds?: null
     ): TypedEventFilter<
       [
         string,
@@ -396,9 +281,9 @@ export class EmbalmerFacet extends BaseContract {
         BigNumber,
         string,
         string,
-        string,
         string[],
-        BigNumber
+        BigNumber,
+        string[]
       ],
       {
         sarcoId: string;
@@ -407,22 +292,22 @@ export class EmbalmerFacet extends BaseContract {
         resurrectionTime: BigNumber;
         embalmer: string;
         recipient: string;
-        arweaveArchaeologist: string;
         cursedArchaeologists: string[];
         totalFees: BigNumber;
+        arweaveTxIds: string[];
       }
     >;
 
-    InitializeSarcophagus(
+    CreateSarcophagus(
       sarcoId?: BytesLike | null,
       name?: null,
       canBeTransferred?: null,
       resurrectionTime?: null,
       embalmer?: null,
       recipient?: null,
-      arweaveArchaeologist?: null,
       cursedArchaeologists?: null,
-      totalFees?: null
+      totalFees?: null,
+      arweaveTxIds?: null
     ): TypedEventFilter<
       [
         string,
@@ -431,9 +316,9 @@ export class EmbalmerFacet extends BaseContract {
         BigNumber,
         string,
         string,
-        string,
         string[],
-        BigNumber
+        BigNumber,
+        string[]
       ],
       {
         sarcoId: string;
@@ -442,9 +327,9 @@ export class EmbalmerFacet extends BaseContract {
         resurrectionTime: BigNumber;
         embalmer: string;
         recipient: string;
-        arweaveArchaeologist: string;
         cursedArchaeologists: string[];
         totalFees: BigNumber;
+        arweaveTxIds: string[];
       }
     >;
 
@@ -471,29 +356,7 @@ export class EmbalmerFacet extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    cancelSarcophagus(
-      sarcoId: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    finalizeSarcophagus(
-      sarcoId: BytesLike,
-      archaeologistSignatures: {
-        account: string;
-        v: BigNumberish;
-        r: BytesLike;
-        s: BytesLike;
-      }[],
-      arweaveArchaeologistSignature: {
-        v: BigNumberish;
-        r: BytesLike;
-        s: BytesLike;
-      },
-      arweaveTxId: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    initializeSarcophagus(
+    createSarcophagus(
       sarcoId: BytesLike,
       sarcophagus: {
         name: string;
@@ -504,11 +367,13 @@ export class EmbalmerFacet extends BaseContract {
       },
       selectedArchaeologists: {
         archAddress: string;
-        storageFee: BigNumberish;
         diggingFee: BigNumberish;
-        hashedShard: BytesLike;
+        unencryptedShardDoubleHash: BytesLike;
+        v: BigNumberish;
+        r: BytesLike;
+        s: BytesLike;
       }[],
-      arweaveArchaeologist: string,
+      arweaveTxIds: string[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -525,29 +390,7 @@ export class EmbalmerFacet extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    cancelSarcophagus(
-      sarcoId: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    finalizeSarcophagus(
-      sarcoId: BytesLike,
-      archaeologistSignatures: {
-        account: string;
-        v: BigNumberish;
-        r: BytesLike;
-        s: BytesLike;
-      }[],
-      arweaveArchaeologistSignature: {
-        v: BigNumberish;
-        r: BytesLike;
-        s: BytesLike;
-      },
-      arweaveTxId: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    initializeSarcophagus(
+    createSarcophagus(
       sarcoId: BytesLike,
       sarcophagus: {
         name: string;
@@ -558,11 +401,13 @@ export class EmbalmerFacet extends BaseContract {
       },
       selectedArchaeologists: {
         archAddress: string;
-        storageFee: BigNumberish;
         diggingFee: BigNumberish;
-        hashedShard: BytesLike;
+        unencryptedShardDoubleHash: BytesLike;
+        v: BigNumberish;
+        r: BytesLike;
+        s: BytesLike;
       }[],
-      arweaveArchaeologist: string,
+      arweaveTxIds: string[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
