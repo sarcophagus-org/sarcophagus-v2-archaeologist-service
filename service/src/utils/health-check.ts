@@ -18,8 +18,8 @@ export async function healthCheck(web3Interface: Web3Interface) {
 
         console.log(` * SARCO:             ${ethers.utils.formatEther(bal)} SARCO`,);
         console.log(` * ETHER:             ${ethers.utils.formatEther(ethBal)} ETH`,);
-        if (ethBal.eq(constants.Zero)) {
-            archLogger.warn(`\n   You have no ETH in your account. You will not be able to sign any transactions (or do unwrappings)!\n`);
+        if (ethBal.lte(ethers.utils.parseEther('0.0005'))) {
+            archLogger.warn(`\n   You have very little ETH in your account. You may not be able to sign any transactions (or do unwrappings)!\n`);
         }
 
         console.log(` * Free Bond:         ${ethers.utils.formatEther(freeBond)} SARCO`,);
