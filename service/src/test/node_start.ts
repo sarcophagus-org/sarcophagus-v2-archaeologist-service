@@ -10,14 +10,16 @@ export async function runTests() {
     archLogger.warn("\n\nVerify service starts with expected output");
 
     const cwd = path.dirname(fileURLToPath(import.meta.url));
-    const opts = { sourceFile: '../index.js', timeout: 1000 };
+    const opts = { sourceFile: '../index.js', timeout: 1000, restartNetwork: true };
 
     let testSuite: TestSuite;
 
-    testSuite = new TestSuite(cwd);
+    testSuite = new TestSuite(cwd, process.env.TEST_CONTRACTS_DIRECTORY!);
+
+    const cleanup = await testSuite.startLocalNetwork();
 
     archLogger.warn("\n\n Listens for messages");
-    await testSuite.expectOutput('listening to stream on protocol: /message', opts);
+    await testSuite.expectOutput('listening to stream on protocol: /message', { ...opts, restartNetwork: false });
 
     archLogger.warn("\n\n Shows balances");
     await testSuite.expectOutput('YOUR BALANCES:', opts);
@@ -62,4 +64,6 @@ export async function runTests() {
 
     archLogger.warn("\n\n Shows notice if there's no free bond");
     await testSuite.expectOutput(noFreeBondNotice, opts);
+
+    cleanup();
 }

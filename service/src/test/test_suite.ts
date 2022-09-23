@@ -1,10 +1,10 @@
-import { execa, ExecaChildProcess } from 'execa';
+import { ExecaChildProcess, execa, execaCommand } from 'execa';
 import fs from 'fs-extra';
 import { archLogger } from '../utils/chalk-theme';
 import which from 'which';
 import path from 'path';
 import * as dotenv from 'dotenv';
-import { exit } from 'process';
+import { ethers } from 'ethers';
 
 async function isExecutable(command) {
     try {
@@ -41,6 +41,7 @@ async function waitForOutput(expectedOutput: string, command: string, args: any[
         all: true
     })
     let output = ''
+
     // @ts-ignore
     let time = opts.outputTimeout || 600000
 
@@ -97,9 +98,13 @@ async function waitForOutput(expectedOutput: string, command: string, args: any[
 
 export class TestSuite {
     private workingDirectory: string;
+    private contractsDirectory: string;
+    private localNetworkProc: ExecaChildProcess;
 
-    constructor(workingDirectory: string) {
+    constructor(workingDirectory: string, contractsDirectory: string) {
         this.workingDirectory = workingDirectory;
+        this.contractsDirectory = contractsDirectory;
+
         dotenv.config({ override: true });
     }
 
@@ -107,10 +112,40 @@ export class TestSuite {
         this.workingDirectory = dir;
     }
 
-    async expectOutput(expectedOutput: string, opts: { sourceFile: string, timeout?: number, toNotShow?: boolean, }) {
+    async expectOutput(expectedOutput: string, opts: {
+        sourceFile: string,
+        timeout?: number,
+        toNotShow?: boolean,
+        restartNetwork?: boolean
+    }) {
+        if (opts.restartNetwork) {
+            this.localNetworkProc.kill();
+            await new Promise(resolve => setTimeout(resolve, 200))
+
+            await this.startLocalNetwork();
+        }
+
         await waitForOutput(expectedOutput, 'node', ['--experimental-specifier-resolution=node', path.join(this.workingDirectory, opts.sourceFile)], {
             outputTimeout: opts.timeout || 30000,
             shouldNotShow: opts.toNotShow || false,
         })
+    }
+
+    async startLocalNetwork() {
+        archLogger.info("Starting local network");
+        this.localNetworkProc = execaCommand(`cd ${this.contractsDirectory} && npx hardhat node`, { shell: true, all: true });
+
+        this.localNetworkProc.all!.on('data', (data) => {
+            process.stdout.write('.');
+        })
+
+        const networkStartupTime = !process.env.TEST_NETWORK_STARTUP_TIME ?
+            6000 :
+            Number.parseInt(process.env.TEST_NETWORK_STARTUP_TIME);
+
+        await new Promise(resolve => setTimeout(resolve, networkStartupTime));
+
+        archLogger.info("\nLocal network ready");
+        return () => this.localNetworkProc.kill();
     }
 }

@@ -50,6 +50,7 @@
     "ecies-geth": "^1.6.5",
     "execa": "^6.1.0",
     "fs-extra": "^10.1.0",
+    "hardhat": "^2.11.2",
     "nodemon": "^2.0.18",
     "rollup-plugin-polyfill-node": "^0.10.2",
     "ts-node": "^9.1.1",

@@ -9,7 +9,6 @@ import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../utils/chalk-theme";
 import { ethers } from "ethers";
 import { fetchAndValidateArweaveShard } from "../utils/arweave";
-import { pushable } from "it-pushable";
 import { Web3Interface } from "scripts/web3-interface";
 
 export interface ListenAddressesConfig {

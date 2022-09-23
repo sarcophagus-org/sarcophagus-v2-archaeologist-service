@@ -146,14 +146,17 @@ The file at `<path-to-shards-file>` should be a `.json` file containing a list o
 ---
 
 ## Running tests
-Make sure you have the `TEST_DEPLOYER_PRIVATE_KEY` environment variable set in `.env`, and have the contracts deployed on 
-a newly spawned local network.
+Set these environment variables:
 
-Set `TEST_DEPLOYER_PRIVATE_KEY` to the private key logged in the node's logs  (private key of Account #0).
+- `TEST_DEPLOYER_PRIVATE_KEY`: the private key of the deployer - logged in the node's logs (private key of Account #0)
+- `TEST_CONTRACTS_DIRECTORY`: absolute path to the directory containing the Sarcophagus Contracts project (https://github.com/sarcophagus-org/sarcophagus-v2-contracts/)
+- `TEST_NETWORK_STARTUP_TIME`: Set if needed. This sets a buffer in milliseconds to wait for the network to start and Sarco contracts to finish deploying. Defaults to 6000.
 
 Run `npm run test` to run all tests.
+If an exception is thrown indicating that a transaction was reverted without a reason, `TEST_NETWORK_STARTUP_TIME` is probably to low and the network didn't have enough
+time to start on your machine. Try re-running the test, or else increase this time.
 
-Test files loaded from `index.ts` in `service/src/test`.
+Test files are loaded from `index.ts` in `service/src/test`.
 
 ## Notes
 Both the signalling server and boostrap node list are using live services.
