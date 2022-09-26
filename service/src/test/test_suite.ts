@@ -27,8 +27,6 @@ async function isExecutable(command) {
 let outputTimeout: NodeJS.Timeout;
 
 async function waitForOutput(expectedOutput: string, command: string, args: any[] = [], opts = {}) {
-    if (outputTimeout) clearTimeout(outputTimeout);
-
     archLogger.info(`Waiting for output...\n`)
     if (!await isExecutable(command)) {
         args.unshift(command)
