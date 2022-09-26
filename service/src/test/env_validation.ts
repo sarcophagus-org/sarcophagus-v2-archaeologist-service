@@ -1,19 +1,15 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { archLogger } from '../utils/chalk-theme';
-import { TestSuite } from './test_suite';
+import { setupTestSuite, TestSuite } from './test_suite';
 import 'dotenv/config';
 
 
 export async function runTests() {
+    const spawnTestSuite = setupTestSuite();
+
     archLogger.warn("\n\nVerify service outputs errors for invalid environment variables");
 
-    const cwd = path.dirname(fileURLToPath(import.meta.url));
     const opts = { sourceFile: '../index.js', timeout: 1000 };
-
     let testSuite: TestSuite;
-
-    const spawnTestSuite = () => new TestSuite(cwd, process.env.TEST_CONTRACTS_DIRECTORY!);
 
     archLogger.warn("\n\n IP_ADDRESS");
     testSuite = spawnTestSuite();

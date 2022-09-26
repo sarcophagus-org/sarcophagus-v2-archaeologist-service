@@ -1,21 +1,19 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { archLogger } from '../utils/chalk-theme';
-import { TestSuite } from './test_suite';
+import { setupTestSuite } from './test_suite';
 import 'dotenv/config';
 import { getWeb3Interface } from '../scripts/web3-interface';
 import { ethers, Wallet } from 'ethers';
 
 export async function runTests() {
+    const spawnTestSuite = setupTestSuite();
+
     archLogger.warn("\n\nVerify service starts with expected output");
 
-    const cwd = path.dirname(fileURLToPath(import.meta.url));
     const opts = { sourceFile: '../index.js', timeout: 1000, restartNetwork: true };
 
-    let testSuite: TestSuite;
-
-    testSuite = new TestSuite(cwd, process.env.TEST_CONTRACTS_DIRECTORY!);
-
+    const testSuite = spawnTestSuite();
     const cleanup = await testSuite.startLocalNetwork();
 
     archLogger.warn("\n\n Listens for messages");

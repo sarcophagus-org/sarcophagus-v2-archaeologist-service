@@ -4,7 +4,7 @@ import { archLogger } from '../utils/chalk-theme';
 import which from 'which';
 import path from 'path';
 import * as dotenv from 'dotenv';
-import { ethers } from 'ethers';
+import { fileURLToPath } from 'url';
 
 async function isExecutable(command) {
     try {
@@ -148,4 +148,16 @@ export class TestSuite {
         archLogger.info("\nLocal network ready");
         return () => this.localNetworkProc.kill();
     }
+}
+
+// TODO: Not terribly worth it right now to extract this function into some test util file/folder. If more utility functions become necessary, then will refactor.
+/**
+ * Setup a `TestSuite` object to run tests in the context of the archaeologist service directory's `src/test` folder.
+ * @returns spawnTestSuite - Creates and returns a new instance of `TestSuite`
+ */
+export function setupTestSuite(): () => TestSuite {
+    const cwd = path.dirname(fileURLToPath(import.meta.url));
+
+    const spawnTestSuite = () => new TestSuite(cwd, process.env.TEST_CONTRACTS_DIRECTORY!);
+    return spawnTestSuite;
 }
