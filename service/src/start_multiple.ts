@@ -15,7 +15,7 @@ function randomIntFromInterval(min, max) { // min and max included
  * Set numOfArchsToGenerate for how many archaeologists to generate
  */
 
-const numOfArchsToGenerate = 1
+const numOfArchsToGenerate = 0
 const startingTcpPort = randomIntFromInterval(10000, 15000)
 const startingWsPort = randomIntFromInterval(15001, 20000)
 const bootstrapEncryptionWallet = new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!);

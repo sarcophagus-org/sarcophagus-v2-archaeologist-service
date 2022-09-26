@@ -22,15 +22,11 @@ const _tryReadEnv = (envName: string, envVar: string | undefined, callback?: (en
     }
 }
 
-export function validateEnvVars(
-  skipValidateBlockEnvVars?: boolean
-): PublicEnvConfig {
+export function validateEnvVars(): PublicEnvConfig {
     validateLibp2pEnvVars();
     validateArweaveEnvVars();
 
-    return skipValidateBlockEnvVars ?
-      { encryptionPublicKey: new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!).publicKey }:
-      validateBlockEnvVars();
+    return validateBlockEnvVars();
 }
 
 function validateLibp2pEnvVars() {
@@ -38,6 +34,7 @@ function validateLibp2pEnvVars() {
     _tryReadEnv("TCP_PORT", process.env.TCP_PORT);
     _tryReadEnv("WS_PORT", process.env.WS_PORT);
     _tryReadEnv("SIGNAL_SERVER_LIST", process.env.SIGNAL_SERVER_LIST);
+    _tryReadEnv("DHT_PROTOCOL_PREFIX", process.env.DHT_PROTOCOL_PREFIX);
     if (process.env.IS_BOOTSTRAP !== "true") {
         _tryReadEnv("BOOTSTRAP_LIST", process.env.BOOTSTRAP_LIST);
     }
