@@ -48,9 +48,9 @@ export async function getOnchainCursedSarcophagi(web3Interface: Web3Interface): 
         if (sarco.state === SarcophagusState.Exists && !archStorage.unencryptedShard) {
             const nowTimestamp = (new Date()).getUTCSeconds();
             // TODO: rename resurrectionWindow to gracePeriod when contract updates merged
-            const tooLateToUnrap = sarco.resurrectionTime.toNumber() + sarco.resurrectionWindow.toNumber() < nowTimestamp;
+            const tooLateToUnwrap = sarco.resurrectionTime.toNumber() + sarco.resurrectionWindow.toNumber() < nowTimestamp;
 
-            if (tooLateToUnrap) {
+            if (tooLateToUnwrap) {
                 archLogger.warn(`You failed to unwrap a Sarcophagus ${sarcoId}\n`);
                 // TODO: archaeologist might want to call clean here
 
