@@ -3,7 +3,7 @@ import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "./chalk-theme";
 import { RPC_EXCEPTION } from "./exit-codes";
 import { inMemoryStore } from "./onchain-data";
-import { rescheduleUnwrap, scheduleUnwrap } from "./scheduler";
+import { scheduleUnwrap } from "./scheduler";
 
 function getCreateSarcoHandler(web3Interface: Web3Interface, archAddress: string) {
     return (
@@ -21,14 +21,18 @@ function getCreateSarcoHandler(web3Interface: Web3Interface, archAddress: string
         if (isCursed) {
             const resurrectionDate = new Date(resurrectionTime as number);
             scheduleUnwrap(web3Interface, sarcoId, resurrectionDate);
+            inMemoryStore.sarcophagi.push({ id: sarcoId, resurrectionTime: resurrectionDate });
         }
     }
 }
 
-function getRewrapHandler() {
-    return (sarcoId: string, _) => {
-        archLogger.info(`Sarcophagus cleaned: ${sarcoId}`);
-        inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
+function getRewrapHandler(web3Interface: Web3Interface) {
+    return (sarcoId, newResurrectionTime) => {
+        const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1
+        if (isCursed) {
+            const newResurrectionDate = new Date(newResurrectionTime as number);
+            scheduleUnwrap(web3Interface, sarcoId, newResurrectionDate);
+        }
     }
 }
 
@@ -59,7 +63,7 @@ export async function setupEventListeners(web3Interface: Web3Interface) {
 
         const handlers = {
             createSarco: getCreateSarcoHandler(web3Interface, archAddress),
-            rewrap: getRewrapHandler(),
+            rewrap: getRewrapHandler(web3Interface),
             clean: getCleanHandler(),
             bury: getBuryHandler(),
         };

@@ -3,6 +3,7 @@ import { Web3Interface } from "scripts/web3-interface";
 import { fetchAndDecryptShard } from "./arweave";
 import { archLogger } from "./chalk-theme";
 import { handleRpcError } from "./rpc-error-handler";
+import { scheduleUnwrap } from "./scheduler";
 
 interface OnchainProfile {
     exists: boolean;
@@ -10,7 +11,6 @@ interface OnchainProfile {
     maximumRewrapInterval: BigNumber;
     freeBond: BigNumber;
     cursedBond: BigNumber;
-    rewards: BigNumber;
     peerId: string;
 }
 
@@ -21,13 +21,11 @@ interface SarcophagusData {
 
 interface InMemoryStore {
     sarcophagi: SarcophagusData[],
-    unwrappedSarcophagi: string[],
     profile?: OnchainProfile
 }
 
 export const inMemoryStore: InMemoryStore = {
-    sarcophagi: [],
-    unwrappedSarcophagi: [],
+    sarcophagi: []
 };
 
 export async function retrieveOnchainData(web3Interface: Web3Interface) {
@@ -45,13 +43,30 @@ export async function getOnchainCursedSarcophagi(web3Interface: Web3Interface): 
     const sarcoIds = await web3Interface.viewStateFacet.getArchaeologistSarcophagi(web3Interface.ethWallet.address);
     sarcoIds.map(async sarcoId => {
         const sarco = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
+        const archStorage = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(sarcoId, web3Interface.ethWallet.address);
 
-        if (sarco.state === SarcophagusState.Exists) {
-            // only add sarco that have state === EXISTS
+        if (sarco.state === SarcophagusState.Exists && !archStorage.unencryptedShard) {
+            const nowTimestamp = (new Date()).getUTCSeconds();
+            // TODO: rename resurrectionWindow to gracePeriod when contract updates merged
+            const tooLateToUnrap = sarco.resurrectionTime.toNumber() + sarco.resurrectionWindow.toNumber() < nowTimestamp;
+
+            if (tooLateToUnrap) {
+                archLogger.warn(`You failed to unwrap a Sarcophagus ${sarcoId}\n`);
+                // TODO: archaeologist might want to call clean here
+
+                return;
+            }
+
+            // only add unwrappable sarco that have state === EXISTS and haven't already unwrapped (uploaded their unencrypted shard)
+            const resurrectionTime = new Date(sarco.resurrectionTime.toNumber() * 1000);
             archSarco.push({
                 id: sarcoId,
-                resurrectionTime: new Date(sarco.resurrectionTime.toNumber() * 1000),
+                resurrectionTime,
             });
+
+            // Schedule an uwrap job for each sarco this arch is cursed on. `scheduleUnwrap` will cancel existing 
+            // schedules, so no duplicate jobs will be created.
+            scheduleUnwrap(web3Interface, sarcoId, resurrectionTime);
         }
     });
 
@@ -71,7 +86,7 @@ export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: s
     try {
         await web3Interface.archaeologistFacet.unwrapSarcophagus(sarcoId, decryptedShard);
 
-        inMemoryStore.unwrappedSarcophagi.push(sarcoId);
+        inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
         archLogger.notice("Unwrapped successfully!");
     } catch (e) {
         archLogger.error("Unwrap failed");
