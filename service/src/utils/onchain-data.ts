@@ -46,12 +46,12 @@ export async function getOnchainCursedSarcophagi(web3Interface: Web3Interface): 
         const archStorage = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(sarcoId, web3Interface.ethWallet.address);
 
         if (sarco.state === SarcophagusState.Exists && !archStorage.unencryptedShard) {
-            const nowTimestamp = (new Date()).getUTCSeconds();
+            const nowTimestampInSeconds = new Date().getTime() / 1000;
             // TODO: rename resurrectionWindow to gracePeriod when contract updates merged
-            const tooLateToUnwrap = sarco.resurrectionTime.toNumber() + sarco.resurrectionWindow.toNumber() < nowTimestamp;
+            const tooLateToUnwrap = sarco.resurrectionTime.toNumber() + sarco.resurrectionWindow.toNumber() < nowTimestampInSeconds;
 
             if (tooLateToUnwrap) {
-                archLogger.warn(`You failed to unwrap a Sarcophagus ${sarcoId}\n`);
+                archLogger.warn(`You failed to unwrap a Sarcophagus on time: ${sarcoId}\n`);
                 // TODO: archaeologist might want to call clean here
 
                 return;
@@ -64,9 +64,19 @@ export async function getOnchainCursedSarcophagi(web3Interface: Web3Interface): 
                 resurrectionTime,
             });
 
+
             // Schedule an uwrap job for each sarco this arch is cursed on. `scheduleUnwrap` will cancel existing 
             // schedules, so no duplicate jobs will be created.
-            scheduleUnwrap(web3Interface, sarcoId, resurrectionTime);
+
+            // NOTE: It is marginally possible that the arch node and a sarco it's bonded to end up in a state where
+            // the sarco's resurrection time is past, but we're still within its grace period. In that case,
+            // scheduling a job won't work as resurrection time is in the past, so we'll want immediately attempt
+            // a rewrap in an effort to salvage the situation.
+            if (nowTimestampInSeconds > sarco.resurrectionTime.toNumber()) {
+                unwrapSarcophagus(web3Interface, sarcoId);
+            } else {
+                scheduleUnwrap(web3Interface, sarcoId, resurrectionTime);
+            }
         }
     });
 
