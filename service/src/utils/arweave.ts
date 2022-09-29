@@ -15,12 +15,12 @@ export const arweaveService = Arweave.init({
 });
 
 export const fetchAndValidateArweaveShard = async (
-    arweaveTxId: string,
-    expectedUnencryptedHash: string,
+    arweaveShardsTxId: string,
+    expectedUnencryptedDoubleHash: string,
     publicKey: string,
 ): Promise<boolean> => {
     try {
-        const data = await arweaveService.transactions.getData(arweaveTxId, { decode: true, string: true });
+        const data = await arweaveService.transactions.getData(arweaveShardsTxId, { decode: true, string: true });
 
         const shards = JSON.parse(data as string);
         const encryptedShard = shards[publicKey];
@@ -32,8 +32,9 @@ export const fetchAndValidateArweaveShard = async (
 
         const decryptedShardString = new TextDecoder().decode(decrypted);
         const unencryptedHash = solidityKeccak256(['string'], [decryptedShardString]);
+        const unencryptedDoubleHash = solidityKeccak256(['string'], [unencryptedHash]);
 
-        return expectedUnencryptedHash === unencryptedHash;
+        return expectedUnencryptedDoubleHash === unencryptedDoubleHash;
     } catch (e) {
         archLogger.error(e);
         return false;

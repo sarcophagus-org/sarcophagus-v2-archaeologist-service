@@ -134,14 +134,14 @@ export class Archaeologist {
                 } = JSON.parse(new TextDecoder().decode(data));
 
                 const txId = jsonData.arweaveTxId;
-                const unencryptedShardHash = jsonData.unencryptedShardDoubleHash;
+                const unencryptedShardDoubleHash = jsonData.unencryptedShardDoubleHash;
 
-                const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, this.web3Interface.encryptionWallet.publicKey);
+                const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardDoubleHash, this.web3Interface.encryptionWallet.publicKey);
 
                 if (isValidShard) {
                   const msg = ethers.utils.solidityPack(
                     ['string', 'string', 'string'],
-                    [txId, unencryptedShardHash, this.web3Interface.ethWallet.address]
+                    [txId, unencryptedShardDoubleHash, this.web3Interface.ethWallet.address]
                   )
                   const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
 
