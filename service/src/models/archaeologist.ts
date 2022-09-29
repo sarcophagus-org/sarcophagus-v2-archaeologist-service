@@ -140,8 +140,8 @@ export class Archaeologist {
 
                 if (isValidShard) {
                   const msg = ethers.utils.solidityPack(
-                    ['string', 'string', 'string'],
-                    [txId, unencryptedShardDoubleHash, this.web3Interface.ethWallet.address]
+                    ['string', 'string'],
+                    [txId, unencryptedShardDoubleHash]
                   )
                   const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
 
