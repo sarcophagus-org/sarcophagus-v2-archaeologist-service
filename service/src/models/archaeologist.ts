@@ -153,29 +153,34 @@ export class Archaeologist {
   }
 
   async publishEnvConfig(connection) {
-    const envConfig = {
-      encryptionPublicKey: this.envConfig.encryptionPublicKey,
-      peerId: this.peerId.toString(),
-    };
+    try {
+      const envConfig = {
+        encryptionPublicKey: this.envConfig.encryptionPublicKey,
+        peerId: this.peerId.toString(),
+      };
 
-    const signature = await this.web3Interface.signer.signMessage(JSON.stringify(envConfig));
+      const signature = await this.web3Interface.signer.signMessage(JSON.stringify(envConfig));
 
-    const configStr = JSON.stringify({
-      signature,
-      ...envConfig
-    });
+      const configStr = JSON.stringify({
+        signature,
+        ...envConfig
+      });
 
-    const { stream } = await connection.newStream(`/env-config`);
+      const { stream } = await connection.newStream(`/env-config`);
 
-    pipe(
-      [new TextEncoder().encode(configStr)],
-      stream,
-      async (source) => {
-        for await (const data of source) {
-          const dataStr = new TextDecoder().decode(data as BufferSource | undefined);
-          console.log('dataStr', dataStr);
+      pipe(
+        [new TextEncoder().encode(configStr)],
+        stream,
+        async (source) => {
+          for await (const data of source) {
+            const dataStr = new TextDecoder().decode(data as BufferSource | undefined);
+            console.log('dataStr', dataStr);
+          }
         }
-      }
-    );
+      )
+    }
+    catch (e) {
+      archLogger.error(`Publish envConfig exception: ${e}\nConnectin: ${connection}`);
+    }
   }
 }
