@@ -125,23 +125,35 @@ export class Archaeologist {
           stream,
           async (source) => {
             for await (const data of source) {
-              const jsonData = JSON.parse(new TextDecoder().decode(data));
+              let msgToBrowser: string;
 
-              const txId = jsonData.arweaveTxId;
-              const unencryptedShardHash = jsonData.unencryptedShardHash;
+              try {
+                const jsonData: {
+                  arweaveTxId: string,
+                  unencryptedShardDoubleHash: string
+                } = JSON.parse(new TextDecoder().decode(data));
 
-              const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, this.web3Interface.encryptionWallet.publicKey);
+                const txId = jsonData.arweaveTxId;
+                const unencryptedShardHash = jsonData.unencryptedShardDoubleHash;
 
-              if (isValidShard) {
-                const msg = ethers.utils.solidityPack(
-                  ['string', 'string', 'string'],
-                  [txId, unencryptedShardHash, this.web3Interface.ethWallet.address]
-                )
-                const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
+                const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, this.web3Interface.encryptionWallet.publicKey);
 
-                streamToBrowser(signature);
-              } else {
-                streamToBrowser('0');
+                if (isValidShard) {
+                  const msg = ethers.utils.solidityPack(
+                    ['string', 'string', 'string'],
+                    [txId, unencryptedShardHash, this.web3Interface.ethWallet.address]
+                  )
+                  const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
+
+                  msgToBrowser = JSON.stringify({ signature });
+                } else {
+                  msgToBrowser = JSON.stringify({ signature: '' });
+                }
+
+                streamToBrowser(msgToBrowser);
+              } catch (e) {
+                msgToBrowser = JSON.stringify({ error: e });
+                streamToBrowser(msgToBrowser);
               }
             }
           },
