@@ -8,7 +8,7 @@ import { pipe } from "it-pipe";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../utils/chalk-theme";
 import { ethers } from "ethers";
-import { fetchAndValidateArweaveShard } from "../utils/arweave";
+import { fetchAndValidateShardOnArweave } from "../utils/arweave";
 import { Web3Interface } from "scripts/web3-interface";
 
 export interface ListenAddressesConfig {
@@ -61,7 +61,7 @@ export class Archaeologist {
 
   async setupCommunicationStreams() {
     await this._setupMessageStream();
-    await this._setupArweaveStream();
+    await this._setupArweaveSignoffStream();
   }
 
   async initNode(arg: { config: PublicEnvConfig, web3Interface: Web3Interface, idFilePath?: string }) {
@@ -111,8 +111,8 @@ export class Archaeologist {
     })
   }
 
-  async _setupArweaveStream() {
-    this.node.handle(['/validate-arweave'], async ({ stream }) => {
+  async _setupArweaveSignoffStream() {
+    this.node.handle(['/arweave-signoff'], async ({ stream }) => {
       const streamToBrowser = (result: string) => {
         pipe(
           [new TextEncoder().encode(result)],
@@ -136,7 +136,7 @@ export class Archaeologist {
                 const txId = jsonData.arweaveTxId;
                 const unencryptedShardDoubleHash = jsonData.unencryptedShardDoubleHash;
 
-                const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardDoubleHash, this.web3Interface.encryptionWallet.publicKey);
+                const isValidShard = await fetchAndValidateShardOnArweave(txId, unencryptedShardDoubleHash, this.web3Interface.encryptionWallet.publicKey);
 
                 if (isValidShard) {
                   const msg = ethers.utils.solidityPack(

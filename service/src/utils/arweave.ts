@@ -14,7 +14,7 @@ export const arweaveService = Arweave.init({
     logging: process.env.ARWEAVE_LOGGING === "true",
 });
 
-export const fetchAndValidateArweaveShard = async (
+export const fetchAndValidateShardOnArweave = async (
     arweaveShardsTxId: string,
     expectedUnencryptedDoubleHash: string,
     publicKey: string,
