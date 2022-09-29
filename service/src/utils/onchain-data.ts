@@ -10,7 +10,6 @@ interface OnchainProfile {
     maximumRewrapInterval: BigNumber;
     freeBond: BigNumber;
     cursedBond: BigNumber;
-    rewards: BigNumber;
     peerId: string;
 }
 

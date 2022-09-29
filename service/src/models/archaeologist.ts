@@ -10,6 +10,7 @@ import { archLogger } from "../utils/chalk-theme";
 import { ethers } from "ethers";
 import { fetchAndValidateShardOnArweave } from "../utils/arweave";
 import { Web3Interface } from "scripts/web3-interface";
+import { inMemoryStore } from "utils/onchain-data";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -124,14 +125,22 @@ export class Archaeologist {
         await pipe(
           stream,
           async (source) => {
-            for await (const data of source) {
-              let msgToBrowser: string;
+            const rejectTransaction = () => streamToBrowser(JSON.stringify({ signature: '' }))
+            const signOff = (signature: string) => streamToBrowser(JSON.stringify({ signature }));
+            const emitError = (error: any) => streamToBrowser(JSON.stringify({ error }));
 
+            for await (const data of source) {
               try {
                 const jsonData: {
                   arweaveTxId: string,
-                  unencryptedShardDoubleHash: string
+                  unencryptedShardDoubleHash: string,
+                  maxRewrapInterval: number,
                 } = JSON.parse(new TextDecoder().decode(data));
+
+                if (jsonData.maxRewrapInterval > inMemoryStore.profile!.maximumRewrapInterval.toNumber()) {
+                  rejectTransaction();
+                  return;
+                }
 
                 const txId = jsonData.arweaveTxId;
                 const unencryptedShardDoubleHash = jsonData.unencryptedShardDoubleHash;
@@ -140,20 +149,17 @@ export class Archaeologist {
 
                 if (isValidShard) {
                   const msg = ethers.utils.solidityPack(
-                    ['string', 'string'],
-                    [txId, unencryptedShardDoubleHash]
+                    ['string', 'string', 'string'],
+                    [txId, unencryptedShardDoubleHash, jsonData.maxRewrapInterval.toString()]
                   )
                   const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
 
-                  msgToBrowser = JSON.stringify({ signature });
+                  signOff(signature);
                 } else {
-                  msgToBrowser = JSON.stringify({ signature: '' });
+                  rejectTransaction();
                 }
-
-                streamToBrowser(msgToBrowser);
               } catch (e) {
-                msgToBrowser = JSON.stringify({ error: e });
-                streamToBrowser(msgToBrowser);
+                emitError(e);
               }
             }
           },
