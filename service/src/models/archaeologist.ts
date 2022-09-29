@@ -10,7 +10,7 @@ import { archLogger } from "../utils/chalk-theme";
 import { ethers } from "ethers";
 import { fetchAndValidateShardOnArweave } from "../utils/arweave";
 import { Web3Interface } from "scripts/web3-interface";
-import { inMemoryStore } from "utils/onchain-data";
+import { inMemoryStore } from "../utils/onchain-data";
 
 export interface ListenAddressesConfig {
   ipAddress: string
