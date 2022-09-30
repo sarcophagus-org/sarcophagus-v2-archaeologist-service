@@ -11,6 +11,7 @@ import { ethers } from "ethers";
 import { fetchAndValidateShardOnArweave } from "../utils/arweave";
 import { Web3Interface } from "scripts/web3-interface";
 import { inMemoryStore } from "../utils/onchain-data";
+import { StreamCommsError, MAX_REWRAP_INTERVAL_TOO_LARGE, UNKNOWN_ERROR } from "../utils/error-codes";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -86,7 +87,7 @@ export class Archaeologist {
     this.nodeConfig.add("peerId", this.peerId)
     this.nodeConfig.add("addresses", { listen: this.listenAddresses })
 
-    return createNode(this.name, this.nodeConfig.configObj, (connection) => this.publishEnvConfig(connection));
+    return createNode(this.name, this.nodeConfig.configObj, (connection) => this.sendEncryptionPublicKey(connection));
   }
 
   async shutdown() {
@@ -125,9 +126,10 @@ export class Archaeologist {
         await pipe(
           stream,
           async (source) => {
-            const rejectTransaction = () => streamToBrowser(JSON.stringify({ signature: '' }))
             const signOff = (signature: string) => streamToBrowser(JSON.stringify({ signature }));
-            const emitError = (error: any) => streamToBrowser(JSON.stringify({ error }));
+            const emitError = (error: StreamCommsError) => streamToBrowser(JSON.stringify({ error }));
+
+            const noSignHint = "Declined to sign";
 
             for await (const data of source) {
               try {
@@ -138,7 +140,12 @@ export class Archaeologist {
                 } = JSON.parse(new TextDecoder().decode(data));
 
                 if (jsonData.maxRewrapInterval > inMemoryStore.profile!.maximumRewrapInterval.toNumber()) {
-                  rejectTransaction();
+                  emitError({
+                    code: MAX_REWRAP_INTERVAL_TOO_LARGE,
+
+                    // offload the burden of user-friendly messaging to the recipient
+                    message: noSignHint,
+                  });
                   return;
                 }
 
@@ -156,10 +163,16 @@ export class Archaeologist {
 
                   signOff(signature);
                 } else {
-                  rejectTransaction();
+                  emitError({
+                    code: MAX_REWRAP_INTERVAL_TOO_LARGE,
+                    message: noSignHint,
+                  });
                 }
               } catch (e) {
-                emitError(e);
+                emitError({
+                  code: UNKNOWN_ERROR,
+                  message: e.code ? `${e.code}\n${e.message}` : (e.message ?? e)
+                });
               }
             }
           },
@@ -170,20 +183,20 @@ export class Archaeologist {
     })
   }
 
-  async publishEnvConfig(connection) {
-    const envConfig = {
+  async sendEncryptionPublicKey(connection) {
+    const message = {
       encryptionPublicKey: this.envConfig.encryptionPublicKey,
       peerId: this.peerId.toString(),
     };
 
-    const signature = await this.web3Interface.signer.signMessage(JSON.stringify(envConfig));
+    const signature = await this.web3Interface.ethWallet.signMessage(JSON.stringify(message));
 
     const configStr = JSON.stringify({
       signature,
-      ...envConfig
+      ...message
     });
 
-    const { stream } = await connection.newStream(`/env-config`);
+    const { stream } = await connection.newStream(`/public-key`);
 
     pipe(
       [new TextEncoder().encode(configStr)],
