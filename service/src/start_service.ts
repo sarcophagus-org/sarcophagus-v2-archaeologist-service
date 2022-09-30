@@ -21,7 +21,7 @@ export async function startService(opts: {
 
   const arch = new Archaeologist({
     name: nodeName,
-    bootstrapList: bootstrapList ?? process.env.BOOTSTRAP_LIST!.split(",").map(s => s.trim()),
+    bootstrapList: bootstrapList ?? process.env.BOOTSTRAP_LIST?.split(",").map(s => s.trim()),
     listenAddresses,
     peerId,
     listenAddressesConfig: listenAddresses === undefined ? {

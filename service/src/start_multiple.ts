@@ -57,7 +57,10 @@ const delayIncrement = 2000;
 let delay = 0;
 
 for (let i = 1; i <= numOfArchsToGenerate; i++) {
-  const { peerId, listenAddresses } = await randomArchVals(startingTcpPort + i, startingWsPort + i)
+  const { peerId, listenAddresses } = await randomTestArchVals({
+    tcpPort: startingTcpPort + i,
+    wsPort: startingWsPort + i
+  })
 
   archInitNodePromises.push(
     new Promise(resolve => setTimeout(resolve, delay))

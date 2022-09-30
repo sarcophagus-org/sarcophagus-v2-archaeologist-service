@@ -3,9 +3,15 @@ import { genListenAddresses } from "./listen-addresses";
 import { createFromJSON } from "@libp2p/peer-id-factory";
 
 const localhost = '127.0.0.1'
-const starServers = process.env.SIGNAL_SERVER_LIST
+const localStarServer = localhost
 
-export const randomArchVals = async (tcpPort: string | number, number, existingPeerId?) => {
+export const randomTestArchVals = async (opts: {
+  tcpPort: string | number,
+  wsPort: string | number,
+  existingPeerId?
+}) => {
+  const { tcpPort, existingPeerId } = opts;
+
   let peerIdJson, peerId
   if (!existingPeerId) {
     const randomPeerId = await PeerId.create({ bits: 1024, keyType: 'Ed25519' })
@@ -16,7 +22,14 @@ export const randomArchVals = async (tcpPort: string | number, number, existingP
     peerIdJson = peerId.toJSON()
   }
 
-  const listenAddresses = genListenAddresses(localhost, tcpPort, [starServers!], peerIdJson.id)
+  const listenAddresses = genListenAddresses(
+    localhost,
+    tcpPort,
+    [localStarServer],
+    peerIdJson.id,
+    true,
+  )
+
   return { peerId, listenAddresses }
 }
 
