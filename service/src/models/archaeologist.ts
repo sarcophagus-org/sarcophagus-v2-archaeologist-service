@@ -29,6 +29,12 @@ export interface ArchaeologistInit {
   bootstrapList?: string[]
 }
 
+interface SarcoDataFromEmbalmerToValidate {
+  arweaveTxId: string;
+  unencryptedShardDoubleHash: string;
+  maxRewrapInterval;
+}
+
 export class Archaeologist {
   public node: Libp2p
   public name: string
@@ -133,13 +139,13 @@ export class Archaeologist {
 
             for await (const data of source) {
               try {
-                const jsonData: {
-                  arweaveTxId: string,
-                  unencryptedShardDoubleHash: string,
-                  maxRewrapInterval: number,
-                } = JSON.parse(new TextDecoder().decode(data));
+                const {
+                  arweaveTxId,
+                  unencryptedShardDoubleHash,
+                  maxRewrapInterval,
+                }: SarcoDataFromEmbalmerToValidate = JSON.parse(new TextDecoder().decode(data));
 
-                if (jsonData.maxRewrapInterval > inMemoryStore.profile!.maximumRewrapInterval.toNumber()) {
+                if (maxRewrapInterval > inMemoryStore.profile!.maximumRewrapInterval.toNumber()) {
                   emitError({
                     code: MAX_REWRAP_INTERVAL_TOO_LARGE,
 
@@ -149,15 +155,12 @@ export class Archaeologist {
                   return;
                 }
 
-                const txId = jsonData.arweaveTxId;
-                const unencryptedShardDoubleHash = jsonData.unencryptedShardDoubleHash;
-
-                const isValidShard = await fetchAndValidateShardOnArweave(txId, unencryptedShardDoubleHash, this.web3Interface.encryptionWallet.publicKey);
+                const isValidShard = await fetchAndValidateShardOnArweave(arweaveTxId, unencryptedShardDoubleHash, this.web3Interface.encryptionWallet.publicKey);
 
                 if (isValidShard) {
                   const msg = ethers.utils.solidityPack(
                     ['string', 'string', 'string'],
-                    [txId, unencryptedShardDoubleHash, jsonData.maxRewrapInterval.toString()]
+                    [arweaveTxId, unencryptedShardDoubleHash, maxRewrapInterval.toString()]
                   )
                   const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
 
