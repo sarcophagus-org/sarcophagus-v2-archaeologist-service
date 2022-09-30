@@ -103,6 +103,9 @@ export async function parseArgs(web3Interface: Web3Interface) {
                 processedArgs.push(argName);
                 break;
 
+            case "count":
+                break;
+
             default:
                 archLogger.error(`Unrecognized argument: ${argName}`);
                 exit(CLI_BAD_STARTUP_ARG);

@@ -1,4 +1,4 @@
-import { starServerPort } from "scripts/signalling-server"
+import { getLocalStarSignallingPort } from "../scripts/run_local/helpers"
 
 export const genListenAddresses = (
   ipAddress: string,
@@ -25,7 +25,7 @@ export const ssListenAddresses = (
 ): string[] => {
   return servers.map(server => {
     const ssAddress = isLocal ?
-      `/ip4/${server}/tcp/${starServerPort}/ws/p2p-webrtc-star` :
+      `/ip4/${server}/tcp/${getLocalStarSignallingPort()}/ws/p2p-webrtc-star` :
       `/dns4/${server}/tcp/443/wss/p2p-webrtc-star`;
 
     return peerId ? `${ssAddress}/p2p/${peerId}` : ssAddress
