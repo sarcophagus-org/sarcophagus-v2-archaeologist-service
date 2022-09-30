@@ -25,5 +25,10 @@ try {
 }
 
 archLogger.notice(`⚡️ Starting ${archCount} archaeologist nodes...\n`);
+if (archCount > 5) {
+    archLogger.warn("=================================================================================================");
+    archLogger.warn(" ⚠️ WARNING: STARTING UP TOO MANY NODES IN ONE THREAD MIGHT CLOG UP PROCESSES AND BLOCK MESSAGING ");
+    archLogger.warn("=================================================================================================");
+}
 
 await startMultipleLocal(archCount);

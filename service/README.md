@@ -55,6 +55,8 @@ The service will still build despite these typescript errors._
 
 `npm run start`
 
+This will start up your node and attempt to connect to the signalling servers defined in `SIGNAL_SERVER_LIST` in `.env`.
+
 ---
 
 #### Approve
@@ -145,7 +147,27 @@ The file at `<path-to-shards-file>` should be a `.json` file containing a list o
 
 ---
 
-## Running tests
+## Testing
+
+
+### Local, Multiple Nodes
+Use `npm run start:local` to start an instance of the archaeologist node that connects to a locally running signalling server.
+
+This script automatically starts up a local signalling server -- you will need to set the `DEV_SIGNAL_SERVER_PORT`
+environment variable in `.env`.
+
+To spin up multiple nodes, run `npm run start:local -- --count:<archCount>`. Replace `<archCount>` with the number of nodes
+you would like to start up.
+
+In order to avoid overloading a single thread, it's recommended to start a maximum of 4 or 5 nodes. To test with more, you
+may run the script in another terminal. The script will attempt to use the signalling server started in the first terminal.
+
+A side effect of this is you might need to keep track of which terminal/process started up the signalling server, as killing
+it would effectively cut of nodes running in other terminals from discovering each other.
+
+---
+
+### Running tests
 Set these environment variables:
 
 - `TEST_DEPLOYER_PRIVATE_KEY`: the private key of the deployer - logged in the node's logs (private key of Account #0)
