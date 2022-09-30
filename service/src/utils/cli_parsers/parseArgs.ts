@@ -104,6 +104,8 @@ export async function parseArgs(web3Interface: Web3Interface) {
                 break;
 
             case "count":
+                // `count` will already have been parsed and handled in `parseLocalArchCountArgs` during multi-node setup.
+                // It's meaningless in this context, but must be 'handled' to avoid a `CLI_BAD_STARTUP_ARG` exception.
                 break;
 
             default:

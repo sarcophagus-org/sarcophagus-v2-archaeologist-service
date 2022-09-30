@@ -1,7 +1,7 @@
 import 'dotenv/config'
-import { randomTestArchVals } from "./utils/random-arch-gen.js";
+import { randomTestArchVals } from "../../utils/random-arch-gen.js";
 import { Libp2p } from "libp2p";
-import { startService } from './start_service';
+import { startService } from '../../start_service';
 
 
 function _randomIntFromInterval(min, max) { // min and max included
