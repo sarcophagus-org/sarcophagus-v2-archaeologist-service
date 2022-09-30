@@ -187,29 +187,34 @@ export class Archaeologist {
   }
 
   async sendEncryptionPublicKey(connection) {
-    const message = {
-      encryptionPublicKey: this.envConfig.encryptionPublicKey,
-      peerId: this.peerId.toString(),
-    };
+    try {
+      const message = {
+        encryptionPublicKey: this.envConfig.encryptionPublicKey,
+        peerId: this.peerId.toString(),
+      };
 
-    const signature = await this.web3Interface.ethWallet.signMessage(JSON.stringify(message));
+      const signature = await this.web3Interface.signer.signMessage(JSON.stringify(envConfig));
 
-    const configStr = JSON.stringify({
-      signature,
-      ...message
-    });
+      const msgStr = JSON.stringify({
+        signature,
+        ...message
+      });
 
-    const { stream } = await connection.newStream(`/public-key`);
+      const { stream } = await connection.newStream(`/public-key`);
 
-    pipe(
-      [new TextEncoder().encode(configStr)],
-      stream,
-      async (source) => {
-        for await (const data of source) {
-          const dataStr = new TextDecoder().decode(data as BufferSource | undefined);
-          console.log('dataStr', dataStr);
+      pipe(
+        [new TextEncoder().encode(msgStr)],
+        stream,
+        async (source) => {
+          for await (const data of source) {
+            const dataStr = new TextDecoder().decode(data as BufferSource | undefined);
+            console.log('dataStr', dataStr);
+          }
         }
-      }
-    );
+      )
+    }
+    catch (e) {
+      archLogger.error(`Publish envConfig exception: ${e}\nConnectin: ${connection}`);
+    }
   }
 }
