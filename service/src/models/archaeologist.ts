@@ -183,7 +183,7 @@ export class Archaeologist {
         }
       );
     } catch (error) {
-      archLogger.error(`Error sending public key:\n${error}`);
+      archLogger.error(`Exception sending public key: ${error}\nConnectin: ${connection}`);
     }
   }
 }
