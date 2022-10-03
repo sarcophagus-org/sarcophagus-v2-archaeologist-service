@@ -8,8 +8,10 @@ import { pipe } from "it-pipe";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../utils/chalk-theme";
 import { ethers } from "ethers";
-import { fetchAndValidateArweaveShard } from "../utils/arweave";
+import { fetchAndValidateShardOnArweave } from "../utils/arweave";
 import { Web3Interface } from "scripts/web3-interface";
+import { inMemoryStore } from "../utils/onchain-data";
+import { StreamCommsError, MAX_REWRAP_INTERVAL_TOO_LARGE, UNKNOWN_ERROR } from "../utils/error-codes";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -25,6 +27,12 @@ export interface ArchaeologistInit {
   isBootstrap?: boolean
   listenAddressesConfig?: ListenAddressesConfig
   bootstrapList?: string[]
+}
+
+interface SarcoDataFromEmbalmerToValidate {
+  arweaveTxId: string;
+  unencryptedShardDoubleHash: string;
+  maxRewrapInterval;
 }
 
 export class Archaeologist {
@@ -61,7 +69,7 @@ export class Archaeologist {
 
   async setupCommunicationStreams() {
     await this._setupMessageStream();
-    await this._setupArweaveStream();
+    await this._setupArweaveSignoffStream();
   }
 
   async initNode(arg: { config: PublicEnvConfig, web3Interface: Web3Interface, idFilePath?: string }) {
@@ -85,7 +93,7 @@ export class Archaeologist {
     this.nodeConfig.add("peerId", this.peerId)
     this.nodeConfig.add("addresses", { listen: this.listenAddresses })
 
-    return createNode(this.name, this.nodeConfig.configObj, (connection) => this.publishEnvConfig(connection));
+    return createNode(this.name, this.nodeConfig.configObj, (connection) => this.sendEncryptionPublicKey(connection));
   }
 
   async shutdown() {
@@ -111,8 +119,8 @@ export class Archaeologist {
     })
   }
 
-  async _setupArweaveStream() {
-    this.node.handle(['/validate-arweave'], async ({ stream }) => {
+  async _setupArweaveSignoffStream() {
+    this.node.handle(['/arweave-signoff'], async ({ stream }) => {
       const streamToBrowser = (result: string) => {
         pipe(
           [new TextEncoder().encode(result)],
@@ -124,24 +132,50 @@ export class Archaeologist {
         await pipe(
           stream,
           async (source) => {
+            const signOff = (signature: string) => streamToBrowser(JSON.stringify({ signature }));
+            const emitError = (error: StreamCommsError) => streamToBrowser(JSON.stringify({ error }));
+
+            const noSignHint = "Declined to sign";
+
             for await (const data of source) {
-              const jsonData = JSON.parse(new TextDecoder().decode(data));
+              try {
+                const {
+                  arweaveTxId,
+                  unencryptedShardDoubleHash,
+                  maxRewrapInterval,
+                }: SarcoDataFromEmbalmerToValidate = JSON.parse(new TextDecoder().decode(data));
 
-              const txId = jsonData.arweaveTxId;
-              const unencryptedShardHash = jsonData.unencryptedShardHash;
+                if (maxRewrapInterval > inMemoryStore.profile!.maximumRewrapInterval.toNumber()) {
+                  emitError({
+                    code: MAX_REWRAP_INTERVAL_TOO_LARGE,
 
-              const isValidShard = await fetchAndValidateArweaveShard(txId, unencryptedShardHash, this.web3Interface.encryptionWallet.publicKey);
+                    // offload the burden of user-friendly messaging to the recipient
+                    message: noSignHint,
+                  });
+                  return;
+                }
 
-              if (isValidShard) {
-                const msg = ethers.utils.solidityPack(
-                  ['string', 'string', 'string'],
-                  [txId, unencryptedShardHash, this.web3Interface.ethWallet.address]
-                )
-                const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
+                const isValidShard = await fetchAndValidateShardOnArweave(arweaveTxId, unencryptedShardDoubleHash, this.web3Interface.encryptionWallet.publicKey);
 
-                streamToBrowser(signature);
-              } else {
-                streamToBrowser('0');
+                if (isValidShard) {
+                  const msg = ethers.utils.solidityPack(
+                    ['string', 'string', 'string'],
+                    [arweaveTxId, unencryptedShardDoubleHash, maxRewrapInterval.toString()]
+                  )
+                  const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
+
+                  signOff(signature);
+                } else {
+                  emitError({
+                    code: MAX_REWRAP_INTERVAL_TOO_LARGE,
+                    message: noSignHint,
+                  });
+                }
+              } catch (e) {
+                emitError({
+                  code: UNKNOWN_ERROR,
+                  message: e.code ? `${e.code}\n${e.message}` : (e.message ?? e)
+                });
               }
             }
           },
@@ -152,24 +186,24 @@ export class Archaeologist {
     })
   }
 
-  async publishEnvConfig(connection) {
+  async sendEncryptionPublicKey(connection) {
     try {
-      const envConfig = {
+      const message = {
         encryptionPublicKey: this.envConfig.encryptionPublicKey,
         peerId: this.peerId.toString(),
       };
 
       const signature = await this.web3Interface.signer.signMessage(JSON.stringify(envConfig));
 
-      const configStr = JSON.stringify({
+      const msgStr = JSON.stringify({
         signature,
-        ...envConfig
+        ...message
       });
 
-      const { stream } = await connection.newStream(`/env-config`);
+      const { stream } = await connection.newStream(`/public-key`);
 
       pipe(
-        [new TextEncoder().encode(configStr)],
+        [new TextEncoder().encode(msgStr)],
         stream,
         async (source) => {
           for await (const data of source) {
