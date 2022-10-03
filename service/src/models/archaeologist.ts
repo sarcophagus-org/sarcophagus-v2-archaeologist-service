@@ -199,7 +199,7 @@ export class Archaeologist {
         peerId: this.peerId.toString(),
       };
 
-      const signature = await this.web3Interface.ethWallet.signMessage(JSON.stringify(envConfig));
+      const signature = await this.web3Interface.ethWallet.signMessage(JSON.stringify(message));
 
       const msgStr = JSON.stringify({
         signature,

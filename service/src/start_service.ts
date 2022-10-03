@@ -3,7 +3,6 @@ import { getWeb3Interface } from './scripts/web3-interface'
 import { Archaeologist } from "./models/archaeologist"
 import { validateEnvVars } from './utils/validateEnv'
 import { parseArgs } from './utils/cli_parsers/parseArgs'
-import { setupEventListeners } from './utils/contract-event-listeners'
 import { retrieveOnchainData } from './utils/onchain-data'
 
 
@@ -40,7 +39,6 @@ export async function startService(opts: {
   retrieveOnchainData(web3Interface);
 
   setInterval(() => retrieveOnchainData(web3Interface), 300000); // refetch every 5mins
-  setupEventListeners(web3Interface);
 
   [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
     process.on(eventType, async () => {
