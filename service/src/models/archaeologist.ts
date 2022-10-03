@@ -7,7 +7,7 @@ import { PublicEnvConfig } from "./env-config";
 import { pipe } from "it-pipe";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../utils/chalk-theme";
-import { ethers } from "ethers";
+import {BigNumber, ethers} from "ethers";
 import { fetchAndValidateShardOnArweave } from "../utils/arweave";
 import { Web3Interface } from "scripts/web3-interface";
 import { inMemoryStore } from "../utils/onchain-data";
@@ -32,7 +32,8 @@ export interface ArchaeologistInit {
 interface SarcoDataFromEmbalmerToValidate {
   arweaveTxId: string;
   unencryptedShardDoubleHash: string;
-  maxRewrapInterval;
+  maxRewrapInterval: number;
+  diggingFee: string;
 }
 
 export class Archaeologist {
@@ -147,6 +148,7 @@ export class Archaeologist {
                   arweaveTxId,
                   unencryptedShardDoubleHash,
                   maxRewrapInterval,
+                  diggingFee,
                 }: SarcoDataFromEmbalmerToValidate = JSON.parse(new TextDecoder().decode(data));
 
                 if (maxRewrapInterval > inMemoryStore.profile!.maximumRewrapInterval.toNumber()) {
@@ -163,8 +165,8 @@ export class Archaeologist {
 
                 if (isValidShard) {
                   const msg = ethers.utils.solidityPack(
-                    ['string', 'string', 'string'],
-                    [arweaveTxId, unencryptedShardDoubleHash, maxRewrapInterval.toString()]
+                      ["string", "bytes32", "uint256", "uint256"],
+                    [arweaveTxId, unencryptedShardDoubleHash, maxRewrapInterval.toString(), diggingFee]
                   )
                   const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
 
