@@ -105,17 +105,21 @@ export class Archaeologist {
     const msgProtocol = '/message';
     archLogger.info(`listening to stream on protocol: ${msgProtocol}`)
     this.node.handle([msgProtocol], ({ stream }) => {
-      pipe(
-        stream,
-        async function (source) {
-          for await (const msg of source) {
-            const decoded = new TextDecoder().decode(msg);
-            archLogger.notice(`received message ${decoded}`);
+      try {
+        pipe(
+          stream,
+          async function (source) {
+            for await (const msg of source) {
+              const decoded = new TextDecoder().decode(msg);
+              archLogger.notice(`received message ${decoded}`);
+            }
           }
-        }
-      ).finally(() => {
-        stream.close()
-      })
+        ).finally(() => {
+          stream.close()
+        })
+      } catch (error) {
+        archLogger.error(`Error sending message:\n${error}`);
+      }
     })
   }
 
@@ -193,7 +197,7 @@ export class Archaeologist {
         peerId: this.peerId.toString(),
       };
 
-      const signature = await this.web3Interface.signer.signMessage(JSON.stringify(envConfig));
+      const signature = await this.web3Interface.ethWallet.signMessage(JSON.stringify(envConfig));
 
       const msgStr = JSON.stringify({
         signature,
@@ -211,10 +215,9 @@ export class Archaeologist {
             console.log('dataStr', dataStr);
           }
         }
-      )
-    }
-    catch (e) {
-      archLogger.error(`Publish envConfig exception: ${e}\nConnectin: ${connection}`);
+      );
+    } catch (error) {
+      archLogger.error(`Exception sending public key: ${error}\nConnectin: ${connection}`);
     }
   }
 }
