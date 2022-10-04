@@ -4,7 +4,7 @@ import {Noise} from "@chainsafe/libp2p-noise";
 import {Mplex} from "@libp2p/mplex";
 
 const dht = new KadDHT({
-  protocolPrefix: import.meta.env.VITE_DHT_PROTOCOL_PREFIX || "/archaeologist-service",
+  protocolPrefix: "/archaeologist-service",
   clientMode: false
 })
 
