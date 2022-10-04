@@ -9,3 +9,4 @@ export interface StreamCommsError {
 export const UNKNOWN_ERROR = 1;
 export const MAX_REWRAP_INTERVAL_TOO_LARGE = 2;
 export const INVALID_ARWEAVE_SHARD = 3;
+export const DIGGING_FEE_TOO_LOW = 4;
