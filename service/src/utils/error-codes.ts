@@ -6,7 +6,10 @@ export interface StreamCommsError {
     message: string,
 }
 
-export const UNKNOWN_ERROR = 1;
-export const MAX_REWRAP_INTERVAL_TOO_LARGE = 2;
-export const INVALID_ARWEAVE_SHARD = 3;
-export const DIGGING_FEE_TOO_LOW = 4;
+export enum SarcophagusValidationError {
+   UNKNOWN_ERROR = 1,
+   MAX_REWRAP_INTERVAL_TOO_LARGE = 2,
+   INVALID_ARWEAVE_SHARD = 3,
+   DIGGING_FEE_TOO_LOW = 4,
+   INVALID_TIMESTAMP = 5
+}

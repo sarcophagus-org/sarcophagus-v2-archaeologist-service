@@ -11,12 +11,7 @@ import { BigNumber, ethers } from "ethers";
 import { fetchAndValidateShardOnArweave } from "../utils/arweave";
 import { Web3Interface } from "scripts/web3-interface";
 import { inMemoryStore } from "../utils/onchain-data";
-import {
-  StreamCommsError,
-  MAX_REWRAP_INTERVAL_TOO_LARGE,
-  UNKNOWN_ERROR,
-  INVALID_ARWEAVE_SHARD, DIGGING_FEE_TOO_LOW
-} from "../utils/error-codes";
+import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
 
 export interface ListenAddressesConfig {
   ipAddress: string;
@@ -39,6 +34,7 @@ interface SarcophagusParameters {
   unencryptedShardDoubleHash: string;
   maxRewrapInterval: number;
   diggingFee: string;
+  timestamp: number;
 }
 
 export class Archaeologist {
@@ -67,10 +63,6 @@ export class Archaeologist {
     this.peerId = options.peerId;
     this.listenAddresses = options.listenAddresses;
     this.listenAddressesConfig = options.listenAddressesConfig;
-  }
-
-  truncatedId(id, limit = 5): string {
-    return id.slice(id.length - limit);
   }
 
   async setupCommunicationStreams() {
@@ -148,18 +140,22 @@ export class Archaeologist {
                 arweaveTxId,
                 unencryptedShardDoubleHash,
                 maxRewrapInterval,
-                diggingFee
+                diggingFee,
+                timestamp
               }: SarcophagusParameters = JSON.parse(new TextDecoder().decode(data));
               let error: number | null = null;
               if (maxRewrapInterval > inMemoryStore.profile!.maximumRewrapInterval.toNumber()) {
-                error = MAX_REWRAP_INTERVAL_TOO_LARGE;
+                error = SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE;
               }
               if (BigNumber.from(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)) {
-                error = DIGGING_FEE_TOO_LOW;
+                error = SarcophagusValidationError.DIGGING_FEE_TOO_LOW;
+              }
+              if (timestamp > Date.now()) {
+                error = SarcophagusValidationError.INVALID_TIMESTAMP;
               }
               if (!await fetchAndValidateShardOnArweave(arweaveTxId,
                 unencryptedShardDoubleHash, this.web3Interface.encryptionWallet.publicKey)) {
-                error = INVALID_ARWEAVE_SHARD;
+                error = SarcophagusValidationError.INVALID_ARWEAVE_SHARD;
               }
               if (error) {
                 // offload the burden of user-friendly messaging to the recipient
@@ -168,14 +164,14 @@ export class Archaeologist {
               }
               // sign sarcophagus parameters to demonstrate agreement
               const msg = ethers.utils.solidityPack(
-                ["string", "bytes32", "uint256", "uint256"],
-                [arweaveTxId, unencryptedShardDoubleHash, maxRewrapInterval.toString(), diggingFee]
+                ["string", "bytes32", "uint256", "uint256", "uint256"],
+                [arweaveTxId, unencryptedShardDoubleHash, maxRewrapInterval.toString(), diggingFee, timestamp.toString()]
               );
               const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
               streamToBrowser(JSON.stringify({ signature }));
             } catch (e) {
               emitError({
-                code: UNKNOWN_ERROR,
+                code: SarcophagusValidationError.UNKNOWN_ERROR,
                 message: e.code ? `${e.code}\n${e.message}` : (e.message ?? e)
               });
             }
