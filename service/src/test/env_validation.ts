@@ -17,7 +17,6 @@ export async function runTests() {
         "WS_PORT",
         "BOOTSTRAP_LIST",
         "SIGNAL_SERVER_LIST",
-        "DHT_PROTOCOL_PREFIX",
         "ENCRYPTION_PRIVATE_KEY",
         "ETH_PRIVATE_KEY",
         "PROVIDER_URL",
