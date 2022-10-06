@@ -13,7 +13,11 @@ interface NodeConfigParams {
   autoDial?: boolean,
 }
 
-const PROTOCOL_PREFIX = "/archaeologist-service";
+// protocol names used to set up communication with embalmer node nodes
+export const PUBLIC_KEY_STREAM = '/archaeologist-public-key';
+export const NEGOTIATION_SIGNATURE_STREAM = '/archaeologist-negotiation-signature';
+const DHT_PROTOCOL_PREFIX = "/archaeologist-service";
+
 const webRtcStar = new WebRTCStar({ wrtc });
 
 export class NodeConfig {
@@ -30,7 +34,7 @@ export class NodeConfig {
       new Mplex()
     ],
     dht: new KadDHT({
-      protocolPrefix: process.env.DHT_PROTOCOL_PREFIX || PROTOCOL_PREFIX,
+      protocolPrefix: DHT_PROTOCOL_PREFIX,
       clientMode: false
     }),
     peerDiscovery: [

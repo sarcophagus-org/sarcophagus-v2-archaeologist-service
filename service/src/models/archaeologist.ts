@@ -10,6 +10,7 @@ import { archLogger } from "../utils/chalk-theme";
 import { ethers } from "ethers";
 import { fetchAndValidateArweaveShard } from "../utils/arweave";
 import { Web3Interface } from "scripts/web3-interface";
+import { PUBLIC_KEY_STREAM, NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
 
 export interface ListenAddressesConfig {
   ipAddress: string
@@ -61,7 +62,7 @@ export class Archaeologist {
 
   async setupCommunicationStreams() {
     await this._setupMessageStream();
-    await this._setupArweaveStream();
+    await this._setupNegotiationSignature();
   }
 
   async initNode(arg: { config: PublicEnvConfig, web3Interface: Web3Interface, idFilePath?: string }) {
@@ -93,6 +94,7 @@ export class Archaeologist {
     await this.node.stop()
   }
 
+  // TODO: this function can probably be removed
   async _setupMessageStream() {
     const msgProtocol = '/message';
     archLogger.info(`listening to stream on protocol: ${msgProtocol}`)
@@ -111,8 +113,8 @@ export class Archaeologist {
     })
   }
 
-  async _setupArweaveStream() {
-    this.node.handle(['/validate-arweave'], async ({ stream }) => {
+  async _setupNegotiationSignature() {
+    this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
       const streamToBrowser = (result: string) => {
         pipe(
           [new TextEncoder().encode(result)],
@@ -147,25 +149,24 @@ export class Archaeologist {
           },
         )
       } catch (err) {
-        archLogger.error(`problem with pipe in validate-arweave: ${err}`)
+        archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`)
       }
     })
   }
 
   async publishEnvConfig(connection) {
-    const envConfig = {
+    const publicKey = {
       encryptionPublicKey: this.envConfig.encryptionPublicKey,
-      peerId: this.peerId.toString(),
     };
 
-    const signature = await this.web3Interface.signer.signMessage(JSON.stringify(envConfig));
+    const signature = await this.web3Interface.signer.signMessage(JSON.stringify(publicKey));
 
     const configStr = JSON.stringify({
       signature,
-      ...envConfig
+      ...publicKey
     });
 
-    const { stream } = await connection.newStream(`/env-config`);
+    const { stream } = await connection.newStream(PUBLIC_KEY_STREAM);
 
     pipe(
       [new TextEncoder().encode(configStr)],
