@@ -1,4 +1,4 @@
-import { getLocalStarSignallingPort } from "../scripts/run_local/helpers"
+import { getLocalStarSignallingPort } from "../scripts/run_local/helpers";
 
 export const genListenAddresses = (
   ipAddress: string,
@@ -7,16 +7,14 @@ export const genListenAddresses = (
   peerId?: string,
   isLocal?: boolean
 ): string[] => {
-  return [tcpListenAddress(ipAddress, tcpPort)]
-    .concat(ssListenAddresses(isLocal === true, servers, peerId))
-}
+  return [tcpListenAddress(ipAddress, tcpPort)].concat(
+    ssListenAddresses(isLocal === true, servers, peerId)
+  );
+};
 
-export const tcpListenAddress = (
-  ipAddress: string,
-  port: number | string
-) => {
-  return `/ip4/${ipAddress}/tcp/${port}`
-}
+export const tcpListenAddress = (ipAddress: string, port: number | string) => {
+  return `/ip4/${ipAddress}/tcp/${port}`;
+};
 
 export const ssListenAddresses = (
   isLocal: boolean,
@@ -24,10 +22,10 @@ export const ssListenAddresses = (
   peerId?: string
 ): string[] => {
   return servers.map(server => {
-    const ssAddress = isLocal ?
-      `/ip4/${server}/tcp/${getLocalStarSignallingPort()}/ws/p2p-webrtc-star` :
-      `/dns4/${server}/tcp/443/wss/p2p-webrtc-star`;
+    const ssAddress = isLocal
+      ? `/ip4/${server}/tcp/${getLocalStarSignallingPort()}/ws/p2p-webrtc-star`
+      : `/dns4/${server}/tcp/443/wss/p2p-webrtc-star`;
 
-    return peerId ? `${ssAddress}/p2p/${peerId}` : ssAddress
-  })
-}
+    return peerId ? `${ssAddress}/p2p/${peerId}` : ssAddress;
+  });
+};

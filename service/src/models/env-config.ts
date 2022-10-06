@@ -1,3 +1,3 @@
 export interface PublicEnvConfig {
-    encryptionPublicKey: string,
+  encryptionPublicKey: string;
 }

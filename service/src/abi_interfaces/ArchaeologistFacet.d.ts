@@ -30,10 +30,7 @@ interface ArchaeologistFacetInterface extends ethers.utils.Interface {
     "withdrawReward(uint256)": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "depositFreeBond",
-    values: [BigNumberish]
-  ): string;
+  encodeFunctionData(functionFragment: "depositFreeBond", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "finalizeTransfer",
     values: [BytesLike, string, { v: BigNumberish; r: BytesLike; s: BytesLike }]
@@ -42,51 +39,21 @@ interface ArchaeologistFacetInterface extends ethers.utils.Interface {
     functionFragment: "registerArchaeologist",
     values: [string, BigNumberish, BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "unwrapSarcophagus",
-    values: [BytesLike, BytesLike]
-  ): string;
+  encodeFunctionData(functionFragment: "unwrapSarcophagus", values: [BytesLike, BytesLike]): string;
   encodeFunctionData(
     functionFragment: "updateArchaeologist",
     values: [string, BigNumberish, BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "withdrawFreeBond",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "withdrawReward",
-    values: [BigNumberish]
-  ): string;
+  encodeFunctionData(functionFragment: "withdrawFreeBond", values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: "withdrawReward", values: [BigNumberish]): string;
 
-  decodeFunctionResult(
-    functionFragment: "depositFreeBond",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "finalizeTransfer",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "registerArchaeologist",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "unwrapSarcophagus",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "updateArchaeologist",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "withdrawFreeBond",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "withdrawReward",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "depositFreeBond", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "finalizeTransfer", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "registerArchaeologist", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "unwrapSarcophagus", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "updateArchaeologist", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "withdrawFreeBond", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "withdrawReward", data: BytesLike): Result;
 
   events: {
     "DepositFreeBond(address,uint256)": EventFragment;
@@ -287,10 +254,7 @@ export class ArchaeologistFacet extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    depositFreeBond(
-      amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    depositFreeBond(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     finalizeTransfer(
       sarcoId: BytesLike,
@@ -321,33 +285,21 @@ export class ArchaeologistFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    withdrawFreeBond(
-      amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    withdrawFreeBond(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
-    withdrawReward(
-      amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    withdrawReward(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
     "DepositFreeBond(address,uint256)"(
       archaeologist?: string | null,
       depositedBond?: null
-    ): TypedEventFilter<
-      [string, BigNumber],
-      { archaeologist: string; depositedBond: BigNumber }
-    >;
+    ): TypedEventFilter<[string, BigNumber], { archaeologist: string; depositedBond: BigNumber }>;
 
     DepositFreeBond(
       archaeologist?: string | null,
       depositedBond?: null
-    ): TypedEventFilter<
-      [string, BigNumber],
-      { archaeologist: string; depositedBond: BigNumber }
-    >;
+    ): TypedEventFilter<[string, BigNumber], { archaeologist: string; depositedBond: BigNumber }>;
 
     "FinalizeTransfer(bytes32,string,address,address,uint256)"(
       sarcoId?: null,
@@ -420,18 +372,12 @@ export class ArchaeologistFacet extends BaseContract {
     "UnwrapSarcophagus(bytes32,bytes)"(
       sarcoId?: BytesLike | null,
       unencryptedShard?: null
-    ): TypedEventFilter<
-      [string, string],
-      { sarcoId: string; unencryptedShard: string }
-    >;
+    ): TypedEventFilter<[string, string], { sarcoId: string; unencryptedShard: string }>;
 
     UnwrapSarcophagus(
       sarcoId?: BytesLike | null,
       unencryptedShard?: null
-    ): TypedEventFilter<
-      [string, string],
-      { sarcoId: string; unencryptedShard: string }
-    >;
+    ): TypedEventFilter<[string, string], { sarcoId: string; unencryptedShard: string }>;
 
     "UpdateArchaeologist(address,string,uint256,uint256,uint256)"(
       archaeologist?: string | null,
@@ -470,34 +416,22 @@ export class ArchaeologistFacet extends BaseContract {
     "WithdrawFreeBond(address,uint256)"(
       archaeologist?: string | null,
       withdrawnBond?: null
-    ): TypedEventFilter<
-      [string, BigNumber],
-      { archaeologist: string; withdrawnBond: BigNumber }
-    >;
+    ): TypedEventFilter<[string, BigNumber], { archaeologist: string; withdrawnBond: BigNumber }>;
 
     WithdrawFreeBond(
       archaeologist?: string | null,
       withdrawnBond?: null
-    ): TypedEventFilter<
-      [string, BigNumber],
-      { archaeologist: string; withdrawnBond: BigNumber }
-    >;
+    ): TypedEventFilter<[string, BigNumber], { archaeologist: string; withdrawnBond: BigNumber }>;
 
     "WithdrawReward(address,uint256)"(
       archaeologist?: string | null,
       withdrawnReward?: null
-    ): TypedEventFilter<
-      [string, BigNumber],
-      { archaeologist: string; withdrawnReward: BigNumber }
-    >;
+    ): TypedEventFilter<[string, BigNumber], { archaeologist: string; withdrawnReward: BigNumber }>;
 
     WithdrawReward(
       archaeologist?: string | null,
       withdrawnReward?: null
-    ): TypedEventFilter<
-      [string, BigNumber],
-      { archaeologist: string; withdrawnReward: BigNumber }
-    >;
+    ): TypedEventFilter<[string, BigNumber], { archaeologist: string; withdrawnReward: BigNumber }>;
   };
 
   estimateGas: {
