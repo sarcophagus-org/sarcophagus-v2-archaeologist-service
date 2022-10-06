@@ -8,6 +8,7 @@ import { BigNumber, ethers } from 'ethers'
 import { requestApproval } from './approve_utils'
 
 import jsonfile from "jsonfile"
+import { getOnchainProfile, inMemoryStore } from 'utils/onchain-data'
 
 validateEnvVars();
 
@@ -65,8 +66,9 @@ export async function profileSetup(args: ProfileParams, isUpdate: boolean) {
   archLogger.info("Waiting for transaction");
   setInterval(() => process.stdout.write("."), 1000);
 
-  tx.wait().then(() => {
+  tx.wait().then(async () => {
     archLogger.notice(isUpdate ? "PROFILE UPDATED!" : "\nPROFILE REGISTERED!");
+    inMemoryStore.profile = await getOnchainProfile(web3Interface);
     exit(0);
   }).catch(handleException);
 }
