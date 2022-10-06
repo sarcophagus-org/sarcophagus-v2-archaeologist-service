@@ -14,81 +14,94 @@ const sarcoIsActuallyUnwrappable = (e: string) => e.includes("SarcophagusIsUnwra
 const notEnoughProof = (e: string) => e.includes("AccuseNotEnoughProof");
 const incorrectProof = (e: string) => e.includes("AccuseIncorrectProof");
 
-
-/** 
+/**
  * Parses the text in RPC errors' `.reason` field and outputs more readable error messages
  * */
 export function handleRpcError(e: string) {
-    if (alreadyUnwrapped(e)) {
-        archLogger.error(`\nAlready unwrapped this Sarcophagus`);
-        return;
-    }
+  if (alreadyUnwrapped(e)) {
+    archLogger.error(`\nAlready unwrapped this Sarcophagus`);
+    return;
+  }
 
-    if (profileShouldExist(e)) {
-        archLogger.error(`\nProfile not registered`);
-        archLogger.error(`Use \`npm run register\` to register your Archaeologist profile. See readme for details on usage\n`);
-        return;
-    }
+  if (profileShouldExist(e)) {
+    archLogger.error(`\nProfile not registered`);
+    archLogger.error(
+      `Use \`npm run register\` to register your Archaeologist profile. See readme for details on usage\n`
+    );
+    return;
+  }
 
-    if (notEnoughFreeBond(e)) {
-        const a = e.indexOf("(") + 1;
-        const b = e.indexOf(",");
+  if (notEnoughFreeBond(e)) {
+    const a = e.indexOf("(") + 1;
+    const b = e.indexOf(",");
 
-        const available = e.substring(a, b);
-        archLogger.error(`\nNot enough free bond. Available: ${ethers.utils.formatEther(available)} SARCO`);
-        return;
-    }
+    const available = e.substring(a, b);
+    archLogger.error(
+      `\nNot enough free bond. Available: ${ethers.utils.formatEther(available)} SARCO`
+    );
+    return;
+  }
 
-    if (notEnoughReward(e)) {
-        const a = e.indexOf("(") + 1;
-        const b = e.indexOf(",");
+  if (notEnoughReward(e)) {
+    const a = e.indexOf("(") + 1;
+    const b = e.indexOf(",");
 
-        const available = e.substring(a, b);
-        archLogger.error(`\nNot enough reward. Available: ${ethers.utils.formatEther(available)} SARCO`);
-        return;
-    }
+    const available = e.substring(a, b);
+    archLogger.error(
+      `\nNot enough reward. Available: ${ethers.utils.formatEther(available)} SARCO`
+    );
+    return;
+  }
 
-    if (insufficientAllowance(e)) {
-        archLogger.error(`\nTransaction reverted: Insufficient allowance`);
-        archLogger.error(`Run \`npm run approve\` to grant Sarcophagus contracts permission to transfer your SARCO tokens.`);
-        return;
-    }
+  if (insufficientAllowance(e)) {
+    archLogger.error(`\nTransaction reverted: Insufficient allowance`);
+    archLogger.error(
+      `Run \`npm run approve\` to grant Sarcophagus contracts permission to transfer your SARCO tokens.`
+    );
+    return;
+  }
 
-    if (lowSarcoBalance(e)) {
-        archLogger.error(`\nInsufficient balance`);
-        archLogger.error(`Add some SARCO to your account to continue`);
-        return;
-    }
+  if (lowSarcoBalance(e)) {
+    archLogger.error(`\nInsufficient balance`);
+    archLogger.error(`Add some SARCO to your account to continue`);
+    return;
+  }
 
-    if (sarcoDoesNotExist(e)) {
-        archLogger.error(`\nNo Sarcophagus found matching provided ID`);
-        return;
-    }
+  if (sarcoDoesNotExist(e)) {
+    archLogger.error(`\nNo Sarcophagus found matching provided ID`);
+    return;
+  }
 
-    if (badlyFormattedHash(e)) {
-        archLogger.error(`\nInvalid data format. Please check to make sure your input is a valid keccak256 hash.`);
-        return;
-    }
+  if (badlyFormattedHash(e)) {
+    archLogger.error(
+      `\nInvalid data format. Please check to make sure your input is a valid keccak256 hash.`
+    );
+    return;
+  }
 
-    if (sarcoNotCleanable(e)) {
-        archLogger.error(`\nThis Sarcophagus cannot be cleaned at this time`);
-        return;
-    }
+  if (sarcoNotCleanable(e)) {
+    archLogger.error(`\nThis Sarcophagus cannot be cleaned at this time`);
+    return;
+  }
 
-    if (sarcoIsActuallyUnwrappable(e)) {
-        archLogger.error(`\nThis Sarcophagus is ready to be unwrapped, so archaeologists cannot be accused of leaking`);
-        return;
-    }
+  if (sarcoIsActuallyUnwrappable(e)) {
+    archLogger.error(
+      `\nThis Sarcophagus is ready to be unwrapped, so archaeologists cannot be accused of leaking`
+    );
+    return;
+  }
 
-    if (notEnoughProof(e)) {
-        archLogger.error(`\nYou have not provided enough unencrypted shard hashes to fully raise an accusal`);
-        return;
-    }
+  if (notEnoughProof(e)) {
+    archLogger.error(
+      `\nYou have not provided enough unencrypted shard hashes to fully raise an accusal`
+    );
+    return;
+  }
 
-    if (incorrectProof(e)) {
-        archLogger.error(`\nOne or more of the proofs provided is incorrect`);
-        return;
-    }
+  if (incorrectProof(e)) {
+    archLogger.error(`\nOne or more of the proofs provided is incorrect`);
+    return;
+  }
 
-    archLogger.error(`\n${e}`);
+  archLogger.error(`\n${e}`);
 }

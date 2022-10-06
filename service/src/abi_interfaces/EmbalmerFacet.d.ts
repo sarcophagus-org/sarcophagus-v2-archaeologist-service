@@ -26,10 +26,7 @@ interface EmbalmerFacetInterface extends ethers.utils.Interface {
     "rewrapSarcophagus(bytes32,uint256)": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "burySarcophagus",
-    values: [BytesLike]
-  ): string;
+  encodeFunctionData(functionFragment: "burySarcophagus", values: [BytesLike]): string;
   encodeFunctionData(
     functionFragment: "createSarcophagus",
     values: [
@@ -57,18 +54,9 @@ interface EmbalmerFacetInterface extends ethers.utils.Interface {
     values: [BytesLike, BigNumberish]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "burySarcophagus",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "createSarcophagus",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "rewrapSarcophagus",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "burySarcophagus", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "createSarcophagus", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "rewrapSarcophagus", data: BytesLike): Result;
 
   events: {
     "BurySarcophagus(bytes32)": EventFragment;
@@ -84,17 +72,7 @@ interface EmbalmerFacetInterface extends ethers.utils.Interface {
 export type BurySarcophagusEvent = TypedEvent<[string] & { sarcoId: string }>;
 
 export type CreateSarcophagusEvent = TypedEvent<
-  [
-    string,
-    string,
-    boolean,
-    BigNumber,
-    string,
-    string,
-    string[],
-    BigNumber,
-    string[]
-  ] & {
+  [string, string, boolean, BigNumber, string, string, string[], BigNumber, string[]] & {
     sarcoId: string;
     name: string;
     canBeTransferred: boolean;
@@ -221,10 +199,7 @@ export class EmbalmerFacet extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    burySarcophagus(
-      sarcoId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    burySarcophagus(sarcoId: BytesLike, overrides?: CallOverrides): Promise<void>;
 
     createSarcophagus(
       sarcoId: BytesLike,
@@ -259,9 +234,7 @@ export class EmbalmerFacet extends BaseContract {
       sarcoId?: BytesLike | null
     ): TypedEventFilter<[string], { sarcoId: string }>;
 
-    BurySarcophagus(
-      sarcoId?: BytesLike | null
-    ): TypedEventFilter<[string], { sarcoId: string }>;
+    BurySarcophagus(sarcoId?: BytesLike | null): TypedEventFilter<[string], { sarcoId: string }>;
 
     "CreateSarcophagus(bytes32,string,bool,uint256,address,address,address[],uint256,string[])"(
       sarcoId?: BytesLike | null,
@@ -274,17 +247,7 @@ export class EmbalmerFacet extends BaseContract {
       totalFees?: null,
       arweaveTxIds?: null
     ): TypedEventFilter<
-      [
-        string,
-        string,
-        boolean,
-        BigNumber,
-        string,
-        string,
-        string[],
-        BigNumber,
-        string[]
-      ],
+      [string, string, boolean, BigNumber, string, string, string[], BigNumber, string[]],
       {
         sarcoId: string;
         name: string;
@@ -309,17 +272,7 @@ export class EmbalmerFacet extends BaseContract {
       totalFees?: null,
       arweaveTxIds?: null
     ): TypedEventFilter<
-      [
-        string,
-        string,
-        boolean,
-        BigNumber,
-        string,
-        string,
-        string[],
-        BigNumber,
-        string[]
-      ],
+      [string, string, boolean, BigNumber, string, string, string[], BigNumber, string[]],
       {
         sarcoId: string;
         name: string;
@@ -336,18 +289,12 @@ export class EmbalmerFacet extends BaseContract {
     "RewrapSarcophagus(bytes32,uint256)"(
       sarcoId?: BytesLike | null,
       resurrectionTime?: null
-    ): TypedEventFilter<
-      [string, BigNumber],
-      { sarcoId: string; resurrectionTime: BigNumber }
-    >;
+    ): TypedEventFilter<[string, BigNumber], { sarcoId: string; resurrectionTime: BigNumber }>;
 
     RewrapSarcophagus(
       sarcoId?: BytesLike | null,
       resurrectionTime?: null
-    ): TypedEventFilter<
-      [string, BigNumber],
-      { sarcoId: string; resurrectionTime: BigNumber }
-    >;
+    ): TypedEventFilter<[string, BigNumber], { sarcoId: string; resurrectionTime: BigNumber }>;
   };
 
   estimateGas: {

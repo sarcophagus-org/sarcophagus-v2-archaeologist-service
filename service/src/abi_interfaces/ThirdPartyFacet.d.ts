@@ -25,14 +25,8 @@ interface ThirdPartyFacetInterface extends ethers.utils.Interface {
     "clean(bytes32,address)": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "accuse",
-    values: [BytesLike, BytesLike[], string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "clean",
-    values: [BytesLike, string]
-  ): string;
+  encodeFunctionData(functionFragment: "accuse", values: [BytesLike, BytesLike[], string]): string;
+  encodeFunctionData(functionFragment: "clean", values: [BytesLike, string]): string;
 
   decodeFunctionResult(functionFragment: "accuse", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "clean", data: BytesLike): Result;
@@ -143,11 +137,7 @@ export class ThirdPartyFacet extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    clean(
-      sarcoId: BytesLike,
-      paymentAddress: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    clean(sarcoId: BytesLike, paymentAddress: string, overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {

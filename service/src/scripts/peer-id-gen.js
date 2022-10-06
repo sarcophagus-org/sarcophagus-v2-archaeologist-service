@@ -1,4 +1,4 @@
-import jsonfile from "jsonfile"
+import jsonfile from "jsonfile";
 import PeerId from "peer-id";
 
 /**
@@ -7,13 +7,13 @@ import PeerId from "peer-id";
  */
 
 async function genPeerIdJSON() {
-  const peerId = await PeerId.create({ bits: 1024, keyType: 'Ed25519' })
-  return peerId.toJSON()
+  const peerId = await PeerId.create({ bits: 1024, keyType: "Ed25519" });
+  return peerId.toJSON();
 }
 
-const file = './peer-id.json'
+const file = "./peer-id.json";
 const obj = await genPeerIdJSON();
 
 jsonfile.writeFile(file, obj, function (err) {
-  if (err) console.error(err)
-})
+  if (err) console.error(err);
+});

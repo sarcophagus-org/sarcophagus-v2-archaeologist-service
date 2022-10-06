@@ -49,15 +49,16 @@ export class Archaeologist {
   public envConfig: PublicEnvConfig;
   public web3Interface: Web3Interface;
 
-
   constructor(options: ArchaeologistInit) {
     if (!options.listenAddresses && !options.listenAddressesConfig) {
-      throw Error("Either listenAddresses or listenAddressesConfig must be provided in archaeologist constructor");
+      throw Error(
+        "Either listenAddresses or listenAddressesConfig must be provided in archaeologist constructor"
+      );
     }
 
     this.nodeConfig = new NodeConfig({
       bootstrapList: options.bootstrapList,
-      isBootstrap: options.isBootstrap
+      isBootstrap: options.isBootstrap,
     });
 
     this.name = options.name;
@@ -71,7 +72,11 @@ export class Archaeologist {
     await this._setupSarcophagusNegotiationStream();
   }
 
-  async initNode(arg: { config: PublicEnvConfig, web3Interface: Web3Interface, idFilePath?: string }) {
+  async initNode(arg: {
+    config: PublicEnvConfig;
+    web3Interface: Web3Interface;
+    idFilePath?: string;
+  }) {
     this.node = await this.createLibp2pNode(arg.idFilePath);
     this.envConfig = arg.config;
     this.web3Interface = arg.web3Interface;
@@ -80,19 +85,24 @@ export class Archaeologist {
   }
 
   async createLibp2pNode(idFilePath?: string): Promise<Libp2p> {
-    this.peerId = this.peerId ?? await loadPeerIdFromFile(idFilePath);
+    this.peerId = this.peerId ?? (await loadPeerIdFromFile(idFilePath));
 
     if (this.listenAddressesConfig) {
-      const {ipAddress, tcpPort, wsPort, signalServerList} = this.listenAddressesConfig!;
+      const { ipAddress, tcpPort, wsPort, signalServerList } = this.listenAddressesConfig!;
       this.listenAddresses = genListenAddresses(
-        ipAddress, tcpPort, signalServerList, this.peerId.toJSON().id
+        ipAddress,
+        tcpPort,
+        signalServerList,
+        this.peerId.toJSON().id
       );
     }
 
     this.nodeConfig.add("peerId", this.peerId);
-    this.nodeConfig.add("addresses", {listen: this.listenAddresses});
+    this.nodeConfig.add("addresses", { listen: this.listenAddresses });
 
-    return createNode(this.name, this.nodeConfig.configObj, (connection) => this.sendEncryptionPublicKey(connection));
+    return createNode(this.name, this.nodeConfig.configObj, connection =>
+      this.sendEncryptionPublicKey(connection)
+    );
   }
 
   async shutdown() {
@@ -104,17 +114,14 @@ export class Archaeologist {
   async _setupMessageStream() {
     const msgProtocol = "/message";
     archLogger.info(`listening to stream on protocol: ${msgProtocol}`);
-    this.node.handle([msgProtocol], ({stream}) => {
+    this.node.handle([msgProtocol], ({ stream }) => {
       try {
-        pipe(
-          stream,
-          async function (source) {
-            for await (const msg of source) {
-              const decoded = new TextDecoder().decode(msg);
-              archLogger.notice(`received message ${decoded}`);
-            }
+        pipe(stream, async function (source) {
+          for await (const msg of source) {
+            const decoded = new TextDecoder().decode(msg);
+            archLogger.notice(`received message ${decoded}`);
           }
-        ).finally(() => {
+        }).finally(() => {
           stream.close();
         });
       } catch (error) {
@@ -124,17 +131,14 @@ export class Archaeologist {
   }
 
   async _setupSarcophagusNegotiationStream() {
-    this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({stream}) => {
+    this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
       const streamToBrowser = (result: string) => {
-        pipe(
-          [new TextEncoder().encode(result)],
-          stream
-        );
+        pipe([new TextEncoder().encode(result)], stream);
       };
 
       try {
-        await pipe(stream, async (source) => {
-          const emitError = (error: StreamCommsError) => streamToBrowser(JSON.stringify({error}));
+        await pipe(stream, async source => {
+          const emitError = (error: StreamCommsError) => streamToBrowser(JSON.stringify({ error }));
           for await (const data of source) {
             // validate that supplied sarcophagus parameters meet the requirements of the archaeologist
             try {
@@ -143,7 +147,7 @@ export class Archaeologist {
                 unencryptedShardDoubleHash,
                 maxRewrapInterval,
                 diggingFee,
-                timestamp
+                timestamp,
               }: SarcophagusParameters = JSON.parse(new TextDecoder().decode(data));
               let error: number | null = null;
               if (maxRewrapInterval > inMemoryStore.profile!.maximumRewrapInterval.toNumber()) {
@@ -155,32 +159,43 @@ export class Archaeologist {
               if (timestamp > Date.now()) {
                 error = SarcophagusValidationError.INVALID_TIMESTAMP;
               }
-              if (!await fetchAndValidateShardOnArweave(arweaveTxId,
-                unencryptedShardDoubleHash, this.web3Interface.encryptionWallet.publicKey)) {
+              if (
+                !(await fetchAndValidateShardOnArweave(
+                  arweaveTxId,
+                  unencryptedShardDoubleHash,
+                  this.web3Interface.encryptionWallet.publicKey
+                ))
+              ) {
                 error = SarcophagusValidationError.INVALID_ARWEAVE_SHARD;
               }
               if (error) {
                 // offload the burden of user-friendly messaging to the recipient
-                emitError({code: error, message: "Declined to sign"});
+                emitError({ code: error, message: "Declined to sign" });
                 return;
               }
               // sign sarcophagus parameters to demonstrate agreement
               const msg = ethers.utils.solidityPack(
                 ["string", "bytes32", "uint256", "uint256", "uint256"],
-                [arweaveTxId, unencryptedShardDoubleHash, maxRewrapInterval.toString(), diggingFee, timestamp.toString()]
+                [
+                  arweaveTxId,
+                  unencryptedShardDoubleHash,
+                  maxRewrapInterval.toString(),
+                  diggingFee,
+                  timestamp.toString(),
+                ]
               );
               const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
-              streamToBrowser(JSON.stringify({signature}));
+              streamToBrowser(JSON.stringify({ signature }));
             } catch (e) {
               emitError({
                 code: SarcophagusValidationError.UNKNOWN_ERROR,
-                message: e.code ? `${e.code}\n${e.message}` : (e.message ?? e)
+                message: e.code ? `${e.code}\n${e.message}` : e.message ?? e,
               });
             }
           }
         });
       } catch (err) {
-        archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`)
+        archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`);
       }
     });
   }
@@ -195,21 +210,17 @@ export class Archaeologist {
 
       const msgStr = JSON.stringify({
         signature,
-        ...publicKey
+        ...publicKey,
       });
 
-      const {stream} = await connection.newStream(PUBLIC_KEY_STREAM);
+      const { stream } = await connection.newStream(PUBLIC_KEY_STREAM);
 
-      pipe(
-        [new TextEncoder().encode(msgStr)],
-        stream,
-        async (source) => {
-          for await (const data of source) {
-            const dataStr = new TextDecoder().decode(data as BufferSource | undefined);
-            console.log("dataStr", dataStr);
-          }
+      pipe([new TextEncoder().encode(msgStr)], stream, async source => {
+        for await (const data of source) {
+          const dataStr = new TextDecoder().decode(data as BufferSource | undefined);
+          console.log("dataStr", dataStr);
         }
-      );
+      });
     } catch (error) {
       archLogger.error(`Exception sending public key: ${error}\nConnectin: ${connection}`);
     }

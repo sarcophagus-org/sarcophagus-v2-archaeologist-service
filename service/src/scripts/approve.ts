@@ -1,8 +1,8 @@
-import 'dotenv/config'
-import { getWeb3Interface } from './web3-interface'
-import { validateEnvVars } from '../utils/validateEnv'
-import { runApprove } from './approve_utils'
-import { exit } from 'process';
+import "dotenv/config";
+import { getWeb3Interface } from "./web3-interface";
+import { validateEnvVars } from "../utils/validateEnv";
+import { runApprove } from "./approve_utils";
+import { exit } from "process";
 
 validateEnvVars();
 
