@@ -9,7 +9,7 @@
     "moduleResolution": "node",
     "module": "esnext",
     "declaration": true,
-    "inlineSourceMap": false,
+    "inlineSourceMap": true,
     "resolveJsonModule": true,
     "noImplicitAny": false,
     "strictNullChecks": true,
