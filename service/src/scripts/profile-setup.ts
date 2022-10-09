@@ -1,4 +1,5 @@
 import "dotenv/config";
+
 import { getWeb3Interface } from "./web3-interface";
 import { validateEnvVars } from "../utils/validateEnv";
 import { exit } from "process";
@@ -8,7 +9,7 @@ import { BigNumber, ethers } from "ethers";
 import { requestApproval } from "./approve_utils";
 
 import jsonfile from "jsonfile";
-import { getOnchainProfile, inMemoryStore } from "utils/onchain-data";
+import { getOnchainProfile, inMemoryStore } from "../utils/onchain-data";
 
 validateEnvVars();
 

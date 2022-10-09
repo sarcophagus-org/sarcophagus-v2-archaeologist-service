@@ -12,7 +12,7 @@ import {
   IERC20__factory,
   ThirdPartyFacet,
   ThirdPartyFacet__factory,
-} from "../abi_interfaces";
+} from "@sarcophagus-org/sarcophagus-v2-contracts";
 import { BAD_ENV } from "../utils/exit-codes";
 
 export interface Web3Interface {
