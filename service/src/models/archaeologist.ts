@@ -30,7 +30,7 @@ export interface ArchaeologistInit {
   bootstrapList?: string[];
 }
 
-interface SarcophagusParameters {
+interface SarcophagusNegotiationParams {
   arweaveTxId: string;
   unencryptedShardDoubleHash: string;
   maxRewrapInterval: number;
@@ -148,17 +148,21 @@ export class Archaeologist {
                 maxRewrapInterval,
                 diggingFee,
                 timestamp,
-              }: SarcophagusParameters = JSON.parse(new TextDecoder().decode(data));
+              }: SarcophagusNegotiationParams = JSON.parse(new TextDecoder().decode(data));
+
               let error: number | null = null;
               if (maxRewrapInterval > inMemoryStore.profile!.maximumRewrapInterval.toNumber()) {
                 error = SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE;
               }
+
               if (BigNumber.from(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)) {
                 error = SarcophagusValidationError.DIGGING_FEE_TOO_LOW;
               }
+
               if (timestamp > Date.now()) {
                 error = SarcophagusValidationError.INVALID_TIMESTAMP;
               }
+
               if (
                 !(await fetchAndValidateShardOnArweave(
                   arweaveTxId,
@@ -168,11 +172,13 @@ export class Archaeologist {
               ) {
                 error = SarcophagusValidationError.INVALID_ARWEAVE_SHARD;
               }
+
+              // Emit error if set for any reason. (Offload burden of user-friendly messaging to recipient)
               if (error) {
-                // offload the burden of user-friendly messaging to the recipient
                 emitError({ code: error, message: "Declined to sign" });
                 return;
               }
+
               // sign sarcophagus parameters to demonstrate agreement
               const msg = ethers.utils.solidityPack(
                 ["string", "bytes32", "uint256", "uint256", "uint256"],
@@ -184,7 +190,7 @@ export class Archaeologist {
                   timestamp.toString(),
                 ]
               );
-              const signature = await this.web3Interface.encryptionWallet.signMessage(msg);
+              const signature = await this.web3Interface.ethWallet.signMessage(msg);
               streamToBrowser(JSON.stringify({ signature }));
             } catch (e) {
               emitError({
@@ -202,27 +208,26 @@ export class Archaeologist {
 
   async sendEncryptionPublicKey(connection) {
     try {
-      const publicKey = {
-        encryptionPublicKey: this.envConfig.encryptionPublicKey,
-      };
-
-      const signature = await this.web3Interface.signer.signMessage(JSON.stringify(publicKey));
+      const signature = await this.web3Interface.ethWallet.signMessage(this.envConfig.encryptionPublicKey);
 
       const msgStr = JSON.stringify({
         signature,
-        ...publicKey,
+        publicKey: this.envConfig.encryptionPublicKey,
       });
 
       const { stream } = await connection.newStream(PUBLIC_KEY_STREAM);
 
-      pipe([new TextEncoder().encode(msgStr)], stream, async source => {
-        for await (const data of source) {
-          const dataStr = new TextDecoder().decode(data as BufferSource | undefined);
-          console.log("dataStr", dataStr);
-        }
-      });
+      pipe([
+        new TextEncoder().encode(msgStr)],
+        stream,
+        async source => {
+          for await (const data of source) {
+            const dataStr = new TextDecoder().decode(data as BufferSource | undefined);
+            console.log("dataStr", dataStr);
+          }
+        });
     } catch (error) {
-      archLogger.error(`Exception sending public key: ${error}\nConnectin: ${connection}`);
+      archLogger.error(`Exception sending public key: ${error}\nConnection: ${JSON.stringify(connection)}`);
     }
   }
 }
