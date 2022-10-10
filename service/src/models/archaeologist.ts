@@ -212,7 +212,7 @@ export class Archaeologist {
 
       const msgStr = JSON.stringify({
         signature,
-        publicKey: this.envConfig.encryptionPublicKey,
+        encryptionPublicKey: this.envConfig.encryptionPublicKey,
       });
 
       const { stream } = await connection.newStream(PUBLIC_KEY_STREAM);
