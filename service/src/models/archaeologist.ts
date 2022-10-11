@@ -155,7 +155,7 @@ export class Archaeologist {
                 error = SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE;
               }
 
-              if (BigNumber.from(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)) {
+              if (ethers.utils.parseEther(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)) {
                 error = SarcophagusValidationError.DIGGING_FEE_TOO_LOW;
               }
 
@@ -181,7 +181,7 @@ export class Archaeologist {
 
               // sign sarcophagus parameters to demonstrate agreement
               const msg = ethers.utils.solidityPack(
-                ["string", "bytes32", "uint256", "uint256", "uint256"],
+                ["string", "string", "string", "uint256", "string"],
                 [
                   arweaveTxId,
                   unencryptedShardDoubleHash,
@@ -193,6 +193,7 @@ export class Archaeologist {
               const signature = await this.web3Interface.ethWallet.signMessage(msg);
               streamToBrowser(JSON.stringify({ signature }));
             } catch (e) {
+              archLogger.error(e);
               emitError({
                 code: SarcophagusValidationError.UNKNOWN_ERROR,
                 message: e.code ? `${e.code}\n${e.message}` : e.message ?? e,
