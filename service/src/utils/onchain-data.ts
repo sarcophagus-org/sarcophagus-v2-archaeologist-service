@@ -5,7 +5,7 @@ import { archLogger } from "../logger/chalk-theme";
 import { handleRpcError } from "./rpc-error-handler";
 import { scheduleUnwrap } from "./scheduler";
 
-interface OnchainProfile {
+export interface OnchainProfile {
   exists: boolean;
   minimumDiggingFee: BigNumber;
   maximumRewrapInterval: BigNumber;
@@ -28,13 +28,27 @@ export const inMemoryStore: InMemoryStore = {
   sarcophagi: [],
 };
 
-export async function retrieveOnchainData(web3Interface: Web3Interface) {
+export async function retrieveAndStoreOnchainProfileAndSarcophagi(web3Interface: Web3Interface) {
   inMemoryStore.sarcophagi = await getOnchainCursedSarcophagi(web3Interface);
   inMemoryStore.profile = await getOnchainProfile(web3Interface);
 }
 
 export async function getOnchainProfile(web3Interface: Web3Interface): Promise<OnchainProfile> {
   return await web3Interface.viewStateFacet.getArchaeologistProfile(
+    web3Interface.ethWallet.address
+  );
+}
+
+export async function getSarcoBalance(web3Interface: Web3Interface): Promise<BigNumber> {
+  return web3Interface.sarcoToken.balanceOf(web3Interface.ethWallet.address);
+}
+
+export async function getEthBalance(web3Interface: Web3Interface): Promise<BigNumber> {
+  return web3Interface.signer.getBalance();
+}
+
+export async function getFreeBondBalance(web3Interface: Web3Interface): Promise<BigNumber> {
+  return await web3Interface.viewStateFacet.getFreeBond(
     web3Interface.ethWallet.address
   );
 }
