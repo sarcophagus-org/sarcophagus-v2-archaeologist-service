@@ -6,6 +6,35 @@ import { RPC_EXCEPTION, NO_ONCHAIN_PROFILE } from "./exit-codes";
 import { logBalance, logCallout } from "../logger/formatter";
 import { getEthBalance, getFreeBondBalance, getOnchainProfile, getSarcoBalance, OnchainProfile } from "./onchain-data";
 
+/**
+ * Runs on service startup
+ * @param web3Interface
+ */
+export async function healthCheck(web3Interface: Web3Interface) {
+  try {
+    const profile = await fetchProfileOrExit(web3Interface);
+
+    const sarcoBalance = await getSarcoBalance(web3Interface);
+    const ethBalance = await getEthBalance(web3Interface);
+    const freeBondBalance = await getFreeBondBalance(web3Interface);
+
+    logCallout(async () => {
+        logBalances(sarcoBalance, ethBalance);
+
+        // If ETH balance is low, the archaeologist won't have gas to sign transactions
+        warnIfEthBalanceIsLow(ethBalance);
+
+        // Free bond must be >= their min digging fee to accept new jobs
+        await warnIfFreeBondIsLessThanMinDiggingFee(freeBondBalance, profile.minimumDiggingFee);
+      }
+    )
+
+  } catch (e) {
+    archLogger.error(e);
+    exit(RPC_EXCEPTION);
+  }
+}
+
 const fetchProfileOrExit = async (web3Interface: Web3Interface): Promise<OnchainProfile> => {
   const profile = await getOnchainProfile(web3Interface);
   if (!profile.exists) {
@@ -48,33 +77,4 @@ const logBalances = (sarcoBalance: BigNumber, ethBalance: BigNumber): void => {
 
   logBalance('SARCO', sarcoBalance, 'SARCO');
   logBalance('ETHER', ethBalance, 'ETH');
-}
-
-/**
- * Runs on service startup
- * @param web3Interface
- */
-export async function healthCheck(web3Interface: Web3Interface) {
-  try {
-    const profile = await fetchProfileOrExit(web3Interface);
-
-    const sarcoBalance = await getSarcoBalance(web3Interface);
-    const ethBalance = await getEthBalance(web3Interface);
-    const freeBondBalance = await getFreeBondBalance(web3Interface);
-
-    logCallout(async () => {
-        logBalances(sarcoBalance, ethBalance);
-
-        // If ETH balance is low, the archaeologist won't have gas to sign transactions
-        warnIfEthBalanceIsLow(ethBalance);
-
-        // Free bond must be >= their min digging fee to accept new jobs
-        await warnIfFreeBondIsLessThanMinDiggingFee(freeBondBalance, profile.minimumDiggingFee);
-      }
-    )
-
-  } catch (e) {
-    archLogger.error(e);
-    exit(RPC_EXCEPTION);
-  }
 }
