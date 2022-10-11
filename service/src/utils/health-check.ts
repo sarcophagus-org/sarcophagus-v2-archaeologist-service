@@ -12,7 +12,7 @@ import { getEthBalance, getFreeBondBalance, getOnchainProfile, getSarcoBalance, 
  */
 export async function healthCheck(web3Interface: Web3Interface) {
   try {
-    const profile = await fetchProfileOrExit(web3Interface);
+    const profile = await fetchProfileOrPromptProfileSetup(web3Interface);
 
     const sarcoBalance = await getSarcoBalance(web3Interface);
     const ethBalance = await getEthBalance(web3Interface);
@@ -35,7 +35,7 @@ export async function healthCheck(web3Interface: Web3Interface) {
   }
 }
 
-const fetchProfileOrExit = async (web3Interface: Web3Interface): Promise<OnchainProfile> => {
+const fetchProfileOrPromptProfileSetup = async (web3Interface: Web3Interface): Promise<OnchainProfile> => {
   const profile = await getOnchainProfile(web3Interface);
   if (!profile.exists) {
     logCallout(() => {
