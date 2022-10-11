@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { getWeb3Interface } from "./web3-interface";
 import { validateEnvVars } from "../utils/validateEnv";
-import { archLogger } from "../utils/chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 import { parseUpdateArgs } from "../utils/cli_parsers/parseUpdateArgs";
 import { profileSetup } from "./profile-setup";
 

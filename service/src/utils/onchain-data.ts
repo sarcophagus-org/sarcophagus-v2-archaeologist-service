@@ -1,7 +1,7 @@
 import { BigNumber } from "ethers";
 import { Web3Interface } from "scripts/web3-interface";
 import { fetchAndDecryptShard } from "./arweave";
-import { archLogger } from "./chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 import { handleRpcError } from "./rpc-error-handler";
 import { scheduleUnwrap } from "./scheduler";
 

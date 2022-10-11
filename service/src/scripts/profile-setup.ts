@@ -4,7 +4,7 @@ import { getWeb3Interface } from "./web3-interface";
 import { validateEnvVars } from "../utils/validateEnv";
 import { exit } from "process";
 import { FILE_READ_EXCEPTION, RPC_EXCEPTION } from "../utils/exit-codes";
-import { archLogger } from "../utils/chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 import { BigNumber, ethers } from "ethers";
 import { requestApproval } from "./approve_utils";
 

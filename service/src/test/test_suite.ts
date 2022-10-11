@@ -1,6 +1,6 @@
 import { ExecaChildProcess, execa, execaCommand } from "execa";
 import fs from "fs-extra";
-import { archLogger } from "../utils/chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 import which from "which";
 import path from "path";
 import * as dotenv from "dotenv";

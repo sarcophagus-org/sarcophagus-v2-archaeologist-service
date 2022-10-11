@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { exit } from "process";
-import { archLogger } from "../../utils/chalk-theme";
+import { archLogger } from "../../logger/chalk-theme";
 
 export function getLocalStarSignallingPort() {
   if (!process.env.DEV_SIGNAL_SERVER_PORT) {

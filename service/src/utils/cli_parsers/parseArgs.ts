@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
-import { archLogger } from "../chalk-theme";
+import { archLogger } from "../../logger/chalk-theme";
 import { CLI_BAD_STARTUP_ARG, RPC_EXCEPTION } from "../exit-codes";
 import { healthCheck } from "../health-check";
 import { handleRpcError } from "../rpc-error-handler";

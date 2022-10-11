@@ -3,7 +3,7 @@ import { Web3Interface } from "./web3-interface";
 import { BigNumber, ethers } from "ethers";
 import { exit } from "process";
 import { RPC_EXCEPTION } from "../utils/exit-codes";
-import { archLogger } from "../utils/chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 import createPrompt from "prompt-sync";
 
 const prompt = createPrompt({ sigint: true });

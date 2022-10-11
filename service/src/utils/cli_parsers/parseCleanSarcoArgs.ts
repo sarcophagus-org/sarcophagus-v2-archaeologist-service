@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { exit } from "process";
-import { archLogger } from "../chalk-theme";
+import { archLogger } from "../../logger/chalk-theme";
 import { CLI_BAD_CLEAN_ARG } from "../exit-codes";
 
 export enum CleanArgNames {

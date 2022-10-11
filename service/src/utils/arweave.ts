@@ -3,7 +3,7 @@ import { decrypt } from "ecies-geth";
 import { ethers } from "ethers";
 import { solidityKeccak256 } from "ethers/lib/utils";
 import { Web3Interface } from "scripts/web3-interface";
-import { archLogger } from "./chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 import { SarcophagusState } from "./onchain-data";
 
 export const arweaveService = Arweave.init({

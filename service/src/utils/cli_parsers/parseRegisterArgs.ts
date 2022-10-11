@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { exit } from "process";
 import { ProfileArgNames, ProfileParams } from "../../scripts/profile-setup";
-import { archLogger } from "../chalk-theme";
+import { archLogger } from "../../logger/chalk-theme";
 import { CLI_BAD_REGISTER_PROFILE_ARG } from "../exit-codes";
 
 export async function parseRegisterArgs(): Promise<ProfileParams> {

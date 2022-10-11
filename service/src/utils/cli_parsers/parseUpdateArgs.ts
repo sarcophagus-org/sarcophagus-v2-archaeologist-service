@@ -3,7 +3,7 @@ import { exit } from "process";
 import { ProfileArgNames, ProfileParams } from "../../scripts/profile-setup";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { getOnchainProfile } from "../../utils/onchain-data";
-import { archLogger } from "../chalk-theme";
+import { archLogger } from "../../logger/chalk-theme";
 import { CLI_BAD_UPDATE_PROFILE_ARG, NO_ONCHAIN_PROFILE } from "../exit-codes";
 
 export async function parseUpdateArgs(web3Interface: Web3Interface): Promise<ProfileParams> {

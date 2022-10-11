@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { exit } from "process";
-import { archLogger } from "../utils/chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 import {
   IERC20,
   ArchaeologistFacet__factory,

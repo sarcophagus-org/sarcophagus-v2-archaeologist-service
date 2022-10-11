@@ -1,4 +1,4 @@
-import { archLogger } from "../utils/chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 import { setupTestSuite, TestSuite } from "./test_suite";
 import "dotenv/config";
 
