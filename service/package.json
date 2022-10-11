@@ -33,6 +33,8 @@
     "@sarcophagus-org/sarcophagus-v2-contracts": "^0.1.0",
     "@types/node": "^18.0.0",
     "chalk": "^5.0.1",
+    "command-line-args": "^5.2.1",
+    "command-line-usage": "^6.1.3",
     "dotenv": "^16.0.1",
     "ethers": "^5.6.9",
     "jsonfile": "^6.1.0",
