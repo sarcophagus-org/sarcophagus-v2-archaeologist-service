@@ -10,6 +10,7 @@ import { requestApproval } from "./approve_utils";
 
 import jsonfile from "jsonfile";
 import { getOnchainProfile, inMemoryStore } from "../utils/onchain-data";
+import { logProfile } from "../cli/utils";
 
 validateEnvVars();
 
@@ -79,7 +80,9 @@ export async function profileSetup(args: ProfileParams, isUpdate: boolean = fals
   tx.wait()
     .then(async () => {
       archLogger.notice(isUpdate ? "PROFILE UPDATED!" : "\nPROFILE REGISTERED!");
-      inMemoryStore.profile = await getOnchainProfile(web3Interface);
+      const profile = await getOnchainProfile(web3Interface);
+      inMemoryStore.profile = profile;
+      logProfile(profile);
       exit(0);
     })
     .catch(handleException);
