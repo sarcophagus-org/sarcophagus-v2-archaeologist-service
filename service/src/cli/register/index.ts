@@ -9,7 +9,7 @@ import { registerOptionDefinitions } from "./args-config";
 import { usageConfig } from "./usage-config";
 import { ProfileParams, profileSetup } from "../../scripts/profile-setup";
 import { parseEther } from "ethers/lib/utils";
-import { logProfile, objectDashToCamelCase } from "../utils";
+import { handleProfileArgs, logProfile, objectDashToCamelCase } from "../utils";
 
 const web3Interface = await getWeb3Interface();
 
@@ -38,7 +38,7 @@ const registerArchaeologist = async (registerArgs: any) => {
 }
 
 const run = async () => {
-  const registerArgs = commandLineArgs(registerOptionDefinitions);
+  const registerArgs = handleProfileArgs(registerOptionDefinitions);
 
   if (registerArgs.help) {
     // output help guide
