@@ -32,7 +32,7 @@ const handleException = e => {
   exit(RPC_EXCEPTION);
 };
 
-export async function profileSetup(args: ProfileParams, isUpdate: boolean) {
+export async function profileSetup(args: ProfileParams, isUpdate: boolean = false) {
   const { diggingFee, rewrapInterval, freeBond } = args;
   let freeBondDeposit = ethers.constants.Zero;
 
