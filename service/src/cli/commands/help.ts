@@ -36,7 +36,7 @@ export class Help implements Command {
     ]);
   }
 
-  async generateCommandUsage(command: Command) {
+  generateCommandUsage(command: Command) {
     const usageGroups: commandLineUsage.UsageGroup[] = [
       {
         header: `cli ${command.name}`,
@@ -65,6 +65,6 @@ export class Help implements Command {
       return;
     }
 
-    console.log(await this.generateCommandUsage(command));
+    console.log(this.generateCommandUsage(command));
   }
 }
