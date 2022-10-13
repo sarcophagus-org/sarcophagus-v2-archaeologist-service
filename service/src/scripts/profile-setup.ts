@@ -14,16 +14,16 @@ import { logProfile } from "../cli/utils";
 
 validateEnvVars();
 
-export enum ProfileArgNames {
-  DIGGING_FEE = "digging-fee",
-  REWRAP_INTERVAL = "rewrap-interval",
-  FREE_BOND = "free-bond",
+export enum ProfileOptionNames {
+  DIGGING_FEE = "diggingFee",
+  REWRAP_INTERVAL = "rewrapInterval",
+  FREE_BOND = "freeBond",
 }
 
 export interface ProfileParams {
-  diggingFee: BigNumber;
-  rewrapInterval: number;
-  freeBond: BigNumber;
+  diggingFee?: BigNumber;
+  rewrapInterval?: number;
+  freeBond?: BigNumber;
 }
 
 const web3Interface = await getWeb3Interface();
@@ -37,7 +37,7 @@ export async function profileSetup(args: ProfileParams, isUpdate: boolean = fals
   const { diggingFee, rewrapInterval, freeBond } = args;
   let freeBondDeposit = ethers.constants.Zero;
 
-  if (freeBond.gt(ethers.constants.Zero)) {
+  if (freeBond && freeBond.gt(ethers.constants.Zero)) {
     const approved = await requestApproval(
       web3Interface,
       "You will need to approve Sarcophagus contracts to use your SARCO in order to deposit free bond.\nEnter 'approve' to authorize this, or else hit <ENTER> to continue without a deposit:",

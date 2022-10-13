@@ -56,3 +56,14 @@ export const logProfile = (profile: OnchainProfile): void => {
     }
   });
 }
+
+export const logValidationErrorAndExit = (message: string): void => {
+  logCallout(() => {
+    archLogger.warn("CLI Args Validation Error:\n")
+    archLogger.error(
+      message
+    );
+  });
+
+  exit(1);
+}

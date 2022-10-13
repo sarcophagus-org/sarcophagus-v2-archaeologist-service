@@ -1,13 +1,13 @@
-import {Command, CommandOptions} from './command';
+import { Command, CommandOptions } from './command';
 import { profileOptionDefinitions } from "../config/options-config";
 import { getOnchainProfile } from "../../utils/onchain-data";
-import { logProfile } from "../utils";
+import { logProfile, logValidationErrorAndExit } from "../utils";
 import { validateEnvVars } from "../../utils/validateEnv";
-import { ProfileParams, profileSetup } from "../../scripts/profile-setup";
-import { parseEther } from "ethers/lib/utils";
+import { ProfileOptionNames, ProfileParams, profileSetup } from "../../scripts/profile-setup";
 import { archLogger } from "../../logger/chalk-theme";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
+import { isFreeBondProvidedAndZero, validateRewrapInterval } from "../shared/profile-validations";
 
 export class Register implements Command {
   name = 'register';
@@ -29,18 +29,32 @@ export class Register implements Command {
     }
   }
 
-  async registerArchaeologist(registerArgs: any) {
+  async registerArchaeologist(registerArgs: ProfileParams) {
     validateEnvVars();
     await this.exitIfArchaeologistProfileExists();
 
-    const finalRegisterArgs: ProfileParams = {
-      diggingFee: parseEther(registerArgs.diggingFee),
-      rewrapInterval: Number(registerArgs.rewrapInterval),
-      freeBond: parseEther(registerArgs.freeBond)
+    archLogger.notice("Registering your Archaeologist profile...");
+    await profileSetup(registerArgs);
+  }
+
+  validateArgs(options: CommandOptions) {
+    if (options.view) { return }
+
+    const requiredOptions = [ProfileOptionNames.DIGGING_FEE, ProfileOptionNames.REWRAP_INTERVAL];
+    const providedOptions = Object.keys(options);
+    const missingRequiredOptions = requiredOptions.filter(field => !providedOptions.includes(field));
+
+    if (missingRequiredOptions.length) {
+      logValidationErrorAndExit(
+        `The required options were not provided: ${missingRequiredOptions.toString()}`
+      )
     }
 
-    archLogger.notice("Updating your Archaeologist profile...");
-    await profileSetup(finalRegisterArgs);
+    validateRewrapInterval(options.rewrapInterval)
+
+    if(isFreeBondProvidedAndZero(options.freeBond)) {
+      delete options.freeBond;
+    }
   }
 
   async run(options: CommandOptions): Promise<void> {
@@ -49,7 +63,7 @@ export class Register implements Command {
       const profile = await getOnchainProfile(this.web3Interface);
       logProfile(profile);
     } else {
-      await this.registerArchaeologist(options);
+      await this.registerArchaeologist(options as ProfileParams);
     }
   }
 }

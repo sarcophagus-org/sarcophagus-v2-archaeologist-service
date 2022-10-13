@@ -57,6 +57,10 @@ export class ArchaeologistCli {
       }
     );
 
+    if(typeof command.validateArgs === 'function') {
+      command.validateArgs(parsedCliArgs);
+    }
+
     return command.run(parsedCliArgs);
   }
 }

@@ -25,7 +25,8 @@ The CLI uses packages: [command-line-args](https://github.com/75lb/command-line-
 2. Create a new command in the `commands` folder. See the `command` interface and other commands for examples of how to setup the new command. If necessary, you will use the options array from step 1 in the new command.
 ####
 3. Register the new command in the `cli.ts` constructor using `this.addCommand`
+4. Optionally, you can implement a `validateArgs` method in the command for arg validations.
 
 ###
 #### Notes:
-The `type` field on the options does not support `BigNumber`. This can be typed as a `String` and then parsed into a `BigNumber` in the command you create.
+The `type` field can be a function which is called on the value provided via the command line args. For example, `parseEther` is being called on a few values in the `register` command.

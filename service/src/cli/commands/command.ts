@@ -11,6 +11,7 @@ export interface Command {
   description: string;
   args: ArgDescriptor[];
   run(options: CommandOptions, web3Interface?: Web3Interface): Promise<CommandResult|void>;
+  validateArgs?(options: CommandOptions);
   web3Interface?: Web3Interface;
 }
 
