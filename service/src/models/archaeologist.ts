@@ -33,7 +33,7 @@ export interface ArchaeologistInit {
 interface SarcophagusNegotiationParams {
   arweaveTxId: string;
   unencryptedShardDoubleHash: string;
-  maxRewrapInterval: number;
+  maxRewrapInterval: BigNumber;
   diggingFee: string;
   timestamp: number;
 }
@@ -150,8 +150,10 @@ export class Archaeologist {
                 timestamp,
               }: SarcophagusNegotiationParams = JSON.parse(new TextDecoder().decode(data));
 
+              const maximumRewrapIntervalBN = BigNumber.from(maxRewrapInterval);
+
               let error: number | null = null;
-              if (maxRewrapInterval > inMemoryStore.profile!.maximumRewrapInterval.toNumber()) {
+              if (maximumRewrapIntervalBN.gt(inMemoryStore.profile!.maximumRewrapInterval)) {
                 error = SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE;
               }
 
@@ -180,17 +182,49 @@ export class Archaeologist {
               }
 
               // sign sarcophagus parameters to demonstrate agreement
-              const msg = ethers.utils.solidityPack(
-                ["string", "string", "string", "uint256", "string"],
+              console.log('diggingFee', diggingFee);
+              console.log('ethers.utils.parseEther(diggingFee).toString()', ethers.utils.parseEther(diggingFee).toString());
+              console.log([
+                arweaveTxId,
+                unencryptedShardDoubleHash,
+                maximumRewrapIntervalBN.toString(),
+                ethers.utils.parseEther(diggingFee).toString(),
+                timestamp.toString(),
+              ]);
+
+              const signPacked = async (
+                types: string[],
+                data: string[],
+              ) => {
+                const dataHex = ethers.utils.defaultAbiCoder.encode(types, data);
+                const dataHash = ethers.utils.keccak256(dataHex);
+                const dataHashBytes = ethers.utils.arrayify(dataHash);
+                const signature = await this.web3Interface.ethWallet.signMessage(dataHashBytes);
+                return signature;
+              }
+
+
+
+              // const msg = ethers.utils.solidityPack(
+              //   ["string", "bytes32", "uint256", "uint256", "uint256"],
+              //   [
+              //     arweaveTxId,
+              //     unencryptedShardDoubleHash,
+              //     maximumRewrapIntervalBN.toString(),
+              //     ethers.utils.parseEther(diggingFee).toString(),
+              //     timestamp.toString(),
+              //   ]
+              // );
+              const signature = await signPacked(
+                ["string", "bytes32", "uint256", "uint256", "uint256"],
                 [
                   arweaveTxId,
                   unencryptedShardDoubleHash,
-                  maxRewrapInterval.toString(),
-                  diggingFee,
+                  maximumRewrapIntervalBN.toString(),
+                  ethers.utils.parseEther(diggingFee).toString(),
                   timestamp.toString(),
-                ]
-              );
-              const signature = await this.web3Interface.ethWallet.signMessage(msg);
+                ]);
+              // const signature = await this.web3Interface.ethWallet.signMessage(msg);
               streamToBrowser(JSON.stringify({ signature }));
             } catch (e) {
               archLogger.error(e);
