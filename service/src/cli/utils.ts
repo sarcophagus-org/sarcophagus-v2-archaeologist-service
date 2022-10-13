@@ -6,13 +6,10 @@ import { archLogger } from "../logger/chalk-theme";
 import { formatEther } from "ethers/lib/utils";
 import { exit } from "process";
 
-export const handleProfileArgs = (optionDefinitions: any): any => {
-  let args;
+export const handleCommandArgs = (optionDefinitions: any, options: any): any => {
   try {
-    args = commandLineArgs(optionDefinitions);
-    return args;
+    return commandLineArgs(optionDefinitions, options);
   } catch (err) {
-
     logCallout(() => {
       const errorName = () => {
         switch (err.name) {
@@ -32,10 +29,15 @@ export const handleProfileArgs = (optionDefinitions: any): any => {
   }
 }
 
+/**
+ * Logs archaeologist on-chain profile
+ * @param profile
+ */
 export const logProfile = (profile: OnchainProfile): void => {
   logCallout(() => {
     if (!profile.exists) {
-      archLogger.warn('This archaeologist is not yet registered` \n');
+      archLogger.error('This archaeologist is not yet registered, please run: \n');
+      archLogger.error('npm run cli -- register --help');
     } else {
       console.log('ARCHAEOLOGIST PROFILE: \n');
 
@@ -53,19 +55,4 @@ export const logProfile = (profile: OnchainProfile): void => {
       console.log(columnify(formattedProfile, {columns: ['FIELD', 'VALUE']}));
     }
   });
-}
-
-/**
- * Shallowly copies an object, converting keys from dash-case to camelCase.
- */
-export const objectDashToCamelCase = (input: any): any => {
-  const output: any = {};
-  for (const key of Object.keys(input)) {
-    output[dashToCamelCase(key)] = input[key];
-  }
-  return output;
-}
-
-export const dashToCamelCase = (text: string): string => {
-  return text.replace(/-([a-z])/g, (v) => v[1].toUpperCase());
 }

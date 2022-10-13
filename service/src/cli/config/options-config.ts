@@ -1,10 +1,4 @@
-export const registerOptionDefinitions = [
-  {
-    name: 'help',
-    alias: 'h',
-    type: Boolean,
-    description: 'Display this usage guide.'
-  },
+export const profileOptionDefinitions = [
   {
     name: 'view',
     alias: 'v',
