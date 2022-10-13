@@ -1,17 +1,19 @@
-import {Command, CommandOptions} from './command';
-import commandLineUsage from 'command-line-usage';
+import { Command, CommandOptions } from "./command";
+import commandLineUsage from "command-line-usage";
 
 export class Help implements Command {
-  name = 'help';
+  name = "help";
   aliases = [];
 
-  description = 'Shows this help message, or help for a specific command';
+  description = "Shows this help message, or help for a specific command";
 
-  args = [{
-    name: 'command',
-    description: 'The command to display help for',
-    defaultOption: true,
-  }];
+  args = [
+    {
+      name: "command",
+      description: "The command to display help for",
+      defaultOption: true,
+    },
+  ];
 
   commands: Map<String, Command> = new Map();
 
@@ -22,16 +24,15 @@ export class Help implements Command {
   generateGeneralUsage() {
     return commandLineUsage([
       {
-        header: 'Available Commands',
-        content: Array.from(new Set(this.commands.values())).map((command) => {
-          return {name: command.name, summary: command.description};
+        header: "Available Commands",
+        content: Array.from(new Set(this.commands.values())).map(command => {
+          return { name: command.name, summary: command.description };
         }),
       },
       {
-        header: 'Help for specific command',
-        content:
-          'Run `cli help <command>` for help with a specific command.',
-      }
+        header: "Help for specific command",
+        content: "Run `cli help <command>` for help with a specific command.",
+      },
     ]);
   }
 
@@ -41,18 +42,18 @@ export class Help implements Command {
         header: `cli ${command.name}`,
         content: command.description,
       },
-      {header: 'Command Options', optionList: command.args},
+      { header: "Command Options", optionList: command.args },
     ];
 
     if (command.aliases.length > 0) {
-      usageGroups.splice(1, 0, {header: 'Alias(es)', content: command.aliases});
+      usageGroups.splice(1, 0, { header: "Alias(es)", content: command.aliases });
     }
 
     return commandLineUsage(usageGroups);
   }
 
   async run(options: CommandOptions) {
-    const commandName: string = options['command'];
+    const commandName: string = options["command"];
     if (!commandName) {
       console.log(this.generateGeneralUsage());
       return;

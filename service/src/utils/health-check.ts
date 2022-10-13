@@ -4,7 +4,13 @@ import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "../logger/chalk-theme";
 import { RPC_EXCEPTION, NO_ONCHAIN_PROFILE } from "./exit-codes";
 import { logCallout } from "../logger/formatter";
-import { getEthBalance, getFreeBondBalance, getOnchainProfile, getSarcoBalance, OnchainProfile } from "./onchain-data";
+import {
+  getEthBalance,
+  getFreeBondBalance,
+  getOnchainProfile,
+  getSarcoBalance,
+  OnchainProfile,
+} from "./onchain-data";
 import { logBalances } from "../cli/utils";
 
 /**
@@ -20,23 +26,23 @@ export async function healthCheck(web3Interface: Web3Interface) {
     const freeBondBalance = await getFreeBondBalance(web3Interface);
 
     logCallout(async () => {
-        logBalances(sarcoBalance, ethBalance, freeBondBalance);
+      logBalances(sarcoBalance, ethBalance, freeBondBalance);
 
-        // If ETH balance is low, the archaeologist won't have gas to sign transactions
-        warnIfEthBalanceIsLow(ethBalance);
+      // If ETH balance is low, the archaeologist won't have gas to sign transactions
+      warnIfEthBalanceIsLow(ethBalance);
 
-        // Free bond must be >= their min digging fee to accept new jobs
-        await warnIfFreeBondIsLessThanMinDiggingFee(freeBondBalance, profile.minimumDiggingFee);
-      }
-    )
-
+      // Free bond must be >= their min digging fee to accept new jobs
+      await warnIfFreeBondIsLessThanMinDiggingFee(freeBondBalance, profile.minimumDiggingFee);
+    });
   } catch (e) {
     archLogger.error(e);
     exit(RPC_EXCEPTION);
   }
 }
 
-const fetchProfileOrPromptProfileSetup = async (web3Interface: Web3Interface): Promise<OnchainProfile> => {
+const fetchProfileOrPromptProfileSetup = async (
+  web3Interface: Web3Interface
+): Promise<OnchainProfile> => {
   const profile = await getOnchainProfile(web3Interface);
   if (!profile.exists) {
     logCallout(() => {
@@ -52,16 +58,21 @@ const fetchProfileOrPromptProfileSetup = async (web3Interface: Web3Interface): P
   }
 
   return profile;
-}
+};
 
-const warnIfFreeBondIsLessThanMinDiggingFee = (freeBondBal: BigNumber, minDiggingFee: BigNumber): void => {
+const warnIfFreeBondIsLessThanMinDiggingFee = (
+  freeBondBal: BigNumber,
+  minDiggingFee: BigNumber
+): void => {
   if (freeBondBal.lt(minDiggingFee)) {
-    archLogger.warn(`\n   Your free bond is less than your minimum digging fee. You will not be able to accept new jobs!`);
+    archLogger.warn(
+      `\n   Your free bond is less than your minimum digging fee. You will not be able to accept new jobs!`
+    );
     archLogger.error(
       `   Run: \`npm run start -- --deposit-bond:<amount>\` to deposit some SARCO\n`
     );
   }
-}
+};
 
 const warnIfEthBalanceIsLow = (ethBalance: BigNumber): void => {
   if (ethBalance.lte(ethers.utils.parseEther("0.0005"))) {
@@ -69,4 +80,4 @@ const warnIfEthBalanceIsLow = (ethBalance: BigNumber): void => {
       `\n   You have very little ETH in your account. You may not be able to sign any transactions (or do unwrappings)!\n`
     );
   }
-}
+};

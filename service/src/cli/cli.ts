@@ -1,6 +1,6 @@
-import {ParsedCommand} from 'command-line-commands';
-import commandLineCommands from 'command-line-commands';
-import {Command} from './commands/command';
+import { ParsedCommand } from "command-line-commands";
+import commandLineCommands from "command-line-commands";
+import { Command } from "./commands/command";
 import { Register } from "./commands/register";
 import { handleCommandArgs } from "./utils";
 import { getWeb3Interface } from "../scripts/web3-interface";
@@ -24,25 +24,24 @@ export class ArchaeologistCli {
   addCommand(command: Command) {
     this.commands.set(command.name, command);
 
-    command.aliases.forEach((alias) => {
+    command.aliases.forEach(alias => {
       this.commands.set(alias, command);
     });
   }
 
-  async run () {
-    const helpCommand = this.commands.get('help')!;
+  async run() {
+    const helpCommand = this.commands.get("help")!;
     const commandNames = Array.from(this.commands.keys());
     let parsedArgs: ParsedCommand;
 
     try {
       parsedArgs = commandLineCommands(commandNames, this.args);
     } catch (error) {
-      if (error.name === 'INVALID_COMMAND') {
+      if (error.name === "INVALID_COMMAND") {
         if (error.command) {
           archLogger.warn(`'${error.command}' is not an available command.`);
         }
-        return helpCommand.run(
-          {command: error.command});
+        return helpCommand.run({ command: error.command });
       }
 
       throw error;
@@ -53,12 +52,12 @@ export class ArchaeologistCli {
       command.args,
       {
         argv: parsedArgs.argv,
-        camelCase: true
+        camelCase: true,
       },
       command.name
     );
 
-    if(typeof command.validateArgs === 'function') {
+    if (typeof command.validateArgs === "function") {
       command.validateArgs(parsedCliArgs);
     }
 

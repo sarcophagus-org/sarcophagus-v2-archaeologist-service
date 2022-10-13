@@ -1,4 +1,4 @@
-import {Command, CommandOptions} from './command';
+import { Command, CommandOptions } from "./command";
 import { profileOptionDefinitions } from "../config/options-config";
 import { getOnchainProfile, OnchainProfile } from "../../utils/onchain-data";
 import { logProfile, logValidationErrorAndExit } from "../utils";
@@ -10,9 +10,9 @@ import { exit } from "process";
 import { isFreeBondProvidedAndZero, validateRewrapInterval } from "../shared/profile-validations";
 
 export class Update implements Command {
-  name = 'update';
-  aliases = ['u'];
-  description = 'Updates your archaeologist profile on-chain.';
+  name = "update";
+  aliases = ["u"];
+  description = "Updates your archaeologist profile on-chain.";
   args = profileOptionDefinitions;
   web3Interface: Web3Interface;
   profile: OnchainProfile | undefined;
@@ -51,17 +51,17 @@ export class Update implements Command {
   }
 
   validateArgs(options: CommandOptions) {
-    if (options.view) { return }
-
-    if (!Object.keys(options).length) {
-      logValidationErrorAndExit(
-        `Update must have at least one option provided`
-      )
+    if (options.view) {
+      return;
     }
 
-    validateRewrapInterval(options.rewrapInterval)
+    if (!Object.keys(options).length) {
+      logValidationErrorAndExit(`Update must have at least one option provided`);
+    }
 
-    if(isFreeBondProvidedAndZero(options.freeBond)) {
+    validateRewrapInterval(options.rewrapInterval);
+
+    if (isFreeBondProvidedAndZero(options.freeBond)) {
       delete options.freeBond;
     }
   }

@@ -1,4 +1,4 @@
-import { Command, CommandOptions } from './command';
+import { Command, CommandOptions } from "./command";
 import { profileOptionDefinitions } from "../config/options-config";
 import { getOnchainProfile } from "../../utils/onchain-data";
 import { logProfile, logValidationErrorAndExit } from "../utils";
@@ -10,9 +10,10 @@ import { exit } from "process";
 import { isFreeBondProvidedAndZero, validateRewrapInterval } from "../shared/profile-validations";
 
 export class Register implements Command {
-  name = 'register';
-  aliases = ['r'];
-  description = 'Registers your archaeologist on-chain. You cannot accept curses without first being registered.';
+  name = "register";
+  aliases = ["r"];
+  description =
+    "Registers your archaeologist on-chain. You cannot accept curses without first being registered.";
   args = profileOptionDefinitions;
   web3Interface: Web3Interface;
 
@@ -38,21 +39,25 @@ export class Register implements Command {
   }
 
   validateArgs(options: CommandOptions) {
-    if (options.view) { return }
+    if (options.view) {
+      return;
+    }
 
     const requiredOptions = [ProfileOptionNames.DIGGING_FEE, ProfileOptionNames.REWRAP_INTERVAL];
     const providedOptions = Object.keys(options);
-    const missingRequiredOptions = requiredOptions.filter(field => !providedOptions.includes(field));
+    const missingRequiredOptions = requiredOptions.filter(
+      field => !providedOptions.includes(field)
+    );
 
     if (missingRequiredOptions.length) {
       logValidationErrorAndExit(
         `The required options were not provided: ${missingRequiredOptions.toString()}`
-      )
+      );
     }
 
-    validateRewrapInterval(options.rewrapInterval)
+    validateRewrapInterval(options.rewrapInterval);
 
-    if(isFreeBondProvidedAndZero(options.freeBond)) {
+    if (isFreeBondProvidedAndZero(options.freeBond)) {
       delete options.freeBond;
     }
   }

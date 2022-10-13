@@ -1,8 +1,8 @@
-import {ArgDescriptor} from 'command-line-args';
+import { ArgDescriptor } from "command-line-args";
 import { Web3Interface } from "../../scripts/web3-interface";
 
 export type CommandOptions = {
-  [name: string]: any
+  [name: string]: any;
 };
 
 export interface Command {
@@ -10,7 +10,7 @@ export interface Command {
   aliases: string[];
   description: string;
   args: ArgDescriptor[];
-  run(options: CommandOptions, web3Interface?: Web3Interface): Promise<CommandResult|void>;
+  run(options: CommandOptions, web3Interface?: Web3Interface): Promise<CommandResult | void>;
   validateArgs?(options: CommandOptions);
   web3Interface?: Web3Interface;
 }

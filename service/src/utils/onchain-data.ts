@@ -34,9 +34,7 @@ export async function retrieveAndStoreOnchainProfileAndSarcophagi(web3Interface:
 }
 
 export async function getOnchainProfile(web3Interface: Web3Interface): Promise<OnchainProfile> {
-  return web3Interface.viewStateFacet.getArchaeologistProfile(
-    web3Interface.ethWallet.address
-  );
+  return web3Interface.viewStateFacet.getArchaeologistProfile(web3Interface.ethWallet.address);
 }
 
 export async function getSarcoBalance(web3Interface: Web3Interface): Promise<BigNumber> {
@@ -48,9 +46,7 @@ export async function getEthBalance(web3Interface: Web3Interface): Promise<BigNu
 }
 
 export async function getFreeBondBalance(web3Interface: Web3Interface): Promise<BigNumber> {
-  return web3Interface.viewStateFacet.getFreeBond(
-    web3Interface.ethWallet.address
-  );
+  return web3Interface.viewStateFacet.getFreeBond(web3Interface.ethWallet.address);
 }
 
 export async function getOnchainCursedSarcophagi(
