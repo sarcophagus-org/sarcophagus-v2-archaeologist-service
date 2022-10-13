@@ -5,8 +5,9 @@ import { logCallout } from "../logger/formatter";
 import { archLogger } from "../logger/chalk-theme";
 import { formatEther } from "ethers/lib/utils";
 import { exit } from "process";
+import { BigNumber, ethers } from "ethers";
 
-export const handleCommandArgs = (optionDefinitions: any, options: any): any => {
+export const handleCommandArgs = (optionDefinitions: any, options: any, commandName: string): any => {
   try {
     return commandLineArgs(optionDefinitions, options);
   } catch (err) {
@@ -23,7 +24,9 @@ export const handleCommandArgs = (optionDefinitions: any, options: any): any => 
       }
 
       archLogger.error(errorName());
-      archLogger.warn("\nPlease use --help to see list of valid options.");
+      archLogger.warn(`\nPlease use:\n`)
+      archLogger.info(`cli help ${commandName}\n`)
+      archLogger.warn('to see list of valid options.');
     })
     exit(1);
   }
@@ -37,7 +40,7 @@ export const logProfile = (profile: OnchainProfile): void => {
   logCallout(() => {
     if (!profile.exists) {
       archLogger.error('This archaeologist is not yet registered, please run: \n');
-      archLogger.error('npm run cli -- register --help');
+      archLogger.error('cli help register');
     } else {
       console.log('ARCHAEOLOGIST PROFILE: \n');
 
@@ -66,4 +69,33 @@ export const logValidationErrorAndExit = (message: string): void => {
   });
 
   exit(1);
+}
+
+
+// TODO: may want to separate these balances in the CLI UX (sarco/eth balance VS. free bond)
+// maybe with horizontal separator or something
+export const logBalances = (sarcoBalance: BigNumber, ethBalance: BigNumber, freeBondBalance: BigNumber): void => {
+  console.log(" YOUR BALANCES:\n");
+
+  const balances = [
+    {
+      field: 'SARCO',
+      balance: formatEther(sarcoBalance),
+      ticker: 'SARCO'
+    },
+    {
+      field: 'ETHER',
+      balance: formatEther(ethBalance),
+      ticker: 'ETH'
+    },
+    {
+      field: 'Free Bond',
+      balance: formatEther(freeBondBalance),
+      ticker: 'SARCO'
+    }
+  ]
+
+  console.log(
+    columnify(balances, {minWidth: 20})
+  )
 }

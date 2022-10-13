@@ -3,8 +3,9 @@ import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "../logger/chalk-theme";
 import { RPC_EXCEPTION, NO_ONCHAIN_PROFILE } from "./exit-codes";
-import { logBalance, logCallout } from "../logger/formatter";
+import { logCallout } from "../logger/formatter";
 import { getEthBalance, getFreeBondBalance, getOnchainProfile, getSarcoBalance, OnchainProfile } from "./onchain-data";
+import { logBalances } from "../cli/utils";
 
 /**
  * Runs on service startup
@@ -19,7 +20,7 @@ export async function healthCheck(web3Interface: Web3Interface) {
     const freeBondBalance = await getFreeBondBalance(web3Interface);
 
     logCallout(async () => {
-        logBalances(sarcoBalance, ethBalance);
+        logBalances(sarcoBalance, ethBalance, freeBondBalance);
 
         // If ETH balance is low, the archaeologist won't have gas to sign transactions
         warnIfEthBalanceIsLow(ethBalance);
@@ -54,8 +55,6 @@ const fetchProfileOrPromptProfileSetup = async (web3Interface: Web3Interface): P
 }
 
 const warnIfFreeBondIsLessThanMinDiggingFee = (freeBondBal: BigNumber, minDiggingFee: BigNumber): void => {
-  logBalance('Free Bond', freeBondBal, 'SARCO');
-
   if (freeBondBal.lt(minDiggingFee)) {
     archLogger.warn(`\n   Your free bond is less than your minimum digging fee. You will not be able to accept new jobs!`);
     archLogger.error(
@@ -70,11 +69,4 @@ const warnIfEthBalanceIsLow = (ethBalance: BigNumber): void => {
       `\n   You have very little ETH in your account. You may not be able to sign any transactions (or do unwrappings)!\n`
     );
   }
-}
-
-const logBalances = (sarcoBalance: BigNumber, ethBalance: BigNumber): void => {
-  console.log(" YOUR BALANCES:\n");
-
-  logBalance('SARCO', sarcoBalance, 'SARCO');
-  logBalance('ETHER', ethBalance, 'ETH');
 }

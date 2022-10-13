@@ -54,7 +54,8 @@ export class ArchaeologistCli {
       {
         argv: parsedArgs.argv,
         camelCase: true
-      }
+      },
+      command.name
     );
 
     if(typeof command.validateArgs === 'function') {
