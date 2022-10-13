@@ -30,7 +30,7 @@ export class Help implements Command {
       {
         header: 'Help for specific command',
         content:
-          'Run `npm run cli -- help <command>` for help with a specific command.',
+          'Run `cli help <command>` for help with a specific command.',
       }
     ]);
   }
@@ -38,7 +38,7 @@ export class Help implements Command {
   async generateCommandUsage(command: Command) {
     const usageGroups: commandLineUsage.UsageGroup[] = [
       {
-        header: `npm run cli -- ${command.name}`,
+        header: `cli ${command.name}`,
         content: command.description,
       },
       {header: 'Command Options', optionList: command.args},

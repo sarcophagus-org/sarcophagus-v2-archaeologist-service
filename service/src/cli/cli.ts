@@ -5,6 +5,8 @@ import { Register } from "./commands/register";
 import { handleCommandArgs } from "./utils";
 import { getWeb3Interface } from "../scripts/web3-interface";
 import { Help } from "./commands/help";
+import { Update } from "./commands/update";
+import { archLogger } from "../logger/chalk-theme";
 
 const web3Interface = await getWeb3Interface();
 
@@ -15,6 +17,7 @@ export class ArchaeologistCli {
   constructor(args: string[]) {
     this.args = args;
     this.addCommand(new Register(web3Interface));
+    this.addCommand(new Update(web3Interface));
     this.addCommand(new Help(this.commands));
   }
 
@@ -27,13 +30,22 @@ export class ArchaeologistCli {
   }
 
   async run () {
+    const helpCommand = this.commands.get('help')!;
     const commandNames = Array.from(this.commands.keys());
     let parsedArgs: ParsedCommand;
 
     try {
       parsedArgs = commandLineCommands(commandNames, this.args);
-    } catch (err) {
-      console.log("error in commands", err);
+    } catch (error) {
+      if (error.name === 'INVALID_COMMAND') {
+        if (error.command) {
+          archLogger.warn(`'${error.command}' is not an available command.`);
+        }
+        return helpCommand.run(
+          {command: error.command});
+      }
+
+      throw error;
     }
 
     const command = this.commands.get(parsedArgs.command)!;

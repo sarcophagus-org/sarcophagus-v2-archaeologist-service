@@ -9,10 +9,10 @@ import { archLogger } from "../../logger/chalk-theme";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
 
-export class Register implements Command {
-  name = 'register';
-  aliases = ['r'];
-  description = 'Registers your archaeologist on-chain. You cannot accept curses without first being registered.';
+export class Update implements Command {
+  name = 'update';
+  aliases = ['u'];
+  description = 'Updates your archaeologist profile on-chain.';
   args = profileOptionDefinitions;
   web3Interface: Web3Interface;
 
@@ -20,27 +20,27 @@ export class Register implements Command {
     this.web3Interface = web3Interface;
   }
 
-  async exitIfArchaeologistProfileExists() {
+  async exitUnlessArchaeologistProfileExists() {
     const profile = await getOnchainProfile(this.web3Interface);
 
-    if (profile.exists) {
-      archLogger.notice("Already registered!");
+    if (!profile.exists) {
+      archLogger.notice("Archaeologist is not registered yet!");
       exit(0);
     }
   }
 
-  async registerArchaeologist(registerArgs: any) {
+  async updateArchaeologist(updateArgs: any) {
     validateEnvVars();
-    await this.exitIfArchaeologistProfileExists();
+    await this.exitUnlessArchaeologistProfileExists();
 
-    const finalRegisterArgs: ProfileParams = {
-      diggingFee: parseEther(registerArgs.diggingFee),
-      rewrapInterval: Number(registerArgs.rewrapInterval),
-      freeBond: parseEther(registerArgs.freeBond)
+    const finalUpdateArgs: ProfileParams = {
+      diggingFee: parseEther(updateArgs.diggingFee),
+      rewrapInterval: Number(updateArgs.rewrapInterval),
+      freeBond: parseEther(updateArgs.freeBond)
     }
 
-    archLogger.notice("Updating your Archaeologist profile...");
-    await profileSetup(finalRegisterArgs);
+    archLogger.notice("Registering your Archaeologist profile...");
+    await profileSetup(finalUpdateArgs, true);
   }
 
   async run(options: CommandOptions): Promise<void> {
@@ -49,7 +49,7 @@ export class Register implements Command {
       const profile = await getOnchainProfile(this.web3Interface);
       logProfile(profile);
     } else {
-      await this.registerArchaeologist(options);
+      await this.updateArchaeologist(options);
     }
   }
 }
