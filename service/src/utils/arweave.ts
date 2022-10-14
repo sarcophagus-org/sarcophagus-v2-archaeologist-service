@@ -33,7 +33,7 @@ export const fetchAndValidateShardOnArweave = async (
       Buffer.from(ethers.utils.arrayify(encryptedShard))
     );
 
-    const decryptedShardString = new TextDecoder().decode(decrypted);
+    const decryptedShardString = ethers.utils.hexlify(decrypted);
     const unencryptedHash = solidityKeccak256(["string"], [decryptedShardString]);
     const unencryptedDoubleHash = solidityKeccak256(["string"], [unencryptedHash]);
 

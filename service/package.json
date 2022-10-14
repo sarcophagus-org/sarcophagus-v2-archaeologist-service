@@ -13,14 +13,13 @@
     "clean": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/third_party/clean.js",
     "accuse": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/third_party/accuse.js",
     "cli": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/cli/run.js",
-    "cli:prepare": "npm run build && chmod +x build/src/cli/run.js && npm link",
-    "start": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/index.js",
-    "start:local": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/run_local/index.js",
-    "start:debug": "cross-env NODE_ENV=production DEBUG=libp2p:* NODE_PATH=./build node build/src/index.js",
+    "cli:install": "npm run build && chmod +x build/src/cli/run.js && npm link",
+    "start": "tsc -p tsconfig.json && cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/index.js",
+    "start:local": "tsc -p tsconfig.json && cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/run_local/index.js",
+    "start:debug": "tsc -p tsconfig.json && cross-env NODE_ENV=production DEBUG=libp2p:* NODE_PATH=./build node build/src/index.js",
     "prettier": "npx prettier --write src/**",
     "peer-id-gen": "node ./src/scripts/peer-id-gen.js",
-    "test": "cross-env NODE_ENV=test NODE_PATH=./build node -r dotenv/config --experimental-specifier-resolution=node build/src/test/index.js dotenv_config_path=.env",
-    "test:all": "node ./test-all.js"
+    "test": "tsc -p tsconfig.json && cross-env NODE_ENV=test NODE_PATH=./build node -r dotenv/config --experimental-specifier-resolution=node build/src/test/index.js dotenv_config_path=.env"
   },
   "license": "MIT",
   "dependencies": {

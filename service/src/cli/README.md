@@ -6,7 +6,7 @@ The CLI provides the archaeologist service a way to quickly interact with the co
 
 ### Setup
 
-> npm run cli:prepare
+> npm run cli:install
 
 ### Examples
 
