@@ -146,7 +146,7 @@ export class Archaeologist {
                 arweaveTxId,
                 unencryptedShardDoubleHash,
                 maxRewrapInterval,
-                diggingFee,
+                diggingFee, // this is assumed to, and should, be in wei
                 timestamp,
               }: SarcophagusNegotiationParams = JSON.parse(new TextDecoder().decode(data));
 
@@ -182,16 +182,6 @@ export class Archaeologist {
               }
 
               // sign sarcophagus parameters to demonstrate agreement
-              console.log('diggingFee', diggingFee);
-              console.log('ethers.utils.parseEther(diggingFee).toString()', ethers.utils.parseEther(diggingFee).toString());
-              console.log([
-                arweaveTxId,
-                unencryptedShardDoubleHash,
-                maximumRewrapIntervalBN.toString(),
-                ethers.utils.parseEther(diggingFee).toString(),
-                timestamp.toString(),
-              ]);
-
               const signPacked = async (
                 types: string[],
                 data: string[],
@@ -203,28 +193,15 @@ export class Archaeologist {
                 return signature;
               }
 
-
-
-              // const msg = ethers.utils.solidityPack(
-              //   ["string", "bytes32", "uint256", "uint256", "uint256"],
-              //   [
-              //     arweaveTxId,
-              //     unencryptedShardDoubleHash,
-              //     maximumRewrapIntervalBN.toString(),
-              //     ethers.utils.parseEther(diggingFee).toString(),
-              //     timestamp.toString(),
-              //   ]
-              // );
               const signature = await signPacked(
                 ["string", "bytes32", "uint256", "uint256", "uint256"],
                 [
                   arweaveTxId,
                   unencryptedShardDoubleHash,
                   maximumRewrapIntervalBN.toString(),
-                  ethers.utils.parseEther(diggingFee).toString(),
-                  timestamp.toString(),
+                  diggingFee,
+                  Math.trunc(timestamp / 1000).toString(),
                 ]);
-              // const signature = await this.web3Interface.ethWallet.signMessage(msg);
               streamToBrowser(JSON.stringify({ signature }));
             } catch (e) {
               archLogger.error(e);
