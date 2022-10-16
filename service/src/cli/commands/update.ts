@@ -1,5 +1,5 @@
 import { Command, CommandOptions } from "./command";
-import { profileOptionDefinitions } from "../config/options-config";
+import { profileOptionDefinitions } from "../config/profile-args";
 import { getOnchainProfile, OnchainProfile } from "../../utils/onchain-data";
 import { logProfile, logValidationErrorAndExit } from "../utils";
 import { validateEnvVars } from "../../utils/validateEnv";

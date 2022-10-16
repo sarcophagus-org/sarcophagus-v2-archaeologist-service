@@ -2,11 +2,13 @@ import { ParsedCommand } from "command-line-commands";
 import commandLineCommands from "command-line-commands";
 import { Command } from "./commands/command";
 import { Register } from "./commands/register";
+import { Start } from "./commands/start";
 import { handleCommandArgs } from "./utils";
 import { getWeb3Interface } from "../scripts/web3-interface";
 import { Help } from "./commands/help";
 import { Update } from "./commands/update";
 import { archLogger } from "../logger/chalk-theme";
+import { View } from "./commands/view";
 
 const web3Interface = await getWeb3Interface();
 
@@ -18,6 +20,8 @@ export class ArchaeologistCli {
     this.args = args;
     this.addCommand(new Register(web3Interface));
     this.addCommand(new Update(web3Interface));
+    this.addCommand(new Start(web3Interface));
+    this.addCommand(new View(web3Interface));
     this.addCommand(new Help(this.commands));
   }
 

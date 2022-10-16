@@ -73,32 +73,27 @@ export const logValidationErrorAndExit = (message: string): void => {
   exit(1);
 };
 
-// TODO: may want to separate these balances in the CLI UX (sarco/eth balance VS. free bond)
-// maybe with horizontal separator or something
 export const logBalances = (
   sarcoBalance: BigNumber,
-  ethBalance: BigNumber,
-  freeBondBalance: BigNumber
+  ethBalance: BigNumber
 ): void => {
-  console.log(" YOUR BALANCES:\n");
+  console.log("YOUR BALANCES:\n");
 
   const balances = [
     {
-      field: "SARCO",
       balance: formatEther(sarcoBalance),
       ticker: "SARCO",
     },
     {
-      field: "ETHER",
       balance: formatEther(ethBalance),
       ticker: "ETH",
-    },
-    {
-      field: "Free Bond",
-      balance: formatEther(freeBondBalance),
-      ticker: "SARCO",
-    },
+    }
   ];
 
   console.log(columnify(balances, { minWidth: 20 }));
 };
+
+export const randomIntFromInterval = (min, max) => {
+  // min and max included
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}

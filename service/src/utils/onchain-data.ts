@@ -49,6 +49,12 @@ export async function getFreeBondBalance(web3Interface: Web3Interface): Promise<
   return web3Interface.viewStateFacet.getFreeBond(web3Interface.ethWallet.address);
 }
 
+export async function getSarcophagiIds(web3Interface: Web3Interface): Promise<string[]> {
+  return web3Interface.viewStateFacet.getArchaeologistSarcophagi(
+    web3Interface.ethWallet.address
+  );
+}
+
 export async function getOnchainCursedSarcophagi(
   web3Interface: Web3Interface
 ): Promise<SarcophagusData[]> {

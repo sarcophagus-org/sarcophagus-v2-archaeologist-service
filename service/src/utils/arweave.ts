@@ -6,13 +6,15 @@ import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "../logger/chalk-theme";
 import { SarcophagusState } from "./onchain-data";
 
-export const arweaveService = Arweave.init({
-  host: process.env.ARWEAVE_HOST,
-  port: process.env.ARWEAVE_PORT,
-  protocol: process.env.ARWEAVE_PROTOCOL,
-  timeout: Number.parseInt(process.env.ARWEAVE_TIMEOUT!),
-  logging: process.env.ARWEAVE_LOGGING === "true",
-});
+export const generateArweaveInstance = (): Arweave => {
+  return Arweave.init({
+    host: process.env.ARWEAVE_HOST,
+    port: Number.parseInt(process.env.ARWEAVE_PORT!),
+    protocol: process.env.ARWEAVE_PROTOCOL,
+    timeout: Number.parseInt(process.env.ARWEAVE_TIMEOUT!),
+    logging: process.env.ARWEAVE_LOGGING === "true",
+  });
+}
 
 export const fetchAndValidateShardOnArweave = async (
   arweaveShardsTxId: string,
@@ -20,7 +22,8 @@ export const fetchAndValidateShardOnArweave = async (
   publicKey: string
 ): Promise<boolean> => {
   try {
-    const data = await arweaveService.transactions.getData(arweaveShardsTxId, {
+    const arweaveInstance = generateArweaveInstance();
+    const data = await arweaveInstance.transactions.getData(arweaveShardsTxId, {
       decode: true,
       string: true,
     });
@@ -39,6 +42,7 @@ export const fetchAndValidateShardOnArweave = async (
 
     return expectedUnencryptedDoubleHash === unencryptedDoubleHash;
   } catch (e) {
+    archLogger.error("error in fetchAndValidateShardOnArweave:")
     archLogger.error(e);
     return false;
   }
@@ -49,6 +53,7 @@ export const fetchAndDecryptShard = async (
   sarcoId: string
 ): Promise<string> => {
   try {
+    const arweaveInstance = generateArweaveInstance();
     const sarco = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
 
     if (sarco.state !== SarcophagusState.Exists) {
@@ -60,7 +65,7 @@ export const fetchAndDecryptShard = async (
     // from a previous arch to this one.
     const shardsArweaveTxId = sarco.arweaveTxIds[1];
 
-    const data = await arweaveService.transactions.getData(shardsArweaveTxId, {
+    const data = await arweaveInstance.transactions.getData(shardsArweaveTxId, {
       decode: true,
       string: true,
     });

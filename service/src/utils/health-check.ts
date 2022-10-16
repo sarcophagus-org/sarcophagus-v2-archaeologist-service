@@ -11,7 +11,7 @@ import {
   getSarcoBalance,
   OnchainProfile,
 } from "./onchain-data";
-import { logBalances } from "../cli/utils";
+import { logBalances, logProfile } from "../cli/utils";
 
 /**
  * Runs on service startup
@@ -24,9 +24,10 @@ export async function healthCheck(web3Interface: Web3Interface) {
     const sarcoBalance = await getSarcoBalance(web3Interface);
     const ethBalance = await getEthBalance(web3Interface);
     const freeBondBalance = await getFreeBondBalance(web3Interface);
+    logProfile(profile);
 
     logCallout(async () => {
-      logBalances(sarcoBalance, ethBalance, freeBondBalance);
+      logBalances(sarcoBalance, ethBalance);
 
       // If ETH balance is low, the archaeologist won't have gas to sign transactions
       warnIfEthBalanceIsLow(ethBalance);
@@ -50,7 +51,7 @@ const fetchProfileOrPromptProfileSetup = async (
 
       archLogger.warn(`\n   Your archaeologist is not yet registered.`);
       archLogger.error(
-        `   Run: \`npm run register -- --deposit-bond:<amount>\` to register your archaeologist with some free bond\n`
+        `   Run: \`cli help register \` to see options for registering\n`
       );
     });
 

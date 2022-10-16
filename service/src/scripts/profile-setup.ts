@@ -24,6 +24,7 @@ export interface ProfileParams {
   diggingFee?: BigNumber;
   rewrapInterval?: number;
   freeBond?: BigNumber;
+  peerId?: string;
 }
 
 const web3Interface = await getWeb3Interface();
@@ -33,8 +34,12 @@ const handleException = e => {
   exit(RPC_EXCEPTION);
 };
 
-export async function profileSetup(args: ProfileParams, isUpdate: boolean = false) {
-  const { diggingFee, rewrapInterval, freeBond } = args;
+export async function profileSetup(
+  args: ProfileParams,
+  isUpdate: boolean = false,
+  exitAfterTx: boolean = true
+  ) {
+  const { diggingFee, rewrapInterval, freeBond, peerId } = args;
   let freeBondDeposit = ethers.constants.Zero;
 
   if (freeBond && freeBond.gt(ethers.constants.Zero)) {
@@ -62,28 +67,32 @@ export async function profileSetup(args: ProfileParams, isUpdate: boolean = fals
 
   const tx = isUpdate
     ? await web3Interface.archaeologistFacet.updateArchaeologist(
-        peerIdJson.id,
+        peerId || peerIdJson.id,
         diggingFee,
         rewrapInterval,
         freeBondDeposit
       )
     : await web3Interface.archaeologistFacet.registerArchaeologist(
-        peerIdJson.id,
+        peerId || peerIdJson.id,
         diggingFee,
         rewrapInterval,
         freeBondDeposit
       );
 
   archLogger.info("Waiting for transaction");
-  setInterval(() => process.stdout.write("."), 1000);
+
+  const txInterval = setInterval(() => process.stdout.write("."), 1000);
 
   tx.wait()
     .then(async () => {
+      clearInterval(txInterval);
       archLogger.notice(isUpdate ? "PROFILE UPDATED!" : "\nPROFILE REGISTERED!");
       const profile = await getOnchainProfile(web3Interface);
       inMemoryStore.profile = profile;
       logProfile(profile);
-      exit(0);
+      if (exitAfterTx) {
+        exit(0);
+      }
     })
     .catch(handleException);
 }
