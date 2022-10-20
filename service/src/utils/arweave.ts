@@ -23,12 +23,9 @@ export const fetchAndValidateShardOnArweave = async (
 ): Promise<boolean> => {
   try {
     const arweaveInstance = generateArweaveInstance();
-    const data = await arweaveInstance.transactions.getData(arweaveShardsTxId, {
-      decode: true,
-      string: true,
-    });
+    const response = await arweaveInstance.api.get(arweaveShardsTxId);
 
-    const shards = JSON.parse(data as string);
+    const shards = response.data;
     const encryptedShard = shards[publicKey];
 
     const decrypted = await decrypt(
