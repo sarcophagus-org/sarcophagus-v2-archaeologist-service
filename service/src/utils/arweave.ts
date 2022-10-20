@@ -6,6 +6,10 @@ import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "../logger/chalk-theme";
 import { SarcophagusState } from "./onchain-data";
 
+const privateKeyPad = (privKey: string): string => {
+  return privKey.startsWith("0x") ? privKey : `0x${privKey}`;
+}
+
 export const generateArweaveInstance = (): Arweave => {
   return Arweave.init({
     host: process.env.ARWEAVE_HOST,
@@ -23,16 +27,13 @@ export const fetchAndValidateShardOnArweave = async (
 ): Promise<boolean> => {
   try {
     const arweaveInstance = generateArweaveInstance();
-    const data = await arweaveInstance.transactions.getData(arweaveShardsTxId, {
-      decode: true,
-      string: true,
-    });
+    const response = await arweaveInstance.api.get(arweaveShardsTxId);
 
-    const shards = JSON.parse(data as string);
+    const shards = response.data;
     const encryptedShard = shards[publicKey];
 
     const decrypted = await decrypt(
-      Buffer.from(ethers.utils.arrayify(process.env.ENCRYPTION_PRIVATE_KEY!)),
+      Buffer.from(ethers.utils.arrayify(privateKeyPad(process.env.ENCRYPTION_PRIVATE_KEY!))),
       Buffer.from(ethers.utils.arrayify(encryptedShard))
     );
 
@@ -74,7 +75,7 @@ export const fetchAndDecryptShard = async (
     const encryptedShard = shards[web3Interface.encryptionWallet.publicKey];
 
     const decrypted = await decrypt(
-      Buffer.from(ethers.utils.arrayify(process.env.ENCRYPTION_PRIVATE_KEY!)),
+      Buffer.from(ethers.utils.arrayify(privateKeyPad(process.env.ENCRYPTION_PRIVATE_KEY!))),
       Buffer.from(ethers.utils.arrayify(encryptedShard))
     );
 
