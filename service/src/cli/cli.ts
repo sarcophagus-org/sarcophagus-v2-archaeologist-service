@@ -1,5 +1,4 @@
-import { ParsedCommand } from "command-line-commands";
-import commandLineCommands from "command-line-commands";
+ import commandLineCommands from "command-line-commands";
 import { Command } from "./commands/command";
 import { Register } from "./commands/register";
 import { Start } from "./commands/start";
@@ -36,7 +35,7 @@ export class ArchaeologistCli {
   async run() {
     const helpCommand = this.commands.get("help")!;
     const commandNames = Array.from(this.commands.keys());
-    let parsedArgs: ParsedCommand;
+    let parsedArgs;
 
     try {
       parsedArgs = commandLineCommands(commandNames, this.args);
