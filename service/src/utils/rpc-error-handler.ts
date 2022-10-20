@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { archLogger } from "./chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 
 const alreadyUnwrapped = (e: string) => e.includes("ArchaeologistAlreadyUnwrapped");
 const notEnoughFreeBond = (e: string) => e.includes("NotEnoughFreeBond");

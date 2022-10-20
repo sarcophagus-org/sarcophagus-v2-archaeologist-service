@@ -1,5 +1,5 @@
 import { Libp2p } from "libp2p/dist/src";
-import { archLogger } from "./chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 
 const idTruncateLimit = 5;
 

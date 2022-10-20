@@ -3,7 +3,7 @@ import { getWeb3Interface } from "./scripts/web3-interface";
 import { Archaeologist } from "./models/archaeologist";
 import { validateEnvVars } from "./utils/validateEnv";
 import { parseArgs } from "./utils/cli_parsers/parseArgs";
-import { retrieveOnchainData } from "./utils/onchain-data";
+import { retrieveAndStoreOnchainProfileAndSarcophagi } from "./utils/onchain-data";
 
 export async function startService(opts: {
   nodeName: string;
@@ -40,9 +40,9 @@ export async function startService(opts: {
 
   parseArgs(web3Interface);
 
-  retrieveOnchainData(web3Interface);
+  retrieveAndStoreOnchainProfileAndSarcophagi(web3Interface);
 
-  setInterval(() => retrieveOnchainData(web3Interface), 300000); // refetch every 5mins
+  setInterval(() => retrieveAndStoreOnchainProfileAndSarcophagi(web3Interface), 300000); // refetch every 5mins
 
   [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, async () => {

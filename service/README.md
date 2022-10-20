@@ -17,8 +17,18 @@ Configure the .env file as necessary:
 _This only needs to be run once_
 
 ---
+
+#### Install CLI
+`npm run cli:install`
+
+To see list of commands:
+`cli help`
+
+To see options available for any given command:
+`cli help <command>`
+
 #### Register your Archaeologist Profile
-`npm run register -- --digging-fee:<val> rewrap-interval:<val>`
+`cli register --digging-fee:<val> --rewrap-interval:<val>`
 
 _This only needs to be run once_
 
@@ -35,7 +45,7 @@ While these values may be later updated, the value they are set to during a Curs
 ---
 
 #### Updating your Archaeologist Profile
-`npm run update -- --digging-fee:<val> rewrap-interval:<val> free-bond:<val>`
+`cli update --digging-fee:<val> --rewrap-interval:<val> --free-bond:<val>`
 
 Replace each `<val>` with the value you would like to set for each item (at least 1)
 

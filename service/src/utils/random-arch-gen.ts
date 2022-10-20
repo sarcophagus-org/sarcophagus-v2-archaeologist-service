@@ -9,8 +9,9 @@ export const randomTestArchVals = async (opts: {
   tcpPort: string | number;
   wsPort: string | number;
   existingPeerId?;
+  isLocal?: boolean;
 }) => {
-  const { tcpPort, existingPeerId } = opts;
+  const { tcpPort, existingPeerId, isLocal } = opts;
 
   let peerIdJson, peerId;
   if (!existingPeerId) {
@@ -25,9 +26,9 @@ export const randomTestArchVals = async (opts: {
   const listenAddresses = genListenAddresses(
     localhost,
     tcpPort,
-    [localStarServer],
+    isLocal ? [localStarServer] : process.env.SIGNAL_SERVER_LIST!.split(",").map(s => s.trim()),
     peerIdJson.id,
-    true
+    isLocal
   );
 
   return { peerId, listenAddresses };

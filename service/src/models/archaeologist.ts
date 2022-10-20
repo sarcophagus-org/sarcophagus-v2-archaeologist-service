@@ -6,7 +6,7 @@ import { NodeConfig } from "./node-config";
 import { PublicEnvConfig } from "./env-config";
 import { pipe } from "it-pipe";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
-import { archLogger } from "../utils/chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 import { BigNumber, ethers } from "ethers";
 import { fetchAndValidateShardOnArweave } from "../utils/arweave";
 import { Web3Interface } from "scripts/web3-interface";

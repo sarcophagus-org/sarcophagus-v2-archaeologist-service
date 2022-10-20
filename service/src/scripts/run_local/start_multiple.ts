@@ -25,6 +25,7 @@ export async function startMultipleLocal(numOfArchsToGenerate: number) {
     const { peerId, listenAddresses } = await randomTestArchVals({
       tcpPort: startingTcpPort + i,
       wsPort: startingWsPort + i,
+      isLocal: true
     });
 
     archInitNodePromises.push(
