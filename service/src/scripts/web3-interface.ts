@@ -36,7 +36,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
     const encryptionWallet = isTest
       ? ethers.Wallet.createRandom()
       : new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!, rpcProvider);
-    const signer = rpcProvider.getSigner(ethWallet.address);
+    const signer = ethWallet;
 
     const network = await rpcProvider.detectNetwork();
 
