@@ -20,24 +20,32 @@ export const generateArweaveInstance = (): Arweave => {
   });
 }
 
+const fetchAndDecryptShardFromArweave = async (txId: string, publicKey: string): Promise<string> => {
+  const arweaveInstance = generateArweaveInstance();
+  const response = await arweaveInstance.api.get(txId);
+  const shards = response.data as Record<string, string>;
+
+  const encryptedShard = shards[publicKey];
+  if (!encryptedShard) return "";
+
+  const decrypted = await decrypt(
+    Buffer.from(ethers.utils.arrayify(privateKeyPad(process.env.ENCRYPTION_PRIVATE_KEY!))),
+    Buffer.from(ethers.utils.arrayify(encryptedShard))
+  );
+
+  const decryptedShardString = ethers.utils.hexlify(decrypted);
+
+  return decryptedShardString;
+}
+
 export const fetchAndValidateShardOnArweave = async (
   arweaveShardsTxId: string,
   expectedUnencryptedDoubleHash: string,
   publicKey: string
 ): Promise<boolean> => {
   try {
-    const arweaveInstance = generateArweaveInstance();
-    const response = await arweaveInstance.api.get(arweaveShardsTxId);
+    const decryptedShardString = await fetchAndDecryptShardFromArweave(arweaveShardsTxId, publicKey);
 
-    const shards = response.data;
-    const encryptedShard = shards[publicKey];
-
-    const decrypted = await decrypt(
-      Buffer.from(ethers.utils.arrayify(privateKeyPad(process.env.ENCRYPTION_PRIVATE_KEY!))),
-      Buffer.from(ethers.utils.arrayify(encryptedShard))
-    );
-
-    const decryptedShardString = ethers.utils.hexlify(decrypted);
     const unencryptedHash = solidityKeccak256(["string"], [decryptedShardString]);
     const unencryptedDoubleHash = solidityKeccak256(["string"], [unencryptedHash]);
 
@@ -54,7 +62,6 @@ export const fetchAndDecryptShard = async (
   sarcoId: string
 ): Promise<string> => {
   try {
-    const arweaveInstance = generateArweaveInstance();
     const sarco = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
 
     if (sarco.state !== SarcophagusState.Exists) {
@@ -65,21 +72,9 @@ export const fetchAndDecryptShard = async (
     // arweaveTxIds on higher indices, if R&R was previously transferred
     // from a previous arch to this one.
     const shardsArweaveTxId = sarco.arweaveTxIds[1];
+    const decryptedShardString = await fetchAndDecryptShardFromArweave(shardsArweaveTxId, web3Interface.encryptionWallet.publicKey);
 
-    const data = await arweaveInstance.transactions.getData(shardsArweaveTxId, {
-      decode: true,
-      string: true,
-    });
-
-    const shards = JSON.parse(data as string);
-    const encryptedShard = shards[web3Interface.encryptionWallet.publicKey];
-
-    const decrypted = await decrypt(
-      Buffer.from(ethers.utils.arrayify(privateKeyPad(process.env.ENCRYPTION_PRIVATE_KEY!))),
-      Buffer.from(ethers.utils.arrayify(encryptedShard))
-    );
-
-    return new TextDecoder().decode(decrypted);
+    return decryptedShardString;
   } catch (e) {
     archLogger.error(e);
     return "";

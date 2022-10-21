@@ -1,4 +1,4 @@
-import { BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { Web3Interface } from "scripts/web3-interface";
 import { fetchAndDecryptShard } from "./arweave";
 import { archLogger } from "../logger/chalk-theme";
@@ -120,7 +120,10 @@ export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: s
   }
 
   try {
-    await web3Interface.archaeologistFacet.unwrapSarcophagus(sarcoId, decryptedShard);
+    await web3Interface.archaeologistFacet.unwrapSarcophagus(
+      sarcoId,
+      ethers.utils.arrayify(decryptedShard) // TODO: Might need an extra `Buffer.from`. `unwrapSarcophagus` expects a solidity bytes type, `decryptedShard` is a hex string
+    );
 
     inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
     archLogger.notice("Unwrapped successfully!");
