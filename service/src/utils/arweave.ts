@@ -36,6 +36,7 @@ const fetchAndDecryptShardFromArweave = async (txId: string, publicKey: string):
       const jsonData = JSON.parse(data as string) as Record<string, string>;
       return jsonData;
     } catch (e) {
+      console.log('fetch failed');
       return await fetchDataFallback();
     }
   };
@@ -44,6 +45,7 @@ const fetchAndDecryptShardFromArweave = async (txId: string, publicKey: string):
   let _nRetries = 1;
 
   const fetchDataFallback = async (): Promise<Record<string, string>> => {
+    console.log('use fallback');
     try {
       const response = await arweaveInstance.api.get(txId);
 
@@ -53,10 +55,12 @@ const fetchAndDecryptShardFromArweave = async (txId: string, publicKey: string):
       }
       return response.data as Record<string, string>;
     } catch {
+      console.log(`fallback ${_nRetries} failed`);
       if (_nRetries >= MAX_ARWEAVE_RETRIES) return {};
 
       _nRetries = _nRetries + 1;
       return new Promise((resolve, _) => {
+        console.log('retrying');
         _timeout = setTimeout(() => fetchDataFallback().then((data => resolve(data))), ARWEAVE_RETRY_INTERVAL);
       });
     }
