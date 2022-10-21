@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { exit } from "process";
-import { archLogger } from "../chalk-theme";
+import { archLogger } from "../../logger/chalk-theme";
 import { CLI_BAD_ACCUSE_ARG, FILE_READ_EXCEPTION } from "../exit-codes";
 
 import jsonfile from "jsonfile";

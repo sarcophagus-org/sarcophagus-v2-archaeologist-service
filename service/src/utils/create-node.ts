@@ -1,5 +1,5 @@
 import { createLibp2p, Libp2p, Libp2pOptions } from "libp2p";
-import { archLogger } from "./chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 import { setupNodeEventListeners } from "./node-event-listeners";
 
 /**

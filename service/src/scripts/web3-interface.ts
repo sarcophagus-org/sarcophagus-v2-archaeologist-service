@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { exit } from "process";
-import { archLogger } from "../utils/chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 import {
   IERC20,
   ArchaeologistFacet__factory,
@@ -36,7 +36,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
     const encryptionWallet = isTest
       ? ethers.Wallet.createRandom()
       : new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!, rpcProvider);
-    const signer = rpcProvider.getSigner(ethWallet.address);
+    const signer = ethWallet;
 
     const network = await rpcProvider.detectNetwork();
 

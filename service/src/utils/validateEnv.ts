@@ -2,7 +2,7 @@ import "dotenv/config";
 import { PublicEnvConfig } from "models/env-config";
 
 import ethers from "ethers";
-import { archLogger } from "./chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "./exit-codes";
 import { exit } from "process";
 

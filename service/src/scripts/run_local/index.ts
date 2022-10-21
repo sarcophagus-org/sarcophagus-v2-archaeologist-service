@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { sigServer } from "@libp2p/webrtc-star-signalling-server";
-import { archLogger } from "../../utils/chalk-theme";
+import { archLogger } from "../../logger/chalk-theme";
 import { getLocalStarSignallingPort, parseLocalArchCountArgs } from "./helpers";
 import { startMultipleLocal } from "./start_multiple";
 
