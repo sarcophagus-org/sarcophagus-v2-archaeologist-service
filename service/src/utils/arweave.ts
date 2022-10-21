@@ -20,22 +20,67 @@ export const generateArweaveInstance = (): Arweave => {
   });
 }
 
+const MAX_ARWEAVE_RETRIES = 10;
+const ARWEAVE_RETRY_INTERVAL = 5000;
+
 const fetchAndDecryptShardFromArweave = async (txId: string, publicKey: string): Promise<string> => {
   const arweaveInstance = generateArweaveInstance();
-  const response = await arweaveInstance.api.get(txId);
-  const shards = response.data as Record<string, string>;
 
-  const encryptedShard = shards[publicKey];
-  if (!encryptedShard) return "";
+  const fetchData = async () => {
+    try {
+      const data = await arweaveInstance.transactions.getData(txId, {
+        decode: true,
+        string: true,
+      });
 
-  const decrypted = await decrypt(
-    Buffer.from(ethers.utils.arrayify(privateKeyPad(process.env.ENCRYPTION_PRIVATE_KEY!))),
-    Buffer.from(ethers.utils.arrayify(encryptedShard))
-  );
+      const jsonData = JSON.parse(data as string) as Record<string, string>;
+      return jsonData;
+    } catch (e) {
+      return await fetchDataFallback();
+    }
+  };
 
-  const decryptedShardString = ethers.utils.hexlify(decrypted);
+  let _timeout: NodeJS.Timeout | undefined;
+  let _nRetries = 1;
 
-  return decryptedShardString;
+  const fetchDataFallback = async (): Promise<Record<string, string>> => {
+    try {
+      const response = await arweaveInstance.api.get(txId);
+
+      if (_timeout) {
+        clearTimeout(_timeout);
+        _timeout = undefined;
+      }
+      return response.data as Record<string, string>;
+    } catch {
+      if (_nRetries >= MAX_ARWEAVE_RETRIES) return {};
+
+      _nRetries = _nRetries + 1;
+      return new Promise((resolve, _) => {
+        _timeout = setTimeout(() => fetchDataFallback().then((data => resolve(data))), ARWEAVE_RETRY_INTERVAL);
+      });
+    }
+  };
+
+  try {
+    const shards = await fetchData();
+
+    const encryptedShard = shards[publicKey];
+    if (!encryptedShard) return "";
+
+    const decrypted = await decrypt(
+      Buffer.from(ethers.utils.arrayify(privateKeyPad(process.env.ENCRYPTION_PRIVATE_KEY!))),
+      Buffer.from(ethers.utils.arrayify(encryptedShard))
+    );
+
+    const decryptedShardString = ethers.utils.hexlify(decrypted);
+
+    return decryptedShardString;
+  } catch (e) {
+    archLogger.error('Exception in fetchAndDecryptShardFromArweave');
+    archLogger.error(e.toString());
+    return '';
+  }
 }
 
 export const fetchAndValidateShardOnArweave = async (
@@ -45,6 +90,8 @@ export const fetchAndValidateShardOnArweave = async (
 ): Promise<boolean> => {
   try {
     const decryptedShardString = await fetchAndDecryptShardFromArweave(arweaveShardsTxId, publicKey);
+
+    if (!decryptedShardString) return false;
 
     const unencryptedHash = solidityKeccak256(["string"], [decryptedShardString]);
     const unencryptedDoubleHash = solidityKeccak256(["string"], [unencryptedHash]);
