@@ -17,7 +17,7 @@ export async function healthCheck(web3Interface: Web3Interface) {
     console.log(
       "\n\n=========================================================================================================\n"
     );
-    console.log(" YOUR BALANCES:\n");
+    console.log(` YOUR BALANCES (${web3Interface.ethWallet.address}):\n`);
 
     console.log(` * SARCO:             ${ethers.utils.formatEther(bal)} SARCO`);
     console.log(` * ETHER:             ${ethers.utils.formatEther(ethBal)} ETH`);

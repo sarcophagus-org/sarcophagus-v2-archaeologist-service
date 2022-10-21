@@ -2,14 +2,14 @@
 // and use for consistency
 
 export interface StreamCommsError {
-  code: number;
+  code: SarcophagusValidationError;
   message: string;
 }
 
 export enum SarcophagusValidationError {
-  UNKNOWN_ERROR = 1,
-  MAX_REWRAP_INTERVAL_TOO_LARGE = 2,
-  INVALID_ARWEAVE_SHARD = 3,
-  DIGGING_FEE_TOO_LOW = 4,
-  INVALID_TIMESTAMP = 5,
+  UNKNOWN_ERROR,
+  MAX_REWRAP_INTERVAL_TOO_LARGE,
+  INVALID_ARWEAVE_SHARD,
+  DIGGING_FEE_TOO_LOW,
+  INVALID_TIMESTAMP,
 }
