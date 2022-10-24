@@ -78,20 +78,24 @@ export const logBalances = (
   ethBalance: BigNumber,
   address: string,
 ): void => {
-  console.log(` YOUR BALANCES (${address}):\n`);
+  console.log(`YOUR BALANCES (${address}):\n`);
 
   const balances = [
     {
-      balance: formatEther(sarcoBalance),
+      balance: "",
+      ticker: "",
+    },
+    {
+      balance: ` > ${formatEther(sarcoBalance)}`,
       ticker: "SARCO",
     },
     {
-      balance: formatEther(ethBalance),
+      balance: ` > ${formatEther(ethBalance)}`,
       ticker: "ETH",
     }
   ];
 
-  console.log(columnify(balances, { minWidth: 20 }));
+  console.log(columnify(balances, { minWidth: 30 }));
 };
 
 export const randomIntFromInterval = (min, max) => {
