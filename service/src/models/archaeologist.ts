@@ -33,7 +33,7 @@ export interface ArchaeologistInit {
 interface SarcophagusNegotiationParams {
   arweaveTxId: string;
   unencryptedShardDoubleHash: string;
-  maxRewrapInterval: BigNumber;
+  maxRewrapInterval: number;
   diggingFee: string;
   timestamp: number;
 }
@@ -152,17 +152,17 @@ export class Archaeologist {
 
               const maximumRewrapIntervalBN = BigNumber.from(maxRewrapInterval);
 
-              let error: number | null = null;
+              let errorCode: SarcophagusValidationError | null = null;
               if (maximumRewrapIntervalBN.gt(inMemoryStore.profile!.maximumRewrapInterval)) {
-                error = SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE;
+                errorCode = SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE;
               }
 
               if (ethers.utils.parseEther(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)) {
-                error = SarcophagusValidationError.DIGGING_FEE_TOO_LOW;
+                errorCode = SarcophagusValidationError.DIGGING_FEE_TOO_LOW;
               }
 
               if (timestamp > Date.now()) {
-                error = SarcophagusValidationError.INVALID_TIMESTAMP;
+                errorCode = SarcophagusValidationError.INVALID_TIMESTAMP;
               }
 
               if (
@@ -172,12 +172,12 @@ export class Archaeologist {
                   this.web3Interface.encryptionWallet.publicKey
                 ))
               ) {
-                error = SarcophagusValidationError.INVALID_ARWEAVE_SHARD;
+                errorCode = SarcophagusValidationError.INVALID_ARWEAVE_SHARD;
               }
 
               // Emit error if set for any reason. (Offload burden of user-friendly messaging to recipient)
-              if (error) {
-                emitError({ code: error, message: "Declined to sign" });
+              if (errorCode) {
+                emitError({ code: errorCode, message: "Declined to sign" });
                 return;
               }
 

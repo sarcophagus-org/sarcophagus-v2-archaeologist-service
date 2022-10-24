@@ -38,7 +38,7 @@ export class View implements Command {
       logCallout(async () => {
         const sarcoBalance = await getSarcoBalance(this.web3Interface);
         const ethBalance = await getEthBalance(this.web3Interface);
-        logBalances(sarcoBalance, ethBalance);
+        logBalances(sarcoBalance, ethBalance, this.web3Interface.ethWallet.address);
       });
     }
   }

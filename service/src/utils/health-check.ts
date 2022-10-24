@@ -1,4 +1,4 @@
-import { BigNumber, constants, ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "../logger/chalk-theme";
@@ -27,7 +27,7 @@ export async function healthCheck(web3Interface: Web3Interface) {
     logProfile(profile);
 
     logCallout(async () => {
-      logBalances(sarcoBalance, ethBalance);
+      logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address);
 
       // If ETH balance is low, the archaeologist won't have gas to sign transactions
       warnIfEthBalanceIsLow(ethBalance);
