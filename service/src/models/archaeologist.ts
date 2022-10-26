@@ -68,7 +68,6 @@ export class Archaeologist {
   }
 
   async setupCommunicationStreams() {
-    await this._setupMessageStream();
     await this._setupSarcophagusNegotiationStream();
   }
 
@@ -110,26 +109,6 @@ export class Archaeologist {
     await this.node.stop();
   }
 
-  // TODO: this function can probably be removed
-  async _setupMessageStream() {
-    const msgProtocol = "/message";
-    archLogger.info(`listening to stream on protocol: ${msgProtocol}`);
-    this.node.handle([msgProtocol], ({ stream }) => {
-      try {
-        pipe(stream, async function (source) {
-          for await (const msg of source) {
-            const decoded = new TextDecoder().decode(msg);
-            archLogger.notice(`received message ${decoded}`);
-          }
-        }).finally(() => {
-          stream.close();
-        });
-      } catch (error) {
-        archLogger.error(`Error sending message:\n${error}`);
-      }
-    });
-  }
-
   async _setupSarcophagusNegotiationStream() {
     this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
       const streamToBrowser = (result: string) => {
@@ -148,7 +127,7 @@ export class Archaeologist {
                 maxRewrapInterval,
                 diggingFee, // this is assumed to, and should, be in wei
                 timestamp,
-              }: SarcophagusNegotiationParams = JSON.parse(new TextDecoder().decode(data));
+              }: SarcophagusNegotiationParams = JSON.parse(new TextDecoder().decode(data.subarray()));
 
               const maximumRewrapIntervalBN = BigNumber.from(maxRewrapInterval);
 
@@ -227,17 +206,9 @@ export class Archaeologist {
         encryptionPublicKey: this.envConfig.encryptionPublicKey,
       });
 
-      const { stream } = await connection.newStream(PUBLIC_KEY_STREAM);
+      const stream = await connection.newStream(PUBLIC_KEY_STREAM);
 
-      pipe([
-        new TextEncoder().encode(msgStr)],
-        stream,
-        async source => {
-          for await (const data of source) {
-            const dataStr = new TextDecoder().decode(data as BufferSource | undefined);
-            console.log("dataStr", dataStr);
-          }
-        });
+      pipe([new TextEncoder().encode(msgStr)], stream);
     } catch (error) {
       archLogger.error(`Exception sending public key: ${error}\nConnection: ${JSON.stringify(connection)}`);
     }

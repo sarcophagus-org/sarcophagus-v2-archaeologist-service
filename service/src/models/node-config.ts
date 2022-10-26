@@ -1,10 +1,9 @@
-import { TCP } from "@libp2p/tcp";
-import { WebRTCStar } from "@libp2p/webrtc-star";
-import wrtc from "@koush/wrtc";
-import { KadDHT } from "@libp2p/kad-dht";
-import { Noise } from "@chainsafe/libp2p-noise";
-import { Mplex } from "@libp2p/mplex";
-import { Bootstrap } from "@libp2p/bootstrap";
+import { webRTCStar } from "@libp2p/webrtc-star";
+import wrtc from "wrtc";
+import { kadDHT } from "@libp2p/kad-dht";
+import { noise } from "@chainsafe/libp2p-noise";
+import { mplex } from "@libp2p/mplex";
+import { bootstrap } from "@libp2p/bootstrap";
 import { Libp2pOptions } from "libp2p";
 
 interface NodeConfigParams {
@@ -18,21 +17,19 @@ export const PUBLIC_KEY_STREAM = "/archaeologist-public-key";
 export const NEGOTIATION_SIGNATURE_STREAM = "/archaeologist-negotiation-signature";
 const DHT_PROTOCOL_PREFIX = "/archaeologist-service";
 
-const webRtcStar = new WebRTCStar({ wrtc });
+const dht = kadDHT({
+  protocolPrefix: DHT_PROTOCOL_PREFIX,
+  clientMode: false,
+});
+
+const webRtcStar = webRTCStar({wrtc});
 
 export class NodeConfig {
   public configObj: Libp2pOptions = {
-    transports: [
-      new TCP(),
-      // @ts-ignore
-      webRtcStar,
-    ],
-    connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()],
-    dht: new KadDHT({
-      protocolPrefix: DHT_PROTOCOL_PREFIX,
-      clientMode: false,
-    }),
+    transports: [webRtcStar.transport],
+    connectionEncryption: [noise()],
+    streamMuxers: [mplex()],
+    dht,
     peerDiscovery: [webRtcStar.discovery],
     connectionManager: {
       autoDial: false,
@@ -42,7 +39,7 @@ export class NodeConfig {
   constructor(options: NodeConfigParams = {}) {
     if (options.bootstrapList) {
       this.configObj.peerDiscovery!.push(
-        new Bootstrap({
+        bootstrap({
           list: options.bootstrapList,
         })
       );
