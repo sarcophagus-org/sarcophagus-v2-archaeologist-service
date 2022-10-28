@@ -80,7 +80,7 @@ export async function getOnchainCursedSarcophagi(
 
     // If sarcophagus exists and the unencrypted shard is empty, then it (potentially)
     // still needs to be unwrapped
-    if ((sarco.state === SarcophagusState.Exists) && archStorage.unencryptedShard === '0x') {
+    if (sarco.state === SarcophagusState.Exists && archStorage.unencryptedShard === '0x') {
       const nowTimestampInSeconds = new Date().getTime() / 1000;
 
       const tooLateToUnwrap =
