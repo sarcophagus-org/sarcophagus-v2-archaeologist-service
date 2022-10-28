@@ -97,8 +97,8 @@ export const fetchAndValidateShardOnArweave = async (
 
     if (!decryptedShardString) return false;
 
-    const unencryptedHash = solidityKeccak256(["string"], [decryptedShardString]);
-    const unencryptedDoubleHash = solidityKeccak256(["string"], [unencryptedHash]);
+    const unencryptedHash = solidityKeccak256(["bytes"], [decryptedShardString]);
+    const unencryptedDoubleHash = solidityKeccak256(["bytes"], [unencryptedHash]);
 
     return expectedUnencryptedDoubleHash === unencryptedDoubleHash;
   } catch (e) {
