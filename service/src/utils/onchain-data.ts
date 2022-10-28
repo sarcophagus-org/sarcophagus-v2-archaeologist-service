@@ -22,6 +22,7 @@ interface SarcophagusData {
 interface InMemoryStore {
   sarcophagi: SarcophagusData[];
   profile?: OnchainProfile;
+  gracePeriod?: BigNumber;
 }
 
 export const inMemoryStore: InMemoryStore = {
@@ -39,6 +40,10 @@ export async function getOnchainProfile(web3Interface: Web3Interface): Promise<O
 
 export async function getSarcoBalance(web3Interface: Web3Interface): Promise<BigNumber> {
   return web3Interface.sarcoToken.balanceOf(web3Interface.ethWallet.address);
+}
+
+export async function getGracePeriod(web3Interface: Web3Interface): Promise<BigNumber> {
+  return web3Interface.viewStateFacet.getGracePeriod();
 }
 
 export async function getEthBalance(web3Interface: Web3Interface): Promise<BigNumber> {
@@ -60,9 +65,12 @@ export async function getOnchainCursedSarcophagi(
 ): Promise<SarcophagusData[]> {
   const archSarco: SarcophagusData[] = [];
 
+  inMemoryStore.gracePeriod = inMemoryStore.gracePeriod || await getGracePeriod(web3Interface);
+
   const sarcoIds = await web3Interface.viewStateFacet.getArchaeologistSarcophagi(
     web3Interface.ethWallet.address
   );
+
   sarcoIds.map(async sarcoId => {
     const sarco = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
     const archStorage = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(
@@ -70,11 +78,13 @@ export async function getOnchainCursedSarcophagi(
       web3Interface.ethWallet.address
     );
 
-    if (sarco.state === SarcophagusState.Exists && !archStorage.unencryptedShard) {
+    // If sarcophagus exists and the unencrypted shard is empty, then it (potentially)
+    // still needs to be unwrapped
+    if ((sarco.state === SarcophagusState.Exists) && archStorage.unencryptedShard === '0x') {
       const nowTimestampInSeconds = new Date().getTime() / 1000;
-      // TODO: rename resurrectionWindow to gracePeriod when contract updates merged
+
       const tooLateToUnwrap =
-        sarco.resurrectionTime.toNumber() + sarco.resurrectionWindow.toNumber() <
+        (sarco.resurrectionTime.toNumber() + inMemoryStore.gracePeriod!.toNumber()) <
         nowTimestampInSeconds;
 
       if (tooLateToUnwrap) {
@@ -113,7 +123,6 @@ export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: s
   archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`);
 
   const decryptedShard = await fetchAndDecryptShard(web3Interface, sarcoId);
-
   if (!decryptedShard) {
     archLogger.error("Unwrap failed -- unable to decrypt shard");
     return;
@@ -122,7 +131,7 @@ export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: s
   try {
     await web3Interface.archaeologistFacet.unwrapSarcophagus(
       sarcoId,
-      ethers.utils.arrayify(decryptedShard) // TODO: Might need an extra `Buffer.from`. `unwrapSarcophagus` expects a solidity bytes type, `decryptedShard` is a hex string
+      decryptedShard
     );
 
     inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
