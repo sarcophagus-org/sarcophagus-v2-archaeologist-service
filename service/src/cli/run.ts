@@ -1,4 +1,4 @@
-#!/usr/bin/env node --experimental-specifier-resolution=node
+#!/usr/bin/env -S node --experimental-specifier-resolution=node
 
 import { ArchaeologistCli } from "./cli";
 import { archLogger } from "../logger/chalk-theme";
