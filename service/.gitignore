@@ -1,8 +1,0 @@
-.idea
-node_modules
-build
-.env
-tsconfig.tsbuildinfo
-peer-id.json
-.DS_Store
-peer-ids
