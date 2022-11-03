@@ -15,9 +15,6 @@ import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
 
 export interface ListenAddressesConfig {
-  ipAddress: string;
-  tcpPort: string;
-  wsPort: string;
   signalServerList: string[];
 }
 
@@ -87,10 +84,8 @@ export class Archaeologist {
     this.peerId = this.peerId ?? (await loadPeerIdFromFile(idFilePath));
 
     if (this.listenAddressesConfig) {
-      const { ipAddress, tcpPort, wsPort, signalServerList } = this.listenAddressesConfig!;
+      const { signalServerList } = this.listenAddressesConfig!;
       this.listenAddresses = genListenAddresses(
-        ipAddress,
-        tcpPort,
         signalServerList,
         this.peerId.toJSON().id
       );
