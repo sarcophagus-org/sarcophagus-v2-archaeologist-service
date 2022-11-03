@@ -5,19 +5,15 @@ import { solidityKeccak256 } from "ethers/lib/utils";
 import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "../logger/chalk-theme";
 import { SarcophagusState } from "./onchain-data";
+import { getNetworkConfigByChainId, localChainId } from "../lib/config";
 
 const privateKeyPad = (privKey: string): string => {
   return privKey.startsWith("0x") ? privKey : `0x${privKey}`;
 }
 
 export const generateArweaveInstance = (): Arweave => {
-  return Arweave.init({
-    host: process.env.ARWEAVE_HOST,
-    port: Number.parseInt(process.env.ARWEAVE_PORT!),
-    protocol: process.env.ARWEAVE_PROTOCOL,
-    timeout: Number.parseInt(process.env.ARWEAVE_TIMEOUT!),
-    logging: process.env.ARWEAVE_LOGGING === "true",
-  });
+  const networkConfig = getNetworkConfigByChainId(process.env.CHAIN_ID || localChainId);
+  return Arweave.init(networkConfig.arweave);
 }
 
 const MAX_ARWEAVE_RETRIES = 10;
