@@ -1,9 +1,7 @@
 import { NetworkConfig } from "../types/network-config";
 
-export const chainId = 31337;
-
 export const hardhatNetworkConfig: NetworkConfig = {
-  chainId,
+  chainId: 31337,
   networkName: 'Hardhat Local Network',
   networkShortName: 'HardHat',
   sarcoTokenAddress: '0x5FbDB2315678afecb367f032d93F642f64180aa3',

@@ -14,6 +14,7 @@ import {
   ThirdPartyFacet__factory,
 } from "@sarcophagus-org/sarcophagus-v2-contracts";
 import { BAD_ENV } from "../utils/exit-codes";
+import { getNetworkConfigByChainId, localChainId } from "../lib/config";
 
 export interface Web3Interface {
   networkName: string;
@@ -27,34 +28,42 @@ export interface Web3Interface {
   viewStateFacet: ViewStateFacet;
 }
 
+// TODO -- consider instantiating this once per session, or memo-izing with cache timeout
 export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface> => {
   try {
-    const rpcProvider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_URL);
+    const networkConfig = getNetworkConfigByChainId(process.env.CHAIN_ID || localChainId);
+
+    const rpcProvider = new ethers.providers.JsonRpcProvider(
+      networkConfig.providerUrl || process.env.PROVIDER_URL
+    );
+
     const ethWallet = isTest
       ? ethers.Wallet.createRandom()
       : new ethers.Wallet(process.env.ETH_PRIVATE_KEY!, rpcProvider);
+
     const encryptionWallet = isTest
       ? ethers.Wallet.createRandom()
       : new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!, rpcProvider);
-    const signer = ethWallet;
 
+    const signer = ethWallet;
     const network = await rpcProvider.detectNetwork();
 
-    const sarcoToken = IERC20__factory.connect(process.env.SARCO_TOKEN_ADDRESS!, signer);
+    const sarcoToken = IERC20__factory.connect(networkConfig.sarcoTokenAddress, signer);
+
     const embalmerFacet = EmbalmerFacet__factory.connect(
-      process.env.SARCO_DIAMOND_ADDRESS!,
+      networkConfig.diamondDeployAddress,
       signer
     );
     const archaeologistFacet = ArchaeologistFacet__factory.connect(
-      process.env.SARCO_DIAMOND_ADDRESS!,
+      networkConfig.diamondDeployAddress,
       signer
     );
     const viewStateFacet = ViewStateFacet__factory.connect(
-      process.env.SARCO_DIAMOND_ADDRESS!,
+      networkConfig.diamondDeployAddress,
       signer
     );
     const thirdPartyFacet = ThirdPartyFacet__factory.connect(
-      process.env.SARCO_DIAMOND_ADDRESS!,
+      networkConfig.diamondDeployAddress,
       signer
     );
 

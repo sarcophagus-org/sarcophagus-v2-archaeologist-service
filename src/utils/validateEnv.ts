@@ -5,6 +5,10 @@ import * as ethers from "ethers";
 import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "./exit-codes";
 import { exit } from "process";
+import { getNetworkConfigByChainId, isLocalNetwork } from "../lib/config";
+
+const DEFAULT_TCP_PORT = "9000";
+const DEFAULT_WS_PORT = "10000";
 
 const _tryReadEnv = (
   envName: string,
@@ -15,7 +19,7 @@ const _tryReadEnv = (
   }
 
 ) => {
-  const isRequired = config && config.required;
+  const isRequired = (config && config.required);
   if (isRequired && !envVar) {
     archLogger.error(`${envName} is required and not set in .env`);
     exit(BAD_ENV);
@@ -33,18 +37,25 @@ const _tryReadEnv = (
   }
 };
 
-export function validateEnvVars(isLocal?: boolean): PublicEnvConfig {
-  validateLibp2pEnvVars(isLocal);
+export function validateEnvVars(): PublicEnvConfig {
+  _tryReadEnv("CHAIN_ID", process.env.CHAIN_ID, {
+    required: true,
+    callback: envVar => {
+      getNetworkConfigByChainId(envVar)
+    }
+  });
 
-  return validateBlockEnvVars(isLocal);
+  validateLibp2pEnvVars(isLocalNetwork);
+
+  return validateBlockEnvVars(isLocalNetwork);
 }
 
 function validateLibp2pEnvVars(isLocal?: boolean) {
   _tryReadEnv("IP_ADDRESS", process.env.IP_ADDRESS, { required: !isLocal });
-  _tryReadEnv("TCP_PORT", process.env.TCP_PORT || "9000");
-  _tryReadEnv("WS_PORT", process.env.WS_PORT || "10000");
+  _tryReadEnv("TCP_PORT", process.env.TCP_PORT || DEFAULT_TCP_PORT);
+  _tryReadEnv("WS_PORT", process.env.WS_PORT || DEFAULT_WS_PORT);
   _tryReadEnv("SIGNAL_SERVER_LIST", process.env.SIGNAL_SERVER_LIST);
-  _tryReadEnv("BOOTSTRAP_LIST", process.env.BOOTSTRAP_LIST, { required: false });
+  _tryReadEnv("BOOTSTRAP_LIST", process.env.BOOTSTRAP_LIST);
 }
 
 function validateBlockEnvVars(isLocal?: boolean) {
