@@ -1,19 +1,11 @@
 import { getLocalStarSignallingPort } from "../scripts/run_local/helpers";
 
 export const genListenAddresses = (
-  ipAddress: string,
-  tcpPort: number | string,
   servers: string[],
   peerId?: string,
   isLocal?: boolean
 ): string[] => {
-  return [tcpListenAddress(ipAddress, tcpPort)].concat(
-    ssListenAddresses(isLocal === true, servers, peerId)
-  );
-};
-
-export const tcpListenAddress = (ipAddress: string, port: number | string) => {
-  return `/ip4/${ipAddress}/tcp/${port}`;
+  return ssListenAddresses(isLocal === true, servers, peerId);
 };
 
 export const ssListenAddresses = (

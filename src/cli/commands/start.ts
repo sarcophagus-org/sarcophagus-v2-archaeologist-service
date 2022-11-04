@@ -27,19 +27,13 @@ export class Start implements Command {
   }
 
   async registerAndStartRandomArch() {
-    const startingTcpPort = randomIntFromInterval(10000, 15000);
-    const startingWsPort = randomIntFromInterval(15001, 20000);
-
-    const {peerId, listenAddresses} = await randomTestArchVals({
-      tcpPort: startingTcpPort,
-      wsPort: startingWsPort
-    });
+    const {peerId, listenAddresses} = await randomTestArchVals({});
 
     this.defaultProfileParams.peerId = peerId.toString();
     await this.registerOrUpdateArchaeologist(this.defaultProfileParams);
 
     await startService({
-      nodeName: `random arch: ${startingWsPort}`,
+      nodeName: `random arch`,
       peerId,
       listenAddresses
     })

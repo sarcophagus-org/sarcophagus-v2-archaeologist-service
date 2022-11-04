@@ -12,18 +12,10 @@ export async function runTests() {
 
   const envVars = [
     "IP_ADDRESS",
-    "TCP_PORT",
-    "WS_PORT",
-    "BOOTSTRAP_LIST",
     "SIGNAL_SERVER_LIST",
     "ENCRYPTION_PRIVATE_KEY",
     "ETH_PRIVATE_KEY",
     "PROVIDER_URL",
-    "SARCO_DIAMOND_ADDRESS",
-    "ARWEAVE_HOST",
-    "ARWEAVE_PORT",
-    "ARWEAVE_TIMEOUT",
-    "ARWEAVE_LOGGING",
   ];
 
   for (const envVar of envVars) {

@@ -27,9 +27,6 @@ export async function startService(opts: {
     listenAddressesConfig:
       listenAddresses === undefined
         ? {
-            ipAddress: process.env.IP_ADDRESS!,
-            tcpPort: process.env.TCP_PORT!,
-            wsPort: process.env.WS_PORT!,
             signalServerList: process.env.SIGNAL_SERVER_LIST!.split(",").map(s => s.trim()),
           }
         : undefined,
