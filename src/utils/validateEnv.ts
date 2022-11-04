@@ -51,9 +51,6 @@ export function validateEnvVars(): PublicEnvConfig {
 }
 
 function validateLibp2pEnvVars(isLocal?: boolean) {
-  _tryReadEnv("IP_ADDRESS", process.env.IP_ADDRESS, { required: !isLocal });
-  _tryReadEnv("TCP_PORT", process.env.TCP_PORT || DEFAULT_TCP_PORT);
-  _tryReadEnv("WS_PORT", process.env.WS_PORT || DEFAULT_WS_PORT);
   _tryReadEnv("SIGNAL_SERVER_LIST", process.env.SIGNAL_SERVER_LIST);
   _tryReadEnv("BOOTSTRAP_LIST", process.env.BOOTSTRAP_LIST);
 }
