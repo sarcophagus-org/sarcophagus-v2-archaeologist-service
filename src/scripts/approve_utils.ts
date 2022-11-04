@@ -11,7 +11,7 @@ const prompt = createPrompt({ sigint: true });
 const _hasAllowance = async (web3Interface: Web3Interface, amt: BigNumber) => {
   const allowance = await web3Interface.sarcoToken.allowance(
     web3Interface.ethWallet.address,
-    process.env.SARCO_DIAMOND_ADDRESS!
+    web3Interface.networkConfig.diamondDeployAddress
   );
 
   if (allowance.gte(amt)) {
@@ -45,7 +45,7 @@ export const runApprove = async (web3Interface: Web3Interface) => {
   };
 
   const tx = await web3Interface.sarcoToken
-    .approve(process.env.SARCO_DIAMOND_ADDRESS!, ethers.constants.MaxUint256)
+    .approve(web3Interface.networkConfig.diamondDeployAddress, ethers.constants.MaxUint256)
     .catch(handleException);
 
   archLogger.info("Waiting for transaction");

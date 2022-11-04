@@ -15,6 +15,7 @@ import {
 } from "@sarcophagus-org/sarcophagus-v2-contracts";
 import { BAD_ENV } from "../utils/exit-codes";
 import { getNetworkConfigByChainId, localChainId } from "../lib/config";
+import { NetworkConfig } from "../lib/types/network-config";
 
 export interface Web3Interface {
   networkName: string;
@@ -26,6 +27,7 @@ export interface Web3Interface {
   embalmerFacet: EmbalmerFacet;
   thirdPartyFacet: ThirdPartyFacet;
   viewStateFacet: ViewStateFacet;
+  networkConfig: NetworkConfig;
 }
 
 // TODO -- consider instantiating this once per session, or memo-izing with cache timeout
@@ -80,6 +82,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       embalmerFacet,
       viewStateFacet,
       thirdPartyFacet,
+      networkConfig
     } as Web3Interface;
   } catch (e) {
     archLogger.error(e);
