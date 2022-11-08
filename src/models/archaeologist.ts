@@ -112,7 +112,10 @@ export class Archaeologist {
 
       try {
         await pipe(stream, async source => {
-          const emitError = (error: StreamCommsError) => streamToBrowser(JSON.stringify({ error }));
+          const emitError = (error: StreamCommsError) => {
+            streamToBrowser(JSON.stringify({ error }));
+            archLogger.error(`Failed to sign sarcophagus params: ${error.message}`);
+          }
           for await (const data of source) {
             // validate that supplied sarcophagus parameters meet the requirements of the archaeologist
             try {
@@ -125,18 +128,36 @@ export class Archaeologist {
               }: SarcophagusNegotiationParams = JSON.parse(new TextDecoder().decode(data.subarray()));
 
               const maximumRewrapIntervalBN = BigNumber.from(maxRewrapInterval);
+              const errorMessagePrefix = `Archaeologist ${this.peerId.toString()} declined to sign: `;
 
-              let errorCode: SarcophagusValidationError | null = null;
               if (maximumRewrapIntervalBN.gt(inMemoryStore.profile!.maximumRewrapInterval)) {
-                errorCode = SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE;
+                emitError({
+                  code: SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE,
+                  message: `${errorMessagePrefix} \n Maximum rewrap interval too large.  
+                  \n Got: ${maximumRewrapIntervalBN.toString()}
+                  \n Maximum allowed: ${inMemoryStore.profile!.maximumRewrapInterval.toString()}`
+                });
+                return;
               }
 
               if (ethers.utils.parseEther(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)) {
-                errorCode = SarcophagusValidationError.DIGGING_FEE_TOO_LOW;
+                emitError({
+                  code: SarcophagusValidationError.DIGGING_FEE_TOO_LOW,
+                  message: `${errorMessagePrefix} \n Digging fee sent is too low.  
+                  \n Got: ${diggingFee.toString()}
+                  \n Minimum needed: ${inMemoryStore.profile!.minimumDiggingFee.toString()}`
+                });
+                return;
               }
 
               if (timestamp > Date.now()) {
-                errorCode = SarcophagusValidationError.INVALID_TIMESTAMP;
+                emitError({
+                  code: SarcophagusValidationError.INVALID_TIMESTAMP,
+                  message: `${errorMessagePrefix} \n Timestamp received is in the future.  
+                  \n Got: ${timestamp}
+                  \n Date.now value: ${Date.now()}`
+                });
+                return;
               }
 
               if (
@@ -146,12 +167,12 @@ export class Archaeologist {
                   this.web3Interface.encryptionWallet.publicKey
                 ))
               ) {
-                errorCode = SarcophagusValidationError.INVALID_ARWEAVE_SHARD;
-              }
-
-              // Emit error if set for any reason. (Offload burden of user-friendly messaging to recipient)
-              if (errorCode) {
-                emitError({ code: errorCode, message: "Declined to sign" });
+                emitError({
+                  code: SarcophagusValidationError.INVALID_ARWEAVE_SHARD,
+                  message: `${errorMessagePrefix} \n Arweave shard is invalid.  
+                  \n Arweave TX ID: ${arweaveTxId}
+                  \n unencryptedShardDoubleHash value: ${unencryptedShardDoubleHash}`
+                });
                 return;
               }
 
