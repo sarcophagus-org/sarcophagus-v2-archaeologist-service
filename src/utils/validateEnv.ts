@@ -1,14 +1,10 @@
 import "dotenv/config";
 import { PublicEnvConfig } from "models/env-config";
-
 import * as ethers from "ethers";
 import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "./exit-codes";
 import { exit } from "process";
 import { getNetworkConfigByChainId, isLocalNetwork } from "../lib/config";
-
-const DEFAULT_TCP_PORT = "9000";
-const DEFAULT_WS_PORT = "10000";
 
 const _tryReadEnv = (
   envName: string,
@@ -17,7 +13,6 @@ const _tryReadEnv = (
     required?: boolean,
     callback?: (envVar: string) => any
   }
-
 ) => {
   const isRequired = (config && config.required);
   if (isRequired && !envVar) {

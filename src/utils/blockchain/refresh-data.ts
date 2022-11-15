@@ -4,8 +4,11 @@ import { scheduleUnwrap } from "../scheduler";
 import { getGracePeriod, getSarcophagiIds, inMemoryStore, SarcophagusData, SarcophagusState } from "../onchain-data";
 import { BigNumber } from "ethers";
 
+// TODO -- once typechain defs are in the sarcophagus-org package,
+// the types in this file and onchain-data can get updated
 const curseIsActive = (sarcophagus: any, archaeologist: any): boolean => {
-  return sarcophagus.state === SarcophagusState.Active && archaeologist.unencryptedShard === '0x';
+  return archaeologist.unencryptedShard === '0x' &&
+    [SarcophagusState.Active, SarcophagusState.Resurrecting].includes(sarcophagus.state);
 }
 
 const endOfGracePeriod = (sarcophagus: any, gracePeriod: BigNumber): number => {
@@ -31,19 +34,22 @@ export async function fetchSarcophagiAndScheduleUnwraps(
       const now = new Date().getTime() / 1000;
 
       const tooLateToUnwrap = now > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
-      if (tooLateToUnwrap) { return; }
+      if (tooLateToUnwrap) {
+        return;
+      }
 
       const resurrectionTime = new Date(sarcophagus.resurrectionTime.toNumber() * 1000);
-      sarcophagi.push({
-        id: sarcoId,
-        resurrectionTime,
-      });
 
       if (now > sarcophagus.resurrectionTime.toNumber()) {
         await unwrapSarcophagus(web3Interface, sarcoId);
       } else {
         scheduleUnwrap(web3Interface, sarcoId, resurrectionTime);
       }
+
+      sarcophagi.push({
+        id: sarcoId,
+        resurrectionTime,
+      });
     }
   });
 

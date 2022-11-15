@@ -13,7 +13,7 @@ const unwrapSarcophagusWithRetry = async (unwrapFn: Function, depth = 0) => {
   try {
     return await unwrapFn();
   } catch (e) {
-    archLogger.warn(`Unwrap failed, retrying.... Error: ${e}`);
+    archLogger.warn(`Unwrap attempt ${depth + 1} failed, retrying....`);
     if (depth > MAX_RETRIES) {
       throw e;
     }
@@ -41,7 +41,7 @@ export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: s
     await tx.wait();
 
     inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
-    archLogger.notice("Unwrapped successfully!");
+    archLogger.notice(`Unwrapped ${sarcoId} successfully!`);
   } catch (e) {
     archLogger.error(`Unwrap failed: ${e}`);
     handleRpcError(e.reason);
