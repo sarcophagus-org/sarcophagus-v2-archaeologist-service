@@ -67,6 +67,7 @@ export class Archaeologist {
 
   async setupCommunicationStreams() {
     await this._setupSarcophagusNegotiationStream();
+    await this._setupPublicKeyStream();
   }
 
   async initNode(arg: {
@@ -206,6 +207,34 @@ export class Archaeologist {
         });
       } catch (err) {
         archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`);
+      }
+    });
+  }
+
+  async _setupPublicKeyStream() {
+    this.node.handle([PUBLIC_KEY_STREAM], async ({ stream }) => {
+      try {
+        await pipe(stream, async source => {
+          for await (const data of source) {
+            if (data.length > 8) stream.close();
+            try {
+              const signature = await this.web3Interface.ethWallet.signMessage(this.envConfig.encryptionPublicKey);
+
+              this.streamToBrowser(stream, JSON.stringify({
+                signature,
+                encryptionPublicKey: this.envConfig.encryptionPublicKey,
+              }));
+            } catch (e) {
+              archLogger.error(e);
+              this.emitError(stream, {
+                code: SarcophagusValidationError.UNKNOWN_ERROR,
+                message: e.code ? `${e.code}\n${e.message}` : e.message ?? e,
+              });
+            }
+          }
+        });
+      } catch (err) {
+        archLogger.error(`problem with pipe in public key stream: ${err}`);
       }
     });
   }
