@@ -74,15 +74,7 @@ export class Archaeologist {
     web3Interface: Web3Interface;
     idFilePath?: string;
   }) {
-    this.node = await this.createLibp2pNode(arg.idFilePath);
-    this.envConfig = arg.config;
-    this.web3Interface = arg.web3Interface;
-
-    return this.node;
-  }
-
-  async createLibp2pNode(idFilePath?: string): Promise<Libp2p> {
-    this.peerId = this.peerId ?? (await loadPeerIdFromFile(idFilePath));
+    this.peerId = this.peerId ?? (await loadPeerIdFromFile(arg.idFilePath));
 
     if (this.listenAddressesConfig) {
       const { signalServerList } = this.listenAddressesConfig!;
@@ -95,7 +87,12 @@ export class Archaeologist {
     this.nodeConfig.add("peerId", this.peerId);
     this.nodeConfig.add("addresses", { listen: this.listenAddresses });
 
-    return createNode(this.name, this.nodeConfig.configObj);
+    this.node = await createNode(this.name, this.nodeConfig.configObj);
+
+    this.envConfig = arg.config;
+    this.web3Interface = arg.web3Interface;
+
+    return this.node;
   }
 
   async shutdown() {
