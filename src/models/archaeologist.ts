@@ -95,9 +95,7 @@ export class Archaeologist {
     this.nodeConfig.add("peerId", this.peerId);
     this.nodeConfig.add("addresses", { listen: this.listenAddresses });
 
-    return createNode(this.name, this.nodeConfig.configObj, connection =>
-      this.sendEncryptionPublicKey(connection)
-    );
+    return createNode(this.name, this.nodeConfig.configObj);
   }
 
   async shutdown() {

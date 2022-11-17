@@ -11,9 +11,7 @@ function formatDP(name, peerId) {
 }
 
 export function setupNodeEventListeners(
-  node: Libp2p,
-  name: string,
-  connectCallback?: (connection) => void
+  node: Libp2p, name: string
 ) {
   node.addEventListener("peer:discovery", evt => {
     const peerId = evt.detail.id.toString();
@@ -30,10 +28,6 @@ export function setupNodeEventListeners(
     archLogger.info(
       `${name}: Connection established to ${peerId.slice(peerId.length - idTruncateLimit)}`
     );
-
-    if (connectCallback) {
-      connectCallback(evt.detail);
-    }
   });
 
   node.connectionManager.addEventListener("peer:disconnect", evt => {
