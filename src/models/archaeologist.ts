@@ -150,7 +150,7 @@ export class Archaeologist {
                 return;
               }
 
-              if (timestamp > Date.now()) {
+              if (timestamp > (Date.now() + 1000 * 60)) { // add 60 second buffer to account for differences in system times
                 emitError({
                   code: SarcophagusValidationError.INVALID_TIMESTAMP,
                   message: `${errorMessagePrefix} \n Timestamp received is in the future.  
