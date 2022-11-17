@@ -40,8 +40,10 @@ export async function fetchSarcophagiAndScheduleUnwraps(
 
       const resurrectionTimeMs = new Date(sarcophagus.resurrectionTime.toNumber() * 1000);
 
-      // If past the resurrection time, start unwrapping now
-      // otherwise, schedule rewrap for the resurrection time
+      // NOTE: It is possible that the arch node and a sarco it's bonded to end up in a state where
+      // the sarco's resurrection time is past, but we're still within its grace period. In that case,
+      // scheduling a job won't work as resurrection time is in the past, so we'll want immediately attempt
+      // a rewrap in an effort to salvage the situation.
       if (nowSeconds > sarcophagus.resurrectionTime.toNumber()) {
         await unwrapSarcophagus(web3Interface, sarcoId);
       } else {
