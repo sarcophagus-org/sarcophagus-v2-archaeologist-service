@@ -31,24 +31,26 @@ export async function fetchSarcophagiAndScheduleUnwraps(
     );
 
     if (curseIsActive(sarcophagus, archaeologist)) {
-      const now = new Date().getTime() / 1000;
+      const nowSeconds = new Date().getTime() / 1000;
 
-      const tooLateToUnwrap = now > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
+      const tooLateToUnwrap = nowSeconds > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
       if (tooLateToUnwrap) {
         return;
       }
 
-      const resurrectionTime = new Date(sarcophagus.resurrectionTime.toNumber() * 1000);
+      const resurrectionTimeMs = new Date(sarcophagus.resurrectionTime.toNumber() * 1000);
 
-      if (now > sarcophagus.resurrectionTime.toNumber()) {
+      // If past the resurrection time, start unwrapping now
+      // otherwise, schedule rewrap for the resurrection time
+      if (nowSeconds > sarcophagus.resurrectionTime.toNumber()) {
         await unwrapSarcophagus(web3Interface, sarcoId);
       } else {
-        scheduleUnwrap(web3Interface, sarcoId, resurrectionTime);
+        scheduleUnwrap(web3Interface, sarcoId, resurrectionTimeMs);
       }
 
       sarcophagi.push({
         id: sarcoId,
-        resurrectionTime,
+        resurrectionTime: resurrectionTimeMs,
       });
     }
   });
