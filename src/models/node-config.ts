@@ -22,7 +22,7 @@ const dht = kadDHT({
   clientMode: false,
 });
 
-const webRtcStar = webRTCStar({wrtc});
+const webRtcStar = webRTCStar({ wrtc });
 
 export class NodeConfig {
   public configObj: Libp2pOptions = {
