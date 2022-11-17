@@ -1,4 +1,4 @@
- import commandLineCommands from "command-line-commands";
+import commandLineCommands from "command-line-commands";
 import { Command } from "./commands/command";
 import { Register } from "./commands/register";
 import { Start } from "./commands/start";
@@ -9,18 +9,16 @@ import { Update } from "./commands/update";
 import { archLogger } from "../logger/chalk-theme";
 import { View } from "./commands/view";
 
-const web3Interface = await getWeb3Interface();
-
 export class ArchaeologistCli {
   commands: Map<string, Command> = new Map();
   args: string[];
 
   constructor(args: string[]) {
     this.args = args;
-    this.addCommand(new Register(web3Interface));
-    this.addCommand(new Update(web3Interface));
-    this.addCommand(new Start(web3Interface));
-    this.addCommand(new View(web3Interface));
+    this.addCommand(new Register());
+    this.addCommand(new Update());
+    this.addCommand(new Start());
+    this.addCommand(new View());
     this.addCommand(new Help(this.commands));
   }
 
@@ -44,7 +42,8 @@ export class ArchaeologistCli {
         if (error.command) {
           archLogger.warn(`'${error.command}' is not an available command.`);
         }
-        return helpCommand.run({ command: error.command });
+        const web3 = await getWeb3Interface(); // TODO, maybe a better signature to run() so do not have to specify for helpcommand, but for all others?
+        return helpCommand.run({ command: error.command }, web3);
       }
 
       throw error;
@@ -64,6 +63,9 @@ export class ArchaeologistCli {
       command.validateArgs(parsedCliArgs);
     }
 
-    return command.run(parsedCliArgs);
+    //TODO, lookup private key from hardhat json file based on parsedArgs
+    const web3Interface = await getWeb3Interface();
+
+    return command.run(parsedCliArgs, web3Interface);
   }
 }

@@ -1,3 +1,5 @@
 import { startService } from "./start_service";
+import { getWeb3Interface } from "./scripts/web3-interface";
 
-await startService({ nodeName: "arch" });
+const web3Interface = await getWeb3Interface();
+await startService({ nodeName: "arch", web3Interface: web3Interface });

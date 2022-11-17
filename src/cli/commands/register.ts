@@ -17,10 +17,6 @@ export class Register implements Command {
   args = profileOptionDefinitions;
   web3Interface: Web3Interface;
 
-  constructor(web3Interface: Web3Interface) {
-    this.web3Interface = web3Interface;
-  }
-
   async exitIfArchaeologistProfileExists() {
     const profile = await getOnchainProfile(this.web3Interface);
 
@@ -35,7 +31,7 @@ export class Register implements Command {
     await this.exitIfArchaeologistProfileExists();
 
     archLogger.notice("Registering your Archaeologist profile...");
-    await profileSetup(registerArgs);
+    await profileSetup(registerArgs, this.web3Interface);
   }
 
   validateArgs(options: CommandOptions) {
@@ -62,7 +58,9 @@ export class Register implements Command {
     }
   }
 
-  async run(options: CommandOptions): Promise<void> {
+  async run({ options: options, web3Interface: web3Interface }): Promise<void> {
+    this.web3Interface = web3Interface;
+
     if (options.view) {
       // output profile
       const profile = await getOnchainProfile(this.web3Interface);

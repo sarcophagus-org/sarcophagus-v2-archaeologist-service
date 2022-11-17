@@ -9,7 +9,7 @@ export interface Command {
   aliases: string[];
   description: string;
   args: any[];
-  run(options: CommandOptions, web3Interface?: Web3Interface): Promise<CommandResult | void>;
+  run(options: CommandOptions, web3Interface: Web3Interface): Promise<CommandResult | void>;
   validateArgs?(options: CommandOptions);
   web3Interface?: Web3Interface;
 }

@@ -3,7 +3,7 @@ import { profileOptionDefinitions } from "../config/profile-args";
 import { getOnchainProfile, OnchainProfile } from "../../utils/onchain-data";
 import { logProfile, logValidationErrorAndExit } from "../utils";
 import { validateEnvVars } from "../../utils/validateEnv";
-import { ProfileOptionNames, ProfileParams, profileSetup } from "../../scripts/profile-setup";
+import { ProfileParams, profileSetup } from "../../scripts/profile-setup";
 import { archLogger } from "../../logger/chalk-theme";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
@@ -17,10 +17,6 @@ export class Update implements Command {
   web3Interface: Web3Interface;
   profile: OnchainProfile | undefined;
 
-  constructor(web3Interface: Web3Interface) {
-    this.web3Interface = web3Interface;
-  }
-
   async setProfileOrExit() {
     const profile = await getOnchainProfile(this.web3Interface);
 
@@ -28,7 +24,6 @@ export class Update implements Command {
       archLogger.notice("Archaeologist is not registered yet!");
       exit(0);
     }
-
     this.profile = profile;
   }
 
@@ -47,7 +42,7 @@ export class Update implements Command {
       updateArgs.rewrapInterval = Number(this.profile!.maximumRewrapInterval);
     }
 
-    await profileSetup(updateArgs, true);
+    await profileSetup(updateArgs, this.web3Interface, true);
   }
 
   validateArgs(options: CommandOptions) {
@@ -66,7 +61,9 @@ export class Update implements Command {
     }
   }
 
-  async run(options: CommandOptions): Promise<void> {
+  async run({ options: options, web3Interface: web3Interface }): Promise<void> {
+    this.web3Interface = web3Interface;
+
     if (options.view) {
       // output profile
       const profile = await getOnchainProfile(this.web3Interface);

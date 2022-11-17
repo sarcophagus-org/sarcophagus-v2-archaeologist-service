@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { getWeb3Interface } from "./web3-interface";
+import { Web3Interface } from "./web3-interface";
 import { validateEnvVars } from "../utils/validateEnv";
 import { exit } from "process";
 import { FILE_READ_EXCEPTION, RPC_EXCEPTION } from "../utils/exit-codes";
@@ -27,8 +27,6 @@ export interface ProfileParams {
   peerId?: string;
 }
 
-const web3Interface = await getWeb3Interface();
-
 const handleException = e => {
   archLogger.error(e);
   exit(RPC_EXCEPTION);
@@ -36,9 +34,10 @@ const handleException = e => {
 
 export async function profileSetup(
   args: ProfileParams,
+  web3Interface: Web3Interface,
   isUpdate: boolean = false,
   exitAfterTx: boolean = true
-  ) {
+) {
   const { diggingFee, rewrapInterval, freeBond, peerId } = args;
   let freeBondDeposit = ethers.constants.Zero;
 
@@ -59,6 +58,8 @@ export async function profileSetup(
   let peerIdJson;
 
   try {
+    //TODO based on args?? lookup from hardhat json file?
+    //TODO maybe add digging fee and rewrap interval to file??
     peerIdJson = await jsonfile.readFile("./peer-id.json");
   } catch (e) {
     archLogger.error(`Error reading file: ${e}`);

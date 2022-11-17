@@ -31,7 +31,10 @@ export interface Web3Interface {
 }
 
 // TODO -- consider instantiating this once per session, or memo-izing with cache timeout
-export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface> => {
+export const getWeb3Interface = async (options?: {
+  archPrivateKey?: string;
+  startMulitpleRandom?: boolean;
+}): Promise<Web3Interface> => {
   try {
     const networkConfig = getNetworkConfigByChainId(process.env.CHAIN_ID || localChainId);
 
@@ -39,13 +42,16 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       networkConfig.providerUrl || process.env.PROVIDER_URL
     );
 
-    const ethWallet = isTest
+    const ethWallet = options?.startMulitpleRandom
       ? ethers.Wallet.createRandom()
-      : new ethers.Wallet(process.env.ETH_PRIVATE_KEY!, rpcProvider);
+      : new ethers.Wallet(options?.archPrivateKey || process.env.ETH_PRIVATE_KEY!, rpcProvider);
 
-    const encryptionWallet = isTest
+    const encryptionWallet = options?.startMulitpleRandom
       ? ethers.Wallet.createRandom()
-      : new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!, rpcProvider);
+      : new ethers.Wallet(
+          options?.archPrivateKey || process.env.ENCRYPTION_PRIVATE_KEY!,
+          rpcProvider
+        );
 
     const signer = ethWallet;
     const network = await rpcProvider.detectNetwork();
@@ -82,7 +88,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       embalmerFacet,
       viewStateFacet,
       thirdPartyFacet,
-      networkConfig
+      networkConfig,
     } as Web3Interface;
   } catch (e) {
     archLogger.error(e);

@@ -41,6 +41,7 @@
     "it-pipe": "^2.0.4",
     "jsonfile": "^6.1.0",
     "libp2p": "^0.40.0",
+    "node-pre-gyp": "^0.17.0",
     "node-schedule": "^2.1.0",
     "peer-id": "^0.16.0",
     "prompt-sync": "^4.2.0",
