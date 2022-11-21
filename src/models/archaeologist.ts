@@ -13,6 +13,7 @@ import { Web3Interface } from "scripts/web3-interface";
 import { PUBLIC_KEY_STREAM, NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
 import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
+import type { Stream } from '@libp2p/interface-connection';
 
 export interface ListenAddressesConfig {
   signalServerList: string[];
@@ -66,6 +67,7 @@ export class Archaeologist {
 
   async setupCommunicationStreams() {
     await this._setupSarcophagusNegotiationStream();
+    await this._setupPublicKeyStream();
   }
 
   async initNode(arg: {
@@ -73,15 +75,7 @@ export class Archaeologist {
     web3Interface: Web3Interface;
     idFilePath?: string;
   }) {
-    this.node = await this.createLibp2pNode(arg.idFilePath);
-    this.envConfig = arg.config;
-    this.web3Interface = arg.web3Interface;
-
-    return this.node;
-  }
-
-  async createLibp2pNode(idFilePath?: string): Promise<Libp2p> {
-    this.peerId = this.peerId ?? (await loadPeerIdFromFile(idFilePath));
+    this.peerId = this.peerId ?? (await loadPeerIdFromFile(arg.idFilePath));
 
     if (this.listenAddressesConfig) {
       const { signalServerList } = this.listenAddressesConfig!;
@@ -94,9 +88,12 @@ export class Archaeologist {
     this.nodeConfig.add("peerId", this.peerId);
     this.nodeConfig.add("addresses", { listen: this.listenAddresses });
 
-    return createNode(this.name, this.nodeConfig.configObj, connection =>
-      this.sendEncryptionPublicKey(connection)
-    );
+    this.node = await createNode(this.name, this.nodeConfig.configObj);
+
+    this.envConfig = arg.config;
+    this.web3Interface = arg.web3Interface;
+
+    return this.node;
   }
 
   async shutdown() {
@@ -104,18 +101,19 @@ export class Archaeologist {
     await this.node.stop();
   }
 
+  streamToBrowser(stream: Stream, message: string) {
+    pipe([new TextEncoder().encode(message)], stream);
+  };
+
+  emitError(stream: Stream, error: StreamCommsError) {
+    this.streamToBrowser(stream, JSON.stringify({ error }));
+    archLogger.error(`Error: ${error.message}`);
+  }
+
   async _setupSarcophagusNegotiationStream() {
     this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
-      const streamToBrowser = (result: string) => {
-        pipe([new TextEncoder().encode(result)], stream);
-      };
-
       try {
         await pipe(stream, async source => {
-          const emitError = (error: StreamCommsError) => {
-            streamToBrowser(JSON.stringify({ error }));
-            archLogger.error(`Failed to sign sarcophagus params: ${error.message}`);
-          }
           for await (const data of source) {
             // validate that supplied sarcophagus parameters meet the requirements of the archaeologist
             try {
@@ -131,7 +129,7 @@ export class Archaeologist {
               const errorMessagePrefix = `Archaeologist ${this.peerId.toString()} declined to sign: `;
 
               if (maximumRewrapIntervalBN.gt(inMemoryStore.profile!.maximumRewrapInterval)) {
-                emitError({
+                this.emitError(stream, {
                   code: SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE,
                   message: `${errorMessagePrefix} \n Maximum rewrap interval too large.  
                   \n Got: ${maximumRewrapIntervalBN.toString()}
@@ -141,7 +139,7 @@ export class Archaeologist {
               }
 
               if (ethers.utils.parseEther(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)) {
-                emitError({
+                this.emitError(stream, {
                   code: SarcophagusValidationError.DIGGING_FEE_TOO_LOW,
                   message: `${errorMessagePrefix} \n Digging fee sent is too low.  
                   \n Got: ${diggingFee.toString()}
@@ -151,7 +149,7 @@ export class Archaeologist {
               }
 
               if (timestamp > (Date.now() + 1000 * 60)) { // add 60 second buffer to account for differences in system times
-                emitError({
+                this.emitError(stream, {
                   code: SarcophagusValidationError.INVALID_TIMESTAMP,
                   message: `${errorMessagePrefix} \n Timestamp received is in the future.  
                   \n Got: ${timestamp}
@@ -167,7 +165,7 @@ export class Archaeologist {
                   this.web3Interface.encryptionWallet.publicKey
                 ))
               ) {
-                emitError({
+                this.emitError(stream, {
                   code: SarcophagusValidationError.INVALID_ARWEAVE_SHARD,
                   message: `${errorMessagePrefix} \n Arweave shard is invalid.  
                   \n Arweave TX ID: ${arweaveTxId}
@@ -197,10 +195,10 @@ export class Archaeologist {
                   diggingFee,
                   Math.trunc(timestamp / 1000).toString(),
                 ]);
-              streamToBrowser(JSON.stringify({ signature }));
+              this.streamToBrowser(stream, JSON.stringify({ signature }));
             } catch (e) {
               archLogger.error(e);
-              emitError({
+              this.emitError(stream, {
                 code: SarcophagusValidationError.UNKNOWN_ERROR,
                 message: e.code ? `${e.code}\n${e.message}` : e.message ?? e,
               });
@@ -209,6 +207,34 @@ export class Archaeologist {
         });
       } catch (err) {
         archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`);
+      }
+    });
+  }
+
+  async _setupPublicKeyStream() {
+    this.node.handle([PUBLIC_KEY_STREAM], async ({ stream }) => {
+      try {
+        await pipe(stream, async source => {
+          for await (const data of source) {
+            if (data.length > 8) stream.close();
+            try {
+              const signature = await this.web3Interface.ethWallet.signMessage(this.envConfig.encryptionPublicKey);
+
+              this.streamToBrowser(stream, JSON.stringify({
+                signature,
+                encryptionPublicKey: this.envConfig.encryptionPublicKey,
+              }));
+            } catch (e) {
+              archLogger.error(e);
+              this.emitError(stream, {
+                code: SarcophagusValidationError.UNKNOWN_ERROR,
+                message: e.code ? `${e.code}\n${e.message}` : e.message ?? e,
+              });
+            }
+          }
+        });
+      } catch (err) {
+        archLogger.error(`problem with pipe in public key stream: ${err}`);
       }
     });
   }

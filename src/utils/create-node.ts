@@ -3,18 +3,16 @@ import { archLogger } from "../logger/chalk-theme";
 import { setupNodeEventListeners } from "./node-event-listeners";
 
 /**
- *
+ * Setup and return a libp2p node instance
  * @param name - name of the node, purely for logging purposes
  * @param configOptions - Libp2p config
- * @param connectCallback callback to execute each time this node connects to another
  */
 export async function createNode(
   name: string,
-  configOptions: Libp2pOptions,
-  connectCallback?: (connection) => void
+  configOptions: Libp2pOptions
 ): Promise<Libp2p> {
   const node = await createLibp2p(configOptions);
-  setupNodeEventListeners(node, name, connectCallback);
+  setupNodeEventListeners(node, name);
 
   const peerId = node.peerId.toString();
   await node.start();
