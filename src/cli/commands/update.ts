@@ -61,7 +61,7 @@ export class Update implements Command {
     }
   }
 
-  async run({ options: options, web3Interface: web3Interface }): Promise<void> {
+  async run(options: CommandOptions, web3Interface: Web3Interface): Promise<void> {
     this.web3Interface = web3Interface;
 
     if (options.view) {

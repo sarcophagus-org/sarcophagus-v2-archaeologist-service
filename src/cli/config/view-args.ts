@@ -1,3 +1,5 @@
+import { sharedOptionDefinitions } from "./shared-args";
+
 export const viewOptionDefinitions = [
   {
     name: "profile",
@@ -16,5 +18,6 @@ export const viewOptionDefinitions = [
     alias: "b",
     type: Boolean,
     description: "Shows your token balances (ETH + SARCO)",
-  }
+  },
+  ...sharedOptionDefinitions,
 ];

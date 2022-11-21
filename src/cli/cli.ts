@@ -8,6 +8,7 @@ import { Help } from "./commands/help";
 import { Update } from "./commands/update";
 import { archLogger } from "../logger/chalk-theme";
 import { View } from "./commands/view";
+import jsonfile from "jsonfile";
 
 export class ArchaeologistCli {
   commands: Map<string, Command> = new Map();
@@ -63,8 +64,14 @@ export class ArchaeologistCli {
       command.validateArgs(parsedCliArgs);
     }
 
-    //TODO, lookup private key from hardhat json file based on parsedArgs
-    const web3Interface = await getWeb3Interface();
+    let archPrivateKey: string | undefined;
+
+    if (parsedCliArgs.configIndex) {
+      const peerIdCconfig = await jsonfile.readFile("./hardhat-config-peerids.json");
+      archPrivateKey = peerIdCconfig[Number(parsedCliArgs.configIndex)].accountPrivateKey;
+    }
+    console.log(archPrivateKey);
+    const web3Interface = await getWeb3Interface({ archPrivateKey: archPrivateKey });
 
     return command.run(parsedCliArgs, web3Interface);
   }

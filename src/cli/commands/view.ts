@@ -1,4 +1,4 @@
-import { Command } from "./command";
+import { Command, CommandOptions } from "./command";
 import {
   getEthBalance,
   getOnchainProfile,
@@ -18,7 +18,7 @@ export class View implements Command {
   args = viewOptionDefinitions;
   web3Interface: Web3Interface;
 
-  async run({ options: options, web3Interface: web3Interface }): Promise<void> {
+  async run(options: CommandOptions, web3Interface: Web3Interface): Promise<void> {
     this.web3Interface = web3Interface;
 
     if (options.sarcophagi) {

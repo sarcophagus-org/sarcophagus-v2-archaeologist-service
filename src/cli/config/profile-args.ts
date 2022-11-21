@@ -1,4 +1,5 @@
 import { parseEther } from "ethers/lib/utils";
+import { sharedOptionDefinitions } from "./shared-args";
 
 export const profileOptionDefinitions = [
   {
@@ -27,4 +28,5 @@ export const profileOptionDefinitions = [
     description:
       "How much free bond you would like to deposit when registering. You can add more free bond later in a separate transaction. Free bond is locked up when you accept curses, and returned after a successful unwrapping.",
   },
+  ...sharedOptionDefinitions,
 ];
