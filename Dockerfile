@@ -14,6 +14,5 @@ COPY . .
 
 FROM base as production
 ENV NODE_PATH=/.build
-EXPOSE 9000 10000
 RUN npm run build
 RUN npm run cli:install

@@ -11,3 +11,5 @@ services:
       - |
         npm run peer-id-gen
         npm run cli start
+    environment:
+      FORCE_COLOR: 1
