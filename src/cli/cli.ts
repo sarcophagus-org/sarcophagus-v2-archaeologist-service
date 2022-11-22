@@ -1,4 +1,4 @@
- import commandLineCommands from "command-line-commands";
+import commandLineCommands from "command-line-commands";
 import { Command } from "./commands/command";
 import { Register } from "./commands/register";
 import { Start } from "./commands/start";

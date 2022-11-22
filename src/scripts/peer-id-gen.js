@@ -1,3 +1,4 @@
+import fs from 'fs';
 import jsonfile from "jsonfile";
 import PeerId from "peer-id";
 
@@ -12,8 +13,14 @@ async function genPeerIdJSON() {
 }
 
 const file = "./peer-id.json";
-const obj = await genPeerIdJSON();
 
-jsonfile.writeFile(file, obj, function (err) {
-  if (err) console.error(err);
-});
+if (!fs.existsSync(file)) {
+  console.log("creating new peerID JSON file");
+  const obj = await genPeerIdJSON();
+
+  jsonfile.writeFile(file, obj, function (err) {
+    if (err) console.error(err);
+  });
+}
+
+
