@@ -6,6 +6,9 @@ import { CLI_BAD_STARTUP_ARG, RPC_EXCEPTION } from "../exit-codes";
 import { healthCheck } from "../health-check";
 import { handleRpcError } from "../rpc-error-handler";
 
+// TODO -- the following need migrated from this format to the new cli format:
+// 1. Rewards (deposit + withdraw)
+// 2. Free bond (deposit + withdraw)
 export async function parseArgs(web3Interface: Web3Interface) {
   const argsStr = process.argv.toString().split("--")[1];
 

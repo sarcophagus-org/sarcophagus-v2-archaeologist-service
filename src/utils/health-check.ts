@@ -16,10 +16,24 @@ import { logBalances, logProfile } from "../cli/utils";
 /**
  * Runs on service startup
  * @param web3Interface
+ * @param peerId -- libp2p peer ID that will be validated with arch profile if provided
  */
-export async function healthCheck(web3Interface: Web3Interface) {
+export async function healthCheck(web3Interface: Web3Interface, peerId?: string) {
   try {
     const profile = await fetchProfileOrPromptProfileSetup(web3Interface);
+
+    // Validate local peerId matches the one on the profile
+    if (peerId) {
+      if (peerId !== profile.peerId) {
+        logCallout( async () => {
+          archLogger.warn("Peer ID on profile does not match local Peer Id\n");
+          archLogger.warn("Your archaeologist will not appear in the embalmer webapp\n");
+        })
+
+        // TODO -- add notification once notifications are setup
+        // TODO -- consider prompting user to update their profile
+      }
+    }
 
     const sarcoBalance = await getSarcoBalance(web3Interface);
     const ethBalance = await getEthBalance(web3Interface);
@@ -47,8 +61,7 @@ const fetchProfileOrPromptProfileSetup = async (
   const profile = await getOnchainProfile(web3Interface);
   if (!profile.exists) {
     logCallout(() => {
-      console.log(" ARCHAEOLOGIST NOT REGISTERED:\n");
-
+      archLogger.warn(" ARCHAEOLOGIST NOT REGISTERED:\n");
       archLogger.warn(`\n   Your archaeologist is not yet registered.`);
       archLogger.error(
         `   Run: \`cli help register \` to see options for registering\n`

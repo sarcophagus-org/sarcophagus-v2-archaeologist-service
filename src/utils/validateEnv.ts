@@ -46,7 +46,7 @@ export function validateEnvVars(): PublicEnvConfig {
 }
 
 function validateLibp2pEnvVars(isLocal?: boolean) {
-  _tryReadEnv("SIGNAL_SERVER_LIST", process.env.SIGNAL_SERVER_LIST);
+  _tryReadEnv("SIGNAL_SERVER_LIST", process.env.SIGNAL_SERVER_LIST, {required: !isLocal});
   _tryReadEnv("BOOTSTRAP_LIST", process.env.BOOTSTRAP_LIST);
 }
 
@@ -55,24 +55,15 @@ function validateBlockEnvVars(isLocal?: boolean) {
     encryptionPublicKey: "",
   };
 
-  _tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL, { required: !isLocal });
+  _tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL, {required: !isLocal});
 
   _tryReadEnv(
     "ETH_PRIVATE_KEY",
     process.env.ETH_PRIVATE_KEY,
     {
-      required: true ,
-      callback: walletPrivateKey => new ethers.Wallet(walletPrivateKey).publicKey
-    }
-  );
-
-  _tryReadEnv(
-    "ENCRYPTION_PRIVATE_KEY",
-    process.env.ENCRYPTION_PRIVATE_KEY,
-    {
       required: true,
-      callback: encryptionPrivateKey =>
-        (publicConfig.encryptionPublicKey = new ethers.Wallet(encryptionPrivateKey).publicKey)
+      callback: walletPrivateKey =>
+        (publicConfig.encryptionPublicKey = new ethers.Wallet(walletPrivateKey).publicKey)
     }
   );
 

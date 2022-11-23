@@ -26,9 +26,9 @@ export const inMemoryStore: InMemoryStore = {
   sarcophagi: [],
 };
 
-export async function retrieveAndStoreOnchainProfileAndSarcophagi(web3Interface: Web3Interface) {
-  inMemoryStore.sarcophagi = await fetchSarcophagiAndScheduleUnwraps(web3Interface);
+export async function fetchProfileAndScheduleUnwraps(web3Interface: Web3Interface) {
   inMemoryStore.profile = await getOnchainProfile(web3Interface);
+  inMemoryStore.sarcophagi = await fetchSarcophagiAndScheduleUnwraps(web3Interface);
 }
 
 export async function getOnchainProfile(web3Interface: Web3Interface): Promise<OnchainProfile> {

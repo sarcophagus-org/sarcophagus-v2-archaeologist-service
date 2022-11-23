@@ -11,7 +11,6 @@ export async function runTests() {
   let testSuite: TestSuite;
 
   const envVars = [
-    "IP_ADDRESS",
     "SIGNAL_SERVER_LIST",
     "ENCRYPTION_PRIVATE_KEY",
     "ETH_PRIVATE_KEY",

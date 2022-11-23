@@ -39,13 +39,13 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       networkConfig.providerUrl || process.env.PROVIDER_URL
     );
 
+    // Note: currently using same wallet for eth signing + encryption
+    // some refactoring could be done to reduce required wallets here to
+    // a single wallet
     const ethWallet = isTest
       ? ethers.Wallet.createRandom()
       : new ethers.Wallet(process.env.ETH_PRIVATE_KEY!, rpcProvider);
-
-    const encryptionWallet = isTest
-      ? ethers.Wallet.createRandom()
-      : new ethers.Wallet(process.env.ENCRYPTION_PRIVATE_KEY!, rpcProvider);
+    const encryptionWallet = ethWallet;
 
     const signer = ethWallet;
     const network = await rpcProvider.detectNetwork();

@@ -2,8 +2,9 @@ import "dotenv/config";
 import { getWeb3Interface } from "./scripts/web3-interface";
 import { Archaeologist } from "./models/archaeologist";
 import { validateEnvVars } from "./utils/validateEnv";
-import { parseArgs } from "./utils/cli_parsers/parseArgs";
-import { retrieveAndStoreOnchainProfileAndSarcophagi } from "./utils/onchain-data";
+import { fetchProfileAndScheduleUnwraps } from "./utils/onchain-data";
+import { healthCheck } from "./utils/health-check";
+import { loadPeerIdFromFile } from "./utils";
 
 export async function startService(opts: {
   nodeName: string;
@@ -17,13 +18,15 @@ export async function startService(opts: {
     ? { encryptionPublicKey: web3Interface.encryptionWallet.publicKey }
     : validateEnvVars();
 
-  const { nodeName, bootstrapList, listenAddresses, peerId } = opts;
+  let { nodeName, bootstrapList, listenAddresses, peerId } = opts;
+
+  peerId = peerId ?? await loadPeerIdFromFile();
 
   const arch = new Archaeologist({
     name: nodeName,
     bootstrapList: bootstrapList ?? process.env.BOOTSTRAP_LIST?.split(",").map(s => s.trim()),
     listenAddresses,
-    peerId,
+    peerId: peerId,
     listenAddressesConfig:
       listenAddresses === undefined
         ? {
@@ -32,14 +35,13 @@ export async function startService(opts: {
         : undefined,
   });
 
+
+  await healthCheck(web3Interface, peerId.toString());
+  fetchProfileAndScheduleUnwraps(web3Interface);
+  setInterval(() => fetchProfileAndScheduleUnwraps(web3Interface), 300000); // refetch every 5mins
+
   await arch.initNode({ config, web3Interface });
   arch.setupCommunicationStreams();
-
-  parseArgs(web3Interface);
-
-  retrieveAndStoreOnchainProfileAndSarcophagi(web3Interface);
-
-  setInterval(() => retrieveAndStoreOnchainProfileAndSarcophagi(web3Interface), 300000); // refetch every 5mins
 
   [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, async () => {
