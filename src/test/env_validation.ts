@@ -12,7 +12,6 @@ export async function runTests() {
 
   const envVars = [
     "SIGNAL_SERVER_LIST",
-    "ENCRYPTION_PRIVATE_KEY",
     "ETH_PRIVATE_KEY",
     "PROVIDER_URL",
   ];

@@ -69,7 +69,7 @@ const fetchAndDecryptShardFromArweave = async (txId: string, publicKey: string):
     if (!encryptedShard) return "";
 
     const decrypted = await decrypt(
-      Buffer.from(ethers.utils.arrayify(privateKeyPad(process.env.ENCRYPTION_PRIVATE_KEY!))),
+      Buffer.from(ethers.utils.arrayify(privateKeyPad(process.env.ETH_PRIVATE_KEY!))),
       Buffer.from(ethers.utils.arrayify(encryptedShard))
     );
 
