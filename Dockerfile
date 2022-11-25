@@ -16,4 +16,3 @@ FROM base as production
 ENV NODE_PATH=/.build
 RUN npm run build
 RUN npm run cli:install
-RUN touch ./peer-id/peer-id.json
