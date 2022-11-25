@@ -26,6 +26,7 @@ const unwrapSarcophagusWithRetry = async (unwrapFn: Function, depth = 0) => {
 
 export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: string) {
   archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`);
+  inMemoryStore.sarcoIdsInProcessOfBeingUnwrapped.push(sarcoId);
 
   try {
     const decryptedShard = await fetchAndDecryptShard(web3Interface, sarcoId);
@@ -45,5 +46,7 @@ export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: s
   } catch (e) {
     archLogger.error(`Unwrap failed: ${e}`);
     handleRpcError(e.reason);
+  } finally {
+    inMemoryStore.sarcoIdsInProcessOfBeingUnwrapped = inMemoryStore.sarcoIdsInProcessOfBeingUnwrapped.filter(id => id !== sarcoId)
   }
 }

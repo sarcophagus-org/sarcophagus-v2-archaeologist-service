@@ -18,12 +18,14 @@ export interface SarcophagusData {
 
 interface InMemoryStore {
   sarcophagi: SarcophagusData[];
+  sarcoIdsInProcessOfBeingUnwrapped: string[];
   profile?: OnchainProfile;
   gracePeriod?: BigNumber;
 }
 
 export const inMemoryStore: InMemoryStore = {
   sarcophagi: [],
+  sarcoIdsInProcessOfBeingUnwrapped: []
 };
 
 export async function fetchProfileAndScheduleUnwraps(web3Interface: Web3Interface) {
