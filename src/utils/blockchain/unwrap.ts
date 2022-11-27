@@ -3,26 +3,7 @@ import { archLogger } from "../../logger/chalk-theme";
 import { fetchAndDecryptShard } from "../arweave";
 import { handleRpcError } from "../rpc-error-handler";
 import { inMemoryStore } from "../onchain-data";
-
-const MAX_RETRIES = 5;
-const INTERVAL_BETWEEN_RETRIES = 5000;
-
-const wait = (ms) => new Promise((res) => setTimeout(res, ms));
-
-const unwrapSarcophagusWithRetry = async (unwrapFn: Function, depth = 0) => {
-  try {
-    return await unwrapFn();
-  } catch (e) {
-    archLogger.warn(`Unwrap attempt ${depth + 1} failed, retrying....`);
-    if (depth > MAX_RETRIES) {
-      throw e;
-    }
-
-    await wait(INTERVAL_BETWEEN_RETRIES);
-
-    return unwrapSarcophagusWithRetry(unwrapFn, depth + 1);
-  }
-}
+import { retryFn } from "./helpers";
 
 export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: string) {
   archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`);
@@ -38,7 +19,7 @@ export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: s
       )
     }
 
-    const tx = await unwrapSarcophagusWithRetry(callUnwrapOnArchFacet);
+    const tx = await retryFn(callUnwrapOnArchFacet);
     await tx.wait();
 
     inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);

@@ -8,3 +8,4 @@ export const CLI_BAD_UPDATE_PROFILE_ARG = 103;
 export const CLI_BAD_CLEAN_ARG = 104;
 export const CLI_BAD_ACCUSE_ARG = 105;
 export const NO_ONCHAIN_PROFILE = 200;
+export const DENIED_APPROVAL = 205;

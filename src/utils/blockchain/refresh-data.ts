@@ -39,7 +39,7 @@ export async function fetchSarcophagiAndScheduleUnwraps(
       }
 
       // NOTE: If we are past the resurrection time (but still in the grace period)
-      // Then schedule the unwrap for 5 seconds from now.
+      // Then schedule the unwrap for 5 seconds from now. Else schedule for resurrection time.
       const resurrectionTimeMs = (nowSeconds > sarcophagus.resurrectionTime.toNumber()) ?
         new Date(Date.now() + 5000) :
         new Date(sarcophagus.resurrectionTime.toNumber() * 1000);
