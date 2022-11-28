@@ -1,5 +1,5 @@
 import { webRTCStar } from "@libp2p/webrtc-star";
-import wrtc from "wrtc";
+import wrtc from "@koush/wrtc";
 import { kadDHT } from "@libp2p/kad-dht";
 import { noise } from "@chainsafe/libp2p-noise";
 import { mplex } from "@libp2p/mplex";
