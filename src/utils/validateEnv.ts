@@ -5,6 +5,7 @@ import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "./exit-codes";
 import { exit } from "process";
 import { getNetworkConfigByChainId, isLocalNetwork } from "../lib/config";
+import { hardhatNetworkConfig } from "../lib/config/hardhat";
 
 const _tryReadEnv = (
   envName: string,
@@ -32,6 +33,7 @@ const _tryReadEnv = (
   }
 };
 
+// TODO
 export function validateEnvVars(): PublicEnvConfig {
   _tryReadEnv("CHAIN_ID", process.env.CHAIN_ID, {
     required: true,
@@ -40,14 +42,7 @@ export function validateEnvVars(): PublicEnvConfig {
     }
   });
 
-  validateLibp2pEnvVars(isLocalNetwork);
-
   return validateBlockEnvVars(isLocalNetwork);
-}
-
-function validateLibp2pEnvVars(isLocal?: boolean) {
-  _tryReadEnv("SIGNAL_SERVER_LIST", process.env.SIGNAL_SERVER_LIST);
-  _tryReadEnv("BOOTSTRAP_LIST", process.env.BOOTSTRAP_LIST);
 }
 
 function validateBlockEnvVars(isLocal?: boolean) {
@@ -55,24 +50,17 @@ function validateBlockEnvVars(isLocal?: boolean) {
     encryptionPublicKey: "",
   };
 
-  _tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL, { required: !isLocal });
+  const providerURL = isLocal ? hardhatNetworkConfig.providerUrl : process.env.PROVIDER_URL;
+
+  _tryReadEnv("PROVIDER_URL", providerURL, {required: true});
 
   _tryReadEnv(
     "ETH_PRIVATE_KEY",
     process.env.ETH_PRIVATE_KEY,
     {
-      required: true ,
-      callback: walletPrivateKey => new ethers.Wallet(walletPrivateKey).publicKey
-    }
-  );
-
-  _tryReadEnv(
-    "ENCRYPTION_PRIVATE_KEY",
-    process.env.ENCRYPTION_PRIVATE_KEY,
-    {
       required: true,
-      callback: encryptionPrivateKey =>
-        (publicConfig.encryptionPublicKey = new ethers.Wallet(encryptionPrivateKey).publicKey)
+      callback: walletPrivateKey =>
+        (publicConfig.encryptionPublicKey = new ethers.Wallet(walletPrivateKey).publicKey)
     }
   );
 

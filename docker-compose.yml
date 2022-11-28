@@ -1,17 +1,23 @@
-version: "3"
+version: "3.8"
 
 services:
   archaeologist:
     build:
       context: ./
       target: production
-    ports:
-      - 9000:9000
-      - 10000:10000
-    command: npm run start:test
+    restart: on-failure
+    env_file:
+      - ./.env
+    command:
+      - /bin/bash
+      - -c
+      - |
+        npm run peer-id-gen
+        npm run cli start
+    volumes:
+      - type: bind
+        source: ./peer-id.json
+        target: /home/node/app/peer-id.json
+    network_mode: "host"
     environment:
-      IP_ADDRESS: 127.0.0.1
-      TCP_PORT: 9000
-      WS_PORT: 10000
-      BOOTSTRAP_LIST: "/ip4/127.0.0.1/tcp/10000/ws/p2p/12D3KooWAsxUbeyiTv8zr7iURBh2ugajHK2ZsS8Js4Vu3Q3SrLpA"
-      SIGNAL_SERVER_LIST: "sig.encryptafile.com"
+      FORCE_COLOR: 1

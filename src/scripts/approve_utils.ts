@@ -8,18 +8,13 @@ import createPrompt from "prompt-sync";
 
 const prompt = createPrompt({ sigint: true });
 
-const _hasAllowance = async (web3Interface: Web3Interface, amt: BigNumber) => {
+export const hasAllowance = async (web3Interface: Web3Interface, amt: BigNumber) => {
   const allowance = await web3Interface.sarcoToken.allowance(
     web3Interface.ethWallet.address,
     web3Interface.networkConfig.diamondDeployAddress
   );
 
-  if (allowance.gte(amt)) {
-    archLogger.notice("Already approved");
-    return true;
-  }
-
-  return false;
+  return allowance.gte(amt);
 };
 
 /**
@@ -33,7 +28,7 @@ const _hasAllowance = async (web3Interface: Web3Interface, amt: BigNumber) => {
 export const runApprove = async (web3Interface: Web3Interface) => {
   archLogger.notice("Approving Sarcophagus contracts to spend SARCO on your behalf...");
 
-  if (await _hasAllowance(web3Interface, ethers.constants.MaxUint256)) {
+  if (await hasAllowance(web3Interface, ethers.constants.MaxUint256)) {
     return;
   }
 
@@ -63,7 +58,7 @@ export const requestApproval = async (
   reason: string,
   sarcoToTransfer: BigNumber
 ): Promise<boolean> => {
-  if (await _hasAllowance(web3Interface, sarcoToTransfer)) {
+  if (await hasAllowance(web3Interface, sarcoToTransfer)) {
     return true;
   }
 

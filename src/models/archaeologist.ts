@@ -21,7 +21,7 @@ export interface ListenAddressesConfig {
 
 export interface ArchaeologistInit {
   name: string;
-  peerId?: PeerId;
+  peerId: PeerId;
   listenAddresses?: string[] | undefined;
   isBootstrap?: boolean;
   listenAddressesConfig?: ListenAddressesConfig;
@@ -73,10 +73,7 @@ export class Archaeologist {
   async initNode(arg: {
     config: PublicEnvConfig;
     web3Interface: Web3Interface;
-    idFilePath?: string;
   }) {
-    this.peerId = this.peerId ?? (await loadPeerIdFromFile(arg.idFilePath));
-
     if (this.listenAddressesConfig) {
       const { signalServerList } = this.listenAddressesConfig!;
       this.listenAddresses = genListenAddresses(
@@ -237,22 +234,5 @@ export class Archaeologist {
         archLogger.error(`problem with pipe in public key stream: ${err}`);
       }
     });
-  }
-
-  async sendEncryptionPublicKey(connection) {
-    try {
-      const signature = await this.web3Interface.ethWallet.signMessage(this.envConfig.encryptionPublicKey);
-
-      const msgStr = JSON.stringify({
-        signature,
-        encryptionPublicKey: this.envConfig.encryptionPublicKey,
-      });
-
-      const stream = await connection.newStream(PUBLIC_KEY_STREAM);
-
-      pipe([new TextEncoder().encode(msgStr)], stream);
-    } catch (error) {
-      archLogger.error(`Exception sending public key: ${error}\nConnection: ${JSON.stringify(connection)}`);
-    }
   }
 }

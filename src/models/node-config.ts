@@ -15,6 +15,7 @@ interface NodeConfigParams {
 // protocol names used to set up communication with embalmer node nodes
 export const PUBLIC_KEY_STREAM = "/archaeologist-public-key";
 export const NEGOTIATION_SIGNATURE_STREAM = "/archaeologist-negotiation-signature";
+export const SIGNAL_SERVER_LIST = ["sig.encryptafile.com"];
 const DHT_PROTOCOL_PREFIX = "/archaeologist-service";
 
 const dht = kadDHT({
