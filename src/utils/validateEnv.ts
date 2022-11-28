@@ -5,11 +5,7 @@ import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "./exit-codes";
 import { exit } from "process";
 import { getNetworkConfigByChainId, isLocalNetwork } from "../lib/config";
-import { goerliNetworkConfig } from "../lib/config/goerli";
 import { hardhatNetworkConfig } from "../lib/config/hardhat";
-
-// TODO: update to mainnet when that time comes.
-const DEFAULT_CHAIN_ID = goerliNetworkConfig.chainId.toString();
 
 const _tryReadEnv = (
   envName: string,
@@ -39,7 +35,8 @@ const _tryReadEnv = (
 
 // TODO
 export function validateEnvVars(): PublicEnvConfig {
-  _tryReadEnv("CHAIN_ID", process.env.CHAIN_ID || DEFAULT_CHAIN_ID, {
+  _tryReadEnv("CHAIN_ID", process.env.CHAIN_ID, {
+    required: true,
     callback: envVar => {
       getNetworkConfigByChainId(envVar)
     }
