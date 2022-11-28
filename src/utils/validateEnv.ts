@@ -8,6 +8,9 @@ import { getNetworkConfigByChainId, isLocalNetwork } from "../lib/config";
 import { goerliNetworkConfig } from "../lib/config/goerli";
 import { hardhatNetworkConfig } from "../lib/config/hardhat";
 
+// TODO: update to mainnet when that time comes.
+const DEFAULT_CHAIN_ID = goerliNetworkConfig.chainId.toString();
+
 const _tryReadEnv = (
   envName: string,
   envVar: string | undefined,
@@ -34,21 +37,15 @@ const _tryReadEnv = (
   }
 };
 
+// TODO
 export function validateEnvVars(): PublicEnvConfig {
-  _tryReadEnv("CHAIN_ID", process.env.CHAIN_ID || goerliNetworkConfig.chainId.toString(), {
+  _tryReadEnv("CHAIN_ID", process.env.CHAIN_ID || DEFAULT_CHAIN_ID, {
     callback: envVar => {
       getNetworkConfigByChainId(envVar)
     }
   });
 
-  validateLibp2pEnvVars(isLocalNetwork);
-
   return validateBlockEnvVars(isLocalNetwork);
-}
-
-function validateLibp2pEnvVars(isLocal?: boolean) {
-  _tryReadEnv("SIGNAL_SERVER_LIST", process.env.SIGNAL_SERVER_LIST, {required: !isLocal});
-  _tryReadEnv("BOOTSTRAP_LIST", process.env.BOOTSTRAP_LIST);
 }
 
 function validateBlockEnvVars(isLocal?: boolean) {

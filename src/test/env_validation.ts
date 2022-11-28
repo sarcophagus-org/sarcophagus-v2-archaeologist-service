@@ -11,7 +11,6 @@ export async function runTests() {
   let testSuite: TestSuite;
 
   const envVars = [
-    "SIGNAL_SERVER_LIST",
     "ETH_PRIVATE_KEY",
     "PROVIDER_URL",
   ];

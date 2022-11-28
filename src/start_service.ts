@@ -5,6 +5,7 @@ import { validateEnvVars } from "./utils/validateEnv";
 import { fetchProfileAndScheduleUnwraps } from "./utils/onchain-data";
 import { healthCheck } from "./utils/health-check";
 import { loadPeerIdFromFile } from "./utils";
+import { SIGNAL_SERVER_LIST } from "./models/node-config";
 
 export async function startService(opts: {
   nodeName: string;
@@ -30,7 +31,7 @@ export async function startService(opts: {
     listenAddressesConfig:
       listenAddresses === undefined
         ? {
-            signalServerList: process.env.SIGNAL_SERVER_LIST!.split(",").map(s => s.trim()),
+            signalServerList: SIGNAL_SERVER_LIST,
           }
         : undefined,
   });
