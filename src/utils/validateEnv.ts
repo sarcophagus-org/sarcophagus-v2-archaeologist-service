@@ -5,6 +5,8 @@ import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "./exit-codes";
 import { exit } from "process";
 import { getNetworkConfigByChainId, isLocalNetwork } from "../lib/config";
+import { goerliNetworkConfig } from "../lib/config/goerli";
+import { hardhatNetworkConfig } from "../lib/config/hardhat";
 
 const _tryReadEnv = (
   envName: string,
@@ -33,8 +35,7 @@ const _tryReadEnv = (
 };
 
 export function validateEnvVars(): PublicEnvConfig {
-  _tryReadEnv("CHAIN_ID", process.env.CHAIN_ID, {
-    required: true,
+  _tryReadEnv("CHAIN_ID", process.env.CHAIN_ID || goerliNetworkConfig.chainId.toString(), {
     callback: envVar => {
       getNetworkConfigByChainId(envVar)
     }
@@ -55,7 +56,9 @@ function validateBlockEnvVars(isLocal?: boolean) {
     encryptionPublicKey: "",
   };
 
-  _tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL, {required: !isLocal});
+  const providerURL = isLocal ? hardhatNetworkConfig.providerUrl : process.env.PROVIDER_URL;
+
+  _tryReadEnv("PROVIDER_URL", providerURL, {required: true});
 
   _tryReadEnv(
     "ETH_PRIVATE_KEY",

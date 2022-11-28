@@ -18,5 +18,6 @@ services:
       - type: bind
         source: ./peer-id.json
         target: /home/node/app/peer-id.json
+    network_mode: "host"
     environment:
       FORCE_COLOR: 1
