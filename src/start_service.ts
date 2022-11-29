@@ -2,7 +2,7 @@ import "dotenv/config";
 import { getWeb3Interface } from "./scripts/web3-interface";
 import { Archaeologist } from "./models/archaeologist";
 import { validateEnvVars } from "./utils/validateEnv";
-import { fetchProfileAndScheduleUnwraps } from "./utils/onchain-data";
+import { fetchProfileAndSchedulePublishKeyShares } from "./utils/onchain-data";
 import { healthCheck } from "./utils/health-check";
 import { loadPeerIdFromFile } from "./utils";
 import { SIGNAL_SERVER_LIST } from "./models/node-config";
@@ -38,8 +38,8 @@ export async function startService(opts: {
 
 
   await healthCheck(web3Interface, peerId.toString());
-  fetchProfileAndScheduleUnwraps(web3Interface);
-  setInterval(() => fetchProfileAndScheduleUnwraps(web3Interface), 300000); // refetch every 5mins
+  fetchProfileAndSchedulePublishKeyShares(web3Interface);
+  setInterval(() => fetchProfileAndSchedulePublishKeyShares(web3Interface), 300000); // refetch every 5mins
 
   await arch.initNode({ config, web3Interface });
   arch.setupCommunicationStreams();

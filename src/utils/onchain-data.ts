@@ -1,6 +1,6 @@
 import { BigNumber } from "ethers";
 import { Web3Interface } from "scripts/web3-interface";
-import { fetchSarcophagiAndScheduleUnwraps } from "./blockchain/refresh-data";
+import { fetchSarcophagiAndSchedulePublishKeyShares } from "./blockchain/refresh-data";
 
 export interface OnchainProfile {
   exists: boolean;
@@ -18,19 +18,19 @@ export interface SarcophagusData {
 
 interface InMemoryStore {
   sarcophagi: SarcophagusData[];
-  sarcoIdsInProcessOfBeingUnwrapped: string[];
+  sarcoIdsInProcessOfHavingKeySharesPublished: string[];
   profile?: OnchainProfile;
   gracePeriod?: BigNumber;
 }
 
 export const inMemoryStore: InMemoryStore = {
   sarcophagi: [],
-  sarcoIdsInProcessOfBeingUnwrapped: []
+  sarcoIdsInProcessOfHavingKeySharesPublished: []
 };
 
-export async function fetchProfileAndScheduleUnwraps(web3Interface: Web3Interface) {
+export async function fetchProfileAndSchedulePublishKeyShares(web3Interface: Web3Interface) {
   inMemoryStore.profile = await getOnchainProfile(web3Interface);
-  inMemoryStore.sarcophagi = await fetchSarcophagiAndScheduleUnwraps(web3Interface);
+  inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublishKeyShares(web3Interface);
 }
 
 export async function getOnchainProfile(web3Interface: Web3Interface): Promise<OnchainProfile> {
