@@ -29,30 +29,30 @@ export interface ProfileParams {
 
 const web3Interface = await getWeb3Interface();
 
-const handleException = e => {
-  archLogger.error(e);
-  exit(RPC_EXCEPTION);
-};
-
 export async function profileSetup(
   args: ProfileParams,
   isUpdate: boolean = false,
-  exitAfterTx: boolean = true
+  exitAfterTx: boolean = true,
+  skipApproval?: boolean
   ) {
   const { diggingFee, rewrapInterval, freeBond, peerId } = args;
   let freeBondDeposit = ethers.constants.Zero;
 
   if (freeBond && freeBond.gt(ethers.constants.Zero)) {
-    const approved = await requestApproval(
-      web3Interface,
-      "You will need to approve Sarcophagus contracts to use your SARCO in order to deposit free bond.\nEnter 'approve' to authorize this, or else hit <ENTER> to continue without a deposit:",
-      freeBond
-    );
-
-    if (approved) {
+    if (skipApproval) {
       freeBondDeposit = freeBond;
     } else {
-      archLogger.info("Skipping free bond deposit");
+      const approved = await requestApproval(
+        web3Interface,
+        "You will need to approve Sarcophagus contracts to use your SARCO in order to deposit free bond.\nEnter 'approve' to authorize this, or else hit <ENTER> to continue without a deposit:",
+        freeBond
+      );
+
+      if (approved) {
+        freeBondDeposit = freeBond;
+      } else {
+        archLogger.info("Skipping free bond deposit");
+      }
     }
   }
 
@@ -65,34 +65,38 @@ export async function profileSetup(
     exit(FILE_READ_EXCEPTION);
   }
 
-  const tx = isUpdate
-    ? await web3Interface.archaeologistFacet.updateArchaeologist(
+  try {
+    const txType = isUpdate ? 'Updating' : 'Registering';
+
+    const tx = isUpdate
+      ? await web3Interface.archaeologistFacet.updateArchaeologist(
         peerId || peerIdJson.id,
         diggingFee,
         rewrapInterval,
         freeBondDeposit
       )
-    : await web3Interface.archaeologistFacet.registerArchaeologist(
+      : await web3Interface.archaeologistFacet.registerArchaeologist(
         peerId || peerIdJson.id,
         diggingFee,
         rewrapInterval,
         freeBondDeposit
       );
 
-  archLogger.info("Waiting for transaction");
+    archLogger.notice(`${txType} Archaeologist`)
+    archLogger.info("Please wait for TX to confirm");
+    await tx.wait();
 
-  const txInterval = setInterval(() => process.stdout.write("."), 1000);
+    archLogger.notice(isUpdate ? "PROFILE UPDATED!" : "\nPROFILE REGISTERED!");
 
-  tx.wait()
-    .then(async () => {
-      clearInterval(txInterval);
-      archLogger.notice(isUpdate ? "PROFILE UPDATED!" : "\nPROFILE REGISTERED!");
-      const profile = await getOnchainProfile(web3Interface);
-      inMemoryStore.profile = profile;
-      logProfile(profile);
-      if (exitAfterTx) {
-        exit(0);
-      }
-    })
-    .catch(handleException);
+    const profile = await getOnchainProfile(web3Interface);
+    inMemoryStore.profile = profile;
+    logProfile(profile);
+
+    if (exitAfterTx) {
+      exit(0);
+    }
+  } catch (error) {
+    archLogger.error(error);
+    exit(RPC_EXCEPTION);
+  }
 }

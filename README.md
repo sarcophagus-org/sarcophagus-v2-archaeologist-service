@@ -4,10 +4,7 @@
 
 `cp .env.example .env`
 
-Configure the .env file as necessary:
-
-1. If running this locally, use 127.0.0.1 as the `IP_ADDRESS`, otherwise use your server's public ip address.
-2. If you would like to run the node as a bootstrap node, set `IS_BOOSTRAP=true`
+See example env file for descriptions of env vars.
 
 ---
 

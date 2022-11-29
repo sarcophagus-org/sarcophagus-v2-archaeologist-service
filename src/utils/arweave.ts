@@ -69,7 +69,7 @@ const fetchAndDecryptShardFromArweave = async (txId: string, publicKey: string):
     if (!encryptedShard) return "";
 
     const decrypted = await decrypt(
-      Buffer.from(ethers.utils.arrayify(privateKeyPad(process.env.ENCRYPTION_PRIVATE_KEY!))),
+      Buffer.from(ethers.utils.arrayify(privateKeyPad(process.env.ETH_PRIVATE_KEY!))),
       Buffer.from(ethers.utils.arrayify(encryptedShard))
     );
 
@@ -111,19 +111,14 @@ export const fetchAndDecryptShard = async (
   try {
     const sarco = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
 
-    if (sarco.state !== SarcophagusState.Exists) {
+    if (sarco.state === SarcophagusState.DoesNotExist) {
       throw "Sarcophagus does not exist";
     }
 
-    // TODO: Potential for this arch's shards to be referenced by
-    // arweaveTxIds on higher indices, if R&R was previously transferred
-    // from a previous arch to this one.
     const shardsArweaveTxId = sarco.arweaveTxIds[1];
-    const decryptedShardString = await fetchAndDecryptShardFromArweave(shardsArweaveTxId, web3Interface.encryptionWallet.publicKey);
-
-    return decryptedShardString;
+    return fetchAndDecryptShardFromArweave(shardsArweaveTxId, web3Interface.encryptionWallet.publicKey);
   } catch (e) {
     archLogger.error(e);
-    return "";
+    throw Error("Error fetching and decrypting shard");
   }
 };
