@@ -15,7 +15,7 @@ const endOfGracePeriod = (sarcophagus: any, gracePeriod: BigNumber): number => {
   return sarcophagus.resurrectionTime.toNumber() + gracePeriod.toNumber();
 }
 
-export async function fetchSarcophagiAndSchedulePublishKeyShares(
+export async function fetchSarcophagiAndSchedulePublish(
   web3Interface: Web3Interface
 ): Promise<SarcophagusData[]> {
   inMemoryStore.gracePeriod = inMemoryStore.gracePeriod || await getGracePeriod(web3Interface);

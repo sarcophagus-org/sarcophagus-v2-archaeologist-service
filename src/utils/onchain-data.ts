@@ -1,6 +1,6 @@
 import { BigNumber } from "ethers";
 import { Web3Interface } from "scripts/web3-interface";
-import { fetchSarcophagiAndSchedulePublishKeyShares } from "./blockchain/refresh-data";
+import { fetchSarcophagiAndSchedulePublish } from "./blockchain/refresh-data";
 
 export interface OnchainProfile {
   exists: boolean;
@@ -28,9 +28,9 @@ export const inMemoryStore: InMemoryStore = {
   sarcoIdsInProcessOfHavingKeySharesPublished: []
 };
 
-export async function fetchProfileAndSchedulePublishKeyShares(web3Interface: Web3Interface) {
+export async function fetchProfileAndSchedulePublish(web3Interface: Web3Interface) {
   inMemoryStore.profile = await getOnchainProfile(web3Interface);
-  inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublishKeyShares(web3Interface);
+  inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublish(web3Interface);
 }
 
 export async function getOnchainProfile(web3Interface: Web3Interface): Promise<OnchainProfile> {
