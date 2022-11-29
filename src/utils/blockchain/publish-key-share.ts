@@ -13,7 +13,7 @@ export async function publishKeyShare(web3Interface: Web3Interface, sarcoId: str
     const decryptedShard = await fetchAndDecryptShard(web3Interface, sarcoId);
 
     const callPublishKeyShareOnArchFacet = (): Promise<any> => {
-      return web3Interface.archaeologistFacet.unwrapSarcophagus(
+      return web3Interface.archaeologistFacet.publishKeyShare(
         sarcoId,
         decryptedShard
       )
