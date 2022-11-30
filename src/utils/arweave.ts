@@ -91,21 +91,18 @@ const fetchAndDecryptShardFromArweave = async (
 
 export const fetchAndValidateShardOnArweave = async (
   arweaveShardsTxId: string,
-  expectedUnencryptedDoubleHash: string,
+  expectedDoubleHashedKeyShare: string,
   publicKey: string
 ): Promise<boolean> => {
   try {
-    const decryptedShardString = await fetchAndDecryptShardFromArweave(
-      arweaveShardsTxId,
-      publicKey
-    );
+    const decryptedKeyShare = await fetchAndDecryptShardFromArweave(arweaveShardsTxId, publicKey);
 
-    if (!decryptedShardString) return false;
+    if (!decryptedKeyShare) return false;
 
-    const unencryptedHash = solidityKeccak256(["bytes"], [decryptedShardString]);
-    const unencryptedDoubleHash = solidityKeccak256(["bytes"], [unencryptedHash]);
+    const hashedKeyShare = solidityKeccak256(["bytes"], [decryptedKeyShare]);
+    const doubleHashedKeyShare = solidityKeccak256(["bytes"], [hashedKeyShare]);
 
-    return expectedUnencryptedDoubleHash === unencryptedDoubleHash;
+    return expectedDoubleHashedKeyShare === doubleHashedKeyShare;
   } catch (e) {
     archLogger.error("error in fetchAndValidateShardOnArweave:");
     archLogger.error(e);

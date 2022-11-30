@@ -20,7 +20,7 @@ interface AccuseCliParams {
 export interface AccuseContractParams {
   sarcoId: string;
   paymentAddress: string;
-  unencryptedShardHashes: string[];
+  keyShareHashes: string[];
 }
 
 export async function parseAccuseArgs(): Promise<AccuseContractParams> {
@@ -96,7 +96,7 @@ export async function parseAccuseArgs(): Promise<AccuseContractParams> {
     exit(CLI_BAD_ACCUSE_ARG);
   }
 
-  let unencryptedShardHashes: string[];
+  let keyShareHashes: string[];
 
   if (!processedArgs.includes(AccuseArgNames.SHARDS_FILEPATH)) {
     archLogger.error(`Missing argument to accuse: ${AccuseArgNames.SHARDS_FILEPATH}`);
@@ -104,7 +104,7 @@ export async function parseAccuseArgs(): Promise<AccuseContractParams> {
   } else {
     try {
       const csvJson = await jsonfile.readFile(accuseParams.shardHashesFilePath);
-      unencryptedShardHashes = csvJson.map(hash => hash.trim());
+      keyShareHashes = csvJson.map(hash => hash.trim());
     } catch (e) {
       archLogger.error(`Error reading file: ${e}`);
       exit(FILE_READ_EXCEPTION);
@@ -114,6 +114,6 @@ export async function parseAccuseArgs(): Promise<AccuseContractParams> {
   return {
     sarcoId: accuseParams.sarcoId,
     paymentAddress: accuseParams.paymentAddress,
-    unencryptedShardHashes,
+    keyShareHashes,
   };
 }

@@ -1,21 +1,15 @@
 import { Web3Interface } from "../../scripts/web3-interface";
-import { publishKeyShare } from "./publish-key-share";
 import { schedulePublishKeyShare } from "../scheduler";
-import {
-  getGracePeriod,
-  getSarcophagiIds,
-  inMemoryStore,
-  SarcophagusData,
-  SarcophagusState,
-} from "../onchain-data";
-import { BigNumber } from "ethers";
+import { getGracePeriod, getSarcophagiIds, inMemoryStore, SarcophagusData } from "../onchain-data";
+import { BigNumber, ethers } from "ethers";
 
 // TODO -- once typechain defs are in the sarcophagus-org package,
 // the types in this file and onchain-data can get updated
 const curseIsActive = (sarcophagus: any, archaeologist: any): boolean => {
   return (
-    archaeologist.unencryptedShard === "0x" &&
-    [SarcophagusState.Active, SarcophagusState.Resurrecting].includes(sarcophagus.state)
+    archaeologist.rawKeyShare === "0x" &&
+    !sarcophagus.isCompromised &&
+    !sarcophagus.resurrectionTime.eq(ethers.constants.MaxUint256)
   );
 };
 
