@@ -13,7 +13,7 @@ import { Web3Interface } from "scripts/web3-interface";
 import { PUBLIC_KEY_STREAM, NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
 import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
-import type { Stream } from '@libp2p/interface-connection';
+import type { Stream } from "@libp2p/interface-connection";
 
 export interface ListenAddressesConfig {
   signalServerList: string[];
@@ -70,16 +70,10 @@ export class Archaeologist {
     await this._setupPublicKeyStream();
   }
 
-  async initNode(arg: {
-    config: PublicEnvConfig;
-    web3Interface: Web3Interface;
-  }) {
+  async initNode(arg: { config: PublicEnvConfig; web3Interface: Web3Interface }) {
     if (this.listenAddressesConfig) {
       const { signalServerList } = this.listenAddressesConfig!;
-      this.listenAddresses = genListenAddresses(
-        signalServerList,
-        this.peerId.toJSON().id
-      );
+      this.listenAddresses = genListenAddresses(signalServerList, this.peerId.toJSON().id);
     }
 
     this.nodeConfig.add("peerId", this.peerId);
@@ -100,7 +94,7 @@ export class Archaeologist {
 
   streamToBrowser(stream: Stream, message: string) {
     pipe([new TextEncoder().encode(message)], stream);
-  };
+  }
 
   emitError(stream: Stream, error: StreamCommsError) {
     this.streamToBrowser(stream, JSON.stringify({ error }));
@@ -120,7 +114,9 @@ export class Archaeologist {
                 maxRewrapInterval,
                 diggingFee, // this is assumed to, and should, be in wei
                 timestamp,
-              }: SarcophagusNegotiationParams = JSON.parse(new TextDecoder().decode(data.subarray()));
+              }: SarcophagusNegotiationParams = JSON.parse(
+                new TextDecoder().decode(data.subarray())
+              );
 
               const maximumRewrapIntervalBN = BigNumber.from(maxRewrapInterval);
               const errorMessagePrefix = `Archaeologist ${this.peerId.toString()} declined to sign: `;
@@ -130,27 +126,30 @@ export class Archaeologist {
                   code: SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE,
                   message: `${errorMessagePrefix} \n Maximum rewrap interval too large.  
                   \n Got: ${maximumRewrapIntervalBN.toString()}
-                  \n Maximum allowed: ${inMemoryStore.profile!.maximumRewrapInterval.toString()}`
+                  \n Maximum allowed: ${inMemoryStore.profile!.maximumRewrapInterval.toString()}`,
                 });
                 return;
               }
 
-              if (ethers.utils.parseEther(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)) {
+              if (
+                ethers.utils.parseEther(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)
+              ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.DIGGING_FEE_TOO_LOW,
                   message: `${errorMessagePrefix} \n Digging fee sent is too low.  
                   \n Got: ${diggingFee.toString()}
-                  \n Minimum needed: ${inMemoryStore.profile!.minimumDiggingFee.toString()}`
+                  \n Minimum needed: ${inMemoryStore.profile!.minimumDiggingFee.toString()}`,
                 });
                 return;
               }
 
-              if (timestamp > (Date.now() + 1000 * 60)) { // add 60 second buffer to account for differences in system times
+              if (timestamp > Date.now() + 1000 * 60) {
+                // add 60 second buffer to account for differences in system times
                 this.emitError(stream, {
                   code: SarcophagusValidationError.INVALID_TIMESTAMP,
                   message: `${errorMessagePrefix} \n Timestamp received is in the future.  
                   \n Got: ${timestamp}
-                  \n Date.now value: ${Date.now()}`
+                  \n Date.now value: ${Date.now()}`,
                 });
                 return;
               }
@@ -166,22 +165,19 @@ export class Archaeologist {
                   code: SarcophagusValidationError.INVALID_ARWEAVE_SHARD,
                   message: `${errorMessagePrefix} \n Arweave shard is invalid.  
                   \n Arweave TX ID: ${arweaveTxId}
-                  \n unencryptedShardDoubleHash value: ${unencryptedShardDoubleHash}`
+                  \n unencryptedShardDoubleHash value: ${unencryptedShardDoubleHash}`,
                 });
                 return;
               }
 
               // sign sarcophagus parameters to demonstrate agreement
-              const signPacked = async (
-                types: string[],
-                data: string[],
-              ) => {
+              const signPacked = async (types: string[], data: string[]) => {
                 const dataHex = ethers.utils.defaultAbiCoder.encode(types, data);
                 const dataHash = ethers.utils.keccak256(dataHex);
                 const dataHashBytes = ethers.utils.arrayify(dataHash);
                 const signature = await this.web3Interface.ethWallet.signMessage(dataHashBytes);
                 return signature;
-              }
+              };
 
               const signature = await signPacked(
                 ["string", "bytes32", "uint256", "uint256", "uint256"],
@@ -191,7 +187,8 @@ export class Archaeologist {
                   maximumRewrapIntervalBN.toString(),
                   diggingFee,
                   Math.trunc(timestamp / 1000).toString(),
-                ]);
+                ]
+              );
               this.streamToBrowser(stream, JSON.stringify({ signature }));
             } catch (e) {
               archLogger.error(e);
@@ -215,12 +212,17 @@ export class Archaeologist {
           for await (const data of source) {
             if (data.length > 8) stream.close();
             try {
-              const signature = await this.web3Interface.ethWallet.signMessage(this.envConfig.encryptionPublicKey);
+              const signature = await this.web3Interface.ethWallet.signMessage(
+                this.envConfig.encryptionPublicKey
+              );
 
-              this.streamToBrowser(stream, JSON.stringify({
-                signature,
-                encryptionPublicKey: this.envConfig.encryptionPublicKey,
-              }));
+              this.streamToBrowser(
+                stream,
+                JSON.stringify({
+                  signature,
+                  encryptionPublicKey: this.envConfig.encryptionPublicKey,
+                })
+              );
             } catch (e) {
               archLogger.error(e);
               this.emitError(stream, {
