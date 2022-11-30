@@ -5,21 +5,21 @@ import { handleRpcError } from "../rpc-error-handler";
 import { inMemoryStore } from "../onchain-data";
 import { retryFn } from "./helpers";
 
-export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: string) {
+export async function publishKeyShare(web3Interface: Web3Interface, sarcoId: string) {
   archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`);
-  inMemoryStore.sarcoIdsInProcessOfBeingUnwrapped.push(sarcoId);
+  inMemoryStore.sarcoIdsInProcessOfHavingKeySharesPublished.push(sarcoId);
 
   try {
     const decryptedShard = await fetchAndDecryptShard(web3Interface, sarcoId);
 
-    const callUnwrapOnArchFacet = (): Promise<any> => {
-      return web3Interface.archaeologistFacet.unwrapSarcophagus(
+    const callPublishKeyShareOnArchFacet = (): Promise<any> => {
+      return web3Interface.archaeologistFacet.publishKeyShare(
         sarcoId,
         decryptedShard
       )
     }
 
-    const tx = await retryFn(callUnwrapOnArchFacet);
+    const tx = await retryFn(callPublishKeyShareOnArchFacet);
     await tx.wait();
 
     inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
@@ -28,6 +28,6 @@ export async function unwrapSarcophagus(web3Interface: Web3Interface, sarcoId: s
     archLogger.error(`Unwrap failed: ${e}`);
     handleRpcError(e.reason);
   } finally {
-    inMemoryStore.sarcoIdsInProcessOfBeingUnwrapped = inMemoryStore.sarcoIdsInProcessOfBeingUnwrapped.filter(id => id !== sarcoId)
+    inMemoryStore.sarcoIdsInProcessOfHavingKeySharesPublished = inMemoryStore.sarcoIdsInProcessOfHavingKeySharesPublished.filter(id => id !== sarcoId)
   }
 }
