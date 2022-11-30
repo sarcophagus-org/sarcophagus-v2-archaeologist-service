@@ -1,11 +1,6 @@
 import { Web3Interface } from "../../scripts/web3-interface";
 import { schedulePublishKeyShare } from "../scheduler";
-import {
-  getGracePeriod,
-  getSarcophagiIds,
-  inMemoryStore,
-  SarcophagusData,
-} from "../onchain-data";
+import { getGracePeriod, getSarcophagiIds, inMemoryStore, SarcophagusData } from "../onchain-data";
 import { BigNumber, ethers } from "ethers";
 
 // TODO -- once typechain defs are in the sarcophagus-org package,

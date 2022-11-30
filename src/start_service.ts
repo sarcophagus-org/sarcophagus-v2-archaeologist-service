@@ -21,7 +21,7 @@ export async function startService(opts: {
 
   let { nodeName, bootstrapList, listenAddresses, peerId } = opts;
 
-  peerId = peerId ?? await loadPeerIdFromFile();
+  peerId = peerId ?? (await loadPeerIdFromFile());
 
   const arch = new Archaeologist({
     name: nodeName,
@@ -35,7 +35,6 @@ export async function startService(opts: {
           }
         : undefined,
   });
-
 
   await healthCheck(web3Interface, peerId.toString());
   fetchProfileAndSchedulePublish(web3Interface);

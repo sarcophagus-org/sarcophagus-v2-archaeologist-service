@@ -25,7 +25,7 @@ interface InMemoryStore {
 
 export const inMemoryStore: InMemoryStore = {
   sarcophagi: [],
-  sarcoIdsInProcessOfHavingKeySharesPublished: []
+  sarcoIdsInProcessOfHavingKeySharesPublished: [],
 };
 
 export async function fetchProfileAndSchedulePublish(web3Interface: Web3Interface) {
@@ -54,9 +54,7 @@ export async function getFreeBondBalance(web3Interface: Web3Interface): Promise<
 }
 
 export async function getSarcophagiIds(web3Interface: Web3Interface): Promise<string[]> {
-  return web3Interface.viewStateFacet.getArchaeologistSarcophagi(
-    web3Interface.ethWallet.address
-  );
+  return web3Interface.viewStateFacet.getArchaeologistSarcophagi(web3Interface.ethWallet.address);
 }
 
 export enum SarcophagusState {
@@ -67,5 +65,5 @@ export enum SarcophagusState {
   Buried,
   Cleaned,
   Accused,
-  Failed
+  Failed,
 }

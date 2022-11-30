@@ -10,9 +10,7 @@ function formatDP(name, peerId) {
   return `${name}:${peerId}`;
 }
 
-export function setupNodeEventListeners(
-  node: Libp2p, name: string
-) {
+export function setupNodeEventListeners(node: Libp2p, name: string) {
   node.addEventListener("peer:discovery", evt => {
     const peerId = evt.detail.id.toString();
     const formattedPeerId = formatDP(name, peerId);

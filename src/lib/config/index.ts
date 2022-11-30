@@ -17,4 +17,4 @@ export const getNetworkConfigByChainId = (chainId: string | number): NetworkConf
   }
 
   return networkConfig;
-}
+};

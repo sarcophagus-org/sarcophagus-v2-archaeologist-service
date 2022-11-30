@@ -11,16 +11,16 @@ const _tryReadEnv = (
   envName: string,
   envVar: string | undefined,
   config?: {
-    required?: boolean,
-    callback?: (envVar: string) => any
+    required?: boolean;
+    callback?: (envVar: string) => any;
   }
 ) => {
-  const isRequired = (config && config.required);
+  const isRequired = config && config.required;
   if (isRequired && !envVar) {
     archLogger.error(`${envName} is required and not set in .env`);
     exit(BAD_ENV);
   } else if (!envVar) {
-    return
+    return;
   }
 
   if (!config || !config.callback) return;
@@ -38,8 +38,8 @@ export function validateEnvVars(): PublicEnvConfig {
   _tryReadEnv("CHAIN_ID", process.env.CHAIN_ID, {
     required: true,
     callback: envVar => {
-      getNetworkConfigByChainId(envVar)
-    }
+      getNetworkConfigByChainId(envVar);
+    },
   });
 
   return validateBlockEnvVars(isLocalNetwork);
@@ -52,17 +52,13 @@ function validateBlockEnvVars(isLocal?: boolean) {
 
   const providerURL = isLocal ? hardhatNetworkConfig.providerUrl : process.env.PROVIDER_URL;
 
-  _tryReadEnv("PROVIDER_URL", providerURL, {required: true});
+  _tryReadEnv("PROVIDER_URL", providerURL, { required: true });
 
-  _tryReadEnv(
-    "ETH_PRIVATE_KEY",
-    process.env.ETH_PRIVATE_KEY,
-    {
-      required: true,
-      callback: walletPrivateKey =>
-        (publicConfig.encryptionPublicKey = new ethers.Wallet(walletPrivateKey).publicKey)
-    }
-  );
+  _tryReadEnv("ETH_PRIVATE_KEY", process.env.ETH_PRIVATE_KEY, {
+    required: true,
+    callback: walletPrivateKey =>
+      (publicConfig.encryptionPublicKey = new ethers.Wallet(walletPrivateKey).publicKey),
+  });
 
   return publicConfig;
 }

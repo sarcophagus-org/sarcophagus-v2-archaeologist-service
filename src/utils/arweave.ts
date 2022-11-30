@@ -9,17 +9,20 @@ import { getNetworkConfigByChainId, localChainId } from "../lib/config";
 
 const privateKeyPad = (privKey: string): string => {
   return privKey.startsWith("0x") ? privKey : `0x${privKey}`;
-}
+};
 
 export const generateArweaveInstance = (): Arweave => {
   const networkConfig = getNetworkConfigByChainId(process.env.CHAIN_ID || localChainId);
   return Arweave.init(networkConfig.arweave);
-}
+};
 
 const MAX_ARWEAVE_RETRIES = 10;
 const ARWEAVE_RETRY_INTERVAL = 5000;
 
-const fetchAndDecryptShardFromArweave = async (txId: string, publicKey: string): Promise<string> => {
+const fetchAndDecryptShardFromArweave = async (
+  txId: string,
+  publicKey: string
+): Promise<string> => {
   const arweaveInstance = generateArweaveInstance();
 
   const fetchData = async () => {
@@ -56,8 +59,11 @@ const fetchAndDecryptShardFromArweave = async (txId: string, publicKey: string):
 
       _nRetries = _nRetries + 1;
       return new Promise((resolve, _) => {
-        console.log('retrying');
-        _timeout = setTimeout(() => fetchDataFallback().then((data => resolve(data))), ARWEAVE_RETRY_INTERVAL);
+        console.log("retrying");
+        _timeout = setTimeout(
+          () => fetchDataFallback().then(data => resolve(data)),
+          ARWEAVE_RETRY_INTERVAL
+        );
       });
     }
   };
@@ -77,11 +83,11 @@ const fetchAndDecryptShardFromArweave = async (txId: string, publicKey: string):
 
     return decryptedShardString;
   } catch (e) {
-    archLogger.error('Exception in fetchAndDecryptShardFromArweave');
+    archLogger.error("Exception in fetchAndDecryptShardFromArweave");
     archLogger.error(e.toString());
-    return '';
+    return "";
   }
-}
+};
 
 export const fetchAndValidateShardOnArweave = async (
   arweaveShardsTxId: string,
@@ -98,7 +104,7 @@ export const fetchAndValidateShardOnArweave = async (
 
     return expectedDoubleHashedKeyShare === doubleHashedKeyShare;
   } catch (e) {
-    archLogger.error("error in fetchAndValidateShardOnArweave:")
+    archLogger.error("error in fetchAndValidateShardOnArweave:");
     archLogger.error(e);
     return false;
   }
@@ -116,7 +122,10 @@ export const fetchAndDecryptShard = async (
     }
 
     const shardsArweaveTxId = sarco.arweaveTxIds[1];
-    return fetchAndDecryptShardFromArweave(shardsArweaveTxId, web3Interface.encryptionWallet.publicKey);
+    return fetchAndDecryptShardFromArweave(
+      shardsArweaveTxId,
+      web3Interface.encryptionWallet.publicKey
+    );
   } catch (e) {
     archLogger.error(e);
     throw Error("Error fetching and decrypting shard");

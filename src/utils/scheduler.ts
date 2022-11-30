@@ -8,8 +8,12 @@ const scheduledPublishKeyShares: Record<string, scheduler.Job | undefined> = {};
 
 export function schedulePublishKeyShare(web3Interface: Web3Interface, sarcoId: string, date: Date) {
   // If sarcophagus is being unwrapped, dont schedule job
-  const sarcoIndex = inMemoryStore.sarcoIdsInProcessOfHavingKeySharesPublished.findIndex(id => id === sarcoId);
-  if (sarcoIndex !== -1) { return }
+  const sarcoIndex = inMemoryStore.sarcoIdsInProcessOfHavingKeySharesPublished.findIndex(
+    id => id === sarcoId
+  );
+  if (sarcoIndex !== -1) {
+    return;
+  }
 
   if (!scheduledPublishKeyShares[sarcoId]) {
     archLogger.info(`Scheduling publish key share at: ${date.toString()}`);
