@@ -15,14 +15,10 @@ archLogger.notice("Accusing Archaeologists");
 
 setInterval(() => process.stdout.write("."), 1000);
 
-const { sarcoId, paymentAddress, unencryptedShardHashes } = await parseAccuseArgs();
+const { sarcoId, paymentAddress, keyShareHashes } = await parseAccuseArgs();
 
 try {
-  const tx = await web3Interface.thirdPartyFacet.accuse(
-    sarcoId,
-    unencryptedShardHashes,
-    paymentAddress
-  );
+  const tx = await web3Interface.thirdPartyFacet.accuse(sarcoId, keyShareHashes, paymentAddress);
 
   archLogger.info("Waiting for transaction");
   await tx.wait();

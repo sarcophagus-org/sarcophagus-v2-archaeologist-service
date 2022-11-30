@@ -30,7 +30,7 @@ export interface ArchaeologistInit {
 
 interface SarcophagusNegotiationParams {
   arweaveTxId: string;
-  unencryptedShardDoubleHash: string;
+  doubleHashedKeyShare: string;
   maxRewrapInterval: number;
   diggingFee: string;
   timestamp: number;
@@ -116,7 +116,7 @@ export class Archaeologist {
             try {
               const {
                 arweaveTxId,
-                unencryptedShardDoubleHash,
+                doubleHashedKeyShare,
                 maxRewrapInterval,
                 diggingFee, // this is assumed to, and should, be in wei
                 timestamp,
@@ -158,7 +158,7 @@ export class Archaeologist {
               if (
                 !(await fetchAndValidateShardOnArweave(
                   arweaveTxId,
-                  unencryptedShardDoubleHash,
+                  doubleHashedKeyShare,
                   this.web3Interface.encryptionWallet.publicKey
                 ))
               ) {
@@ -166,7 +166,7 @@ export class Archaeologist {
                   code: SarcophagusValidationError.INVALID_ARWEAVE_SHARD,
                   message: `${errorMessagePrefix} \n Arweave shard is invalid.  
                   \n Arweave TX ID: ${arweaveTxId}
-                  \n unencryptedShardDoubleHash value: ${unencryptedShardDoubleHash}`
+                  \n doubleHashedKeyShare value: ${doubleHashedKeyShare}`
                 });
                 return;
               }
@@ -187,7 +187,7 @@ export class Archaeologist {
                 ["string", "bytes32", "uint256", "uint256", "uint256"],
                 [
                   arweaveTxId,
-                  unencryptedShardDoubleHash,
+                  doubleHashedKeyShare,
                   maximumRewrapIntervalBN.toString(),
                   diggingFee,
                   Math.trunc(timestamp / 1000).toString(),
