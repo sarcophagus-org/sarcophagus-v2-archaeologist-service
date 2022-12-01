@@ -15,7 +15,7 @@ export async function startMultipleLocal(numOfArchsToGenerate: number) {
 
   for (let i = 1; i <= numOfArchsToGenerate; i++) {
     const { peerId, listenAddresses } = await randomTestArchVals({
-      isLocal: true
+      isLocal: true,
     });
 
     archInitNodePromises.push(

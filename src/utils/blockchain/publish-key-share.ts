@@ -13,11 +13,8 @@ export async function publishKeyShare(web3Interface: Web3Interface, sarcoId: str
     const decryptedShard = await fetchAndDecryptShard(web3Interface, sarcoId);
 
     const callPublishKeyShareOnArchFacet = (): Promise<any> => {
-      return web3Interface.archaeologistFacet.publishKeyShare(
-        sarcoId,
-        decryptedShard
-      )
-    }
+      return web3Interface.archaeologistFacet.publishKeyShare(sarcoId, decryptedShard);
+    };
 
     const tx = await retryFn(callPublishKeyShareOnArchFacet);
     await tx.wait();
@@ -28,6 +25,7 @@ export async function publishKeyShare(web3Interface: Web3Interface, sarcoId: str
     archLogger.error(`Unwrap failed: ${e}`);
     handleRpcError(e.reason);
   } finally {
-    inMemoryStore.sarcoIdsInProcessOfHavingKeySharesPublished = inMemoryStore.sarcoIdsInProcessOfHavingKeySharesPublished.filter(id => id !== sarcoId)
+    inMemoryStore.sarcoIdsInProcessOfHavingKeySharesPublished =
+      inMemoryStore.sarcoIdsInProcessOfHavingKeySharesPublished.filter(id => id !== sarcoId);
   }
 }

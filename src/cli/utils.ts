@@ -76,7 +76,7 @@ export const logValidationErrorAndExit = (message: string): void => {
 export const logBalances = (
   sarcoBalance: BigNumber,
   ethBalance: BigNumber,
-  address: string,
+  address: string
 ): void => {
   console.log(`YOUR BALANCES (${address}):\n`);
 
@@ -92,7 +92,7 @@ export const logBalances = (
     {
       balance: ` > ${formatEther(ethBalance)}`,
       ticker: "ETH",
-    }
+    },
   ];
 
   console.log(columnify(balances, { minWidth: 30 }));
@@ -101,4 +101,4 @@ export const logBalances = (
 export const randomIntFromInterval = (min, max) => {
   // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min);
-}
+};

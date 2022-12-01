@@ -11,8 +11,7 @@ import { startService } from "../../start_service";
 export class Start implements Command {
   name = "start";
   aliases = [];
-  description =
-    "Starts the archaeologist service";
+  description = "Starts the archaeologist service";
   args = startOptionDefinitions;
   web3Interface: Web3Interface;
 
@@ -23,11 +22,11 @@ export class Start implements Command {
   defaultProfileParams: ProfileParams = {
     diggingFee: parseEther("10"),
     rewrapInterval: Number(31536000), // 1 year
-    freeBond: parseEther("100")
-  }
+    freeBond: parseEther("100"),
+  };
 
   async registerAndStartRandomArch() {
-    const {peerId, listenAddresses} = await randomTestArchVals({});
+    const { peerId, listenAddresses } = await randomTestArchVals({});
 
     this.defaultProfileParams.peerId = peerId.toString();
     await this.registerOrUpdateArchaeologist(this.defaultProfileParams);
@@ -35,8 +34,8 @@ export class Start implements Command {
     await startService({
       nodeName: `random arch`,
       peerId,
-      listenAddresses
-    })
+      listenAddresses,
+    });
   }
 
   async registerOrUpdateArchaeologist(profileParams: ProfileParams) {
@@ -49,9 +48,8 @@ export class Start implements Command {
       await this.registerAndStartRandomArch();
     } else {
       await startService({
-          nodeName: 'arch'
-        }
-      );
+        nodeName: "arch",
+      });
     }
   }
 }

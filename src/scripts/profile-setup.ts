@@ -34,7 +34,7 @@ export async function profileSetup(
   isUpdate: boolean = false,
   exitAfterTx: boolean = true,
   skipApproval?: boolean
-  ) {
+) {
   const { diggingFee, rewrapInterval, freeBond, peerId } = args;
   let freeBondDeposit = ethers.constants.Zero;
 
@@ -66,23 +66,23 @@ export async function profileSetup(
   }
 
   try {
-    const txType = isUpdate ? 'Updating' : 'Registering';
+    const txType = isUpdate ? "Updating" : "Registering";
 
     const tx = isUpdate
       ? await web3Interface.archaeologistFacet.updateArchaeologist(
-        peerId || peerIdJson.id,
-        diggingFee,
-        rewrapInterval,
-        freeBondDeposit
-      )
+          peerId || peerIdJson.id,
+          diggingFee,
+          rewrapInterval,
+          freeBondDeposit
+        )
       : await web3Interface.archaeologistFacet.registerArchaeologist(
-        peerId || peerIdJson.id,
-        diggingFee,
-        rewrapInterval,
-        freeBondDeposit
-      );
+          peerId || peerIdJson.id,
+          diggingFee,
+          rewrapInterval,
+          freeBondDeposit
+        );
 
-    archLogger.notice(`${txType} Archaeologist`)
+    archLogger.notice(`${txType} Archaeologist`);
     archLogger.info("Please wait for TX to confirm");
     await tx.wait();
 

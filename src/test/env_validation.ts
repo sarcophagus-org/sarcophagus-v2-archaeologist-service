@@ -10,10 +10,7 @@ export async function runTests() {
   const opts = { sourceFile: "../index.js", timeout: 1000 };
   let testSuite: TestSuite;
 
-  const envVars = [
-    "ETH_PRIVATE_KEY",
-    "PROVIDER_URL",
-  ];
+  const envVars = ["ETH_PRIVATE_KEY", "PROVIDER_URL"];
 
   for (const envVar of envVars) {
     archLogger.warn(`\n\n ${envVar}`);

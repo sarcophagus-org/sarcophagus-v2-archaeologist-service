@@ -16,5 +16,5 @@ export const viewOptionDefinitions = [
     alias: "b",
     type: Boolean,
     description: "Shows your token balances (ETH + SARCO)",
-  }
+  },
 ];

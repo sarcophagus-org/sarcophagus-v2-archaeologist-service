@@ -82,7 +82,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       embalmerFacet,
       viewStateFacet,
       thirdPartyFacet,
-      networkConfig
+      networkConfig,
     } as Web3Interface;
   } catch (e) {
     archLogger.error(e);
