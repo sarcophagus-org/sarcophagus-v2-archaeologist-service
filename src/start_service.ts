@@ -43,6 +43,10 @@ export async function startService(opts: {
   await arch.initNode({ config, web3Interface });
   arch.setupCommunicationStreams();
 
+  // TODO: remove once node connection issues are resolved
+  // Restart node on 20 min interval in attempt to avoid websocket / wrtc issues
+  setInterval(() => arch.restartNode(), 20 * 60 * 1000);
+
   [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, async () => {
       console.log(`${nodeName} received exit event: ${eventType}`);
