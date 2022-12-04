@@ -7,7 +7,7 @@ import { setupNodeEventListeners } from "./node-event-listeners";
  * @param name - name of the node, purely for logging purposes
  * @param configOptions - Libp2p config
  */
-export async function createNode(name: string, configOptions: Libp2pOptions): Promise<Libp2p> {
+export async function createAndStartNode(name: string, configOptions: Libp2pOptions): Promise<Libp2p> {
   const node = await createLibp2p(configOptions);
   setupNodeEventListeners(node, name);
 
