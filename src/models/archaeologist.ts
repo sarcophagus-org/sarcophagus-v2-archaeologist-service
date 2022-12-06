@@ -1,7 +1,7 @@
 import { Libp2p } from "libp2p";
 import { loadPeerIdFromFile } from "../utils";
 import { genListenAddresses } from "../utils/listen-addresses";
-import { createNode } from "../utils/create-node";
+import { createAndStartNode } from "../utils/create-and-start-node";
 import { NodeConfig } from "./node-config";
 import { PublicEnvConfig } from "./env-config";
 import { pipe } from "it-pipe";
@@ -79,7 +79,7 @@ export class Archaeologist {
     this.nodeConfig.add("peerId", this.peerId);
     this.nodeConfig.add("addresses", { listen: this.listenAddresses });
 
-    this.node = await createNode(this.name, this.nodeConfig.configObj);
+    this.node = await createAndStartNode(this.name, this.nodeConfig.configObj);
 
     this.envConfig = arg.config;
     this.web3Interface = arg.web3Interface;
@@ -90,6 +90,22 @@ export class Archaeologist {
   async shutdown() {
     archLogger.info(`${this.name} is stopping...`);
     await this.node.stop();
+  }
+
+  async restartNode() {
+    if (!this.node.isStarted()) {
+      await this.node.start();
+      return;
+    }
+
+    // If the node has open connections, dont restart.
+    if (this.node.getConnections().length) {
+      return;
+    }
+
+    archLogger.info('node restarting on set interval');
+    await this.node.stop();
+    await this.node.start();
   }
 
   streamToBrowser(stream: Stream, message: string) {

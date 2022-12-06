@@ -1,5 +1,8 @@
 ## Getting started
 
+## TODO
+Add docker instructions
+
 #### Setup env file
 
 `cp .env.example .env`
