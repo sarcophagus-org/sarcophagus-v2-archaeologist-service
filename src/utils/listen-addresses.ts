@@ -14,7 +14,7 @@ export const genListenAddresses = (
 export const wssListenAddress = (
   domain: string
 ): string[] => {
-  return [`/dns4/${domain}/tcp/443/wss`]
+  return [`/ip4/127.0.0.1/tcp/9000/wss`]
 };
 
 export const ssListenAddresses = (
