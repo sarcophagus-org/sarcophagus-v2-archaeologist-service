@@ -25,7 +25,6 @@ export interface ProfileParams {
   rewrapInterval?: number;
   freeBond?: BigNumber;
   peerId?: string;
-  domain?: string;
 }
 
 const web3Interface = await getWeb3Interface();
@@ -36,7 +35,9 @@ export async function profileSetup(
   exitAfterTx: boolean = true,
   skipApproval?: boolean
 ) {
-  const { diggingFee, rewrapInterval, freeBond, peerId, domain } = args;
+  const { diggingFee, rewrapInterval, freeBond, peerId } = args;
+  const domain = process.env.DOMAIN;
+
   let freeBondDeposit = ethers.constants.Zero;
 
   if (freeBond && freeBond.gt(ethers.constants.Zero)) {
@@ -68,7 +69,7 @@ export async function profileSetup(
 
   try {
     const txType = isUpdate ? "Updating" : "Registering";
-
+    console.log("domain", domain);
     const tx = isUpdate
       ? await web3Interface.archaeologistFacet.updateArchaeologist(
           domain || peerId || peerIdJson.id,
