@@ -7,15 +7,15 @@ export const genListenAddresses = (
   domain?: string
 ): string[] => {
   return domain ?
-    wssListenAddress(domain) :
+    wssListenAddress(peerId) :
     ssListenAddresses(isLocal === true, servers, peerId);
 };
 
 export const wssListenAddress = (
-  domain: string
+  peerId?: string
 ): string[] => {
   console.log("listening on websocket")
-  return [`/ip4/127.0.0.1/tcp/9000/wss`]
+  return [`/ip4/127.0.0.1/tcp/9000/wss/p2p/${peerId}`]
 };
 
 export const ssListenAddresses = (
