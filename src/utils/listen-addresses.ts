@@ -3,9 +3,18 @@ import { getLocalStarSignallingPort } from "../scripts/run_local/helpers";
 export const genListenAddresses = (
   servers: string[],
   peerId?: string,
-  isLocal?: boolean
+  isLocal?: boolean,
+  domain?: string
 ): string[] => {
-  return ssListenAddresses(isLocal === true, servers, peerId);
+  return domain ?
+    wssListenAddress(domain) :
+    ssListenAddresses(isLocal === true, servers, peerId);
+};
+
+export const wssListenAddress = (
+  domain: string
+): string[] => {
+  return [`/dns4/${domain}/tcp/443/wss`]
 };
 
 export const ssListenAddresses = (
