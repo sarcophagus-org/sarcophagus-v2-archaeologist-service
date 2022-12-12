@@ -14,6 +14,7 @@ export const genListenAddresses = (
 export const wssListenAddress = (
   domain: string
 ): string[] => {
+  console.log("listening on websocket")
   return [`/ip4/127.0.0.1/tcp/9000/wss`]
 };
 
@@ -22,6 +23,7 @@ export const ssListenAddresses = (
   servers: string[],
   peerId?: string
 ): string[] => {
+  console.log("listening on sig server");
   return servers.map(server => {
     const ssAddress = isLocal
       ? `/ip4/${server}/tcp/${getLocalStarSignallingPort()}/ws/p2p-webrtc-star`
