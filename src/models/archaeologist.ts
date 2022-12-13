@@ -43,7 +43,7 @@ export class Archaeologist {
   private peerId: PeerId;
   private listenAddresses: string[] | undefined;
   private listenAddressesConfig: ListenAddressesConfig | undefined;
-  public envConfig: PublicEnvConfig;
+  public encryptionHdWallet: ethers.utils.HDNode;
   public web3Interface: Web3Interface;
 
   constructor(options: ArchaeologistInit) {
@@ -69,7 +69,7 @@ export class Archaeologist {
     await this._setupPublicKeyStream();
   }
 
-  async initNode(arg: { config: PublicEnvConfig; web3Interface: Web3Interface }) {
+  async initNode(encryptionHdWallet: ethers.utils.HDNode, web3Interface: Web3Interface): Promise<Libp2p> {
     if (this.listenAddressesConfig) {
       const { signalServerList } = this.listenAddressesConfig!;
       this.listenAddresses = genListenAddresses(
@@ -85,8 +85,8 @@ export class Archaeologist {
 
     this.node = await createAndStartNode(this.name, this.nodeConfig.configObj);
 
-    this.envConfig = arg.config;
-    this.web3Interface = arg.web3Interface;
+    this.encryptionHdWallet = encryptionHdWallet;
+    this.web3Interface = web3Interface;
 
     return this.node;
   }
@@ -178,7 +178,7 @@ export class Archaeologist {
                 !(await fetchAndValidateShardOnArweave(
                   arweaveTxId,
                   doubleHashedKeyShare,
-                  this.web3Interface.encryptionWallet.publicKey
+                  this.web3Interface.encryptionHdWallet.publicKey
                 ))
               ) {
                 this.emitError(stream, {

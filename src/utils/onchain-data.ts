@@ -46,7 +46,7 @@ export async function getGracePeriod(web3Interface: Web3Interface): Promise<BigN
 }
 
 export async function getEthBalance(web3Interface: Web3Interface): Promise<BigNumber> {
-  return web3Interface.signer.getBalance();
+  return web3Interface.ethWallet.getBalance();
 }
 
 export async function getFreeBondBalance(web3Interface: Web3Interface): Promise<BigNumber> {

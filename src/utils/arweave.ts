@@ -124,7 +124,7 @@ export const fetchAndDecryptShard = async (
     const shardsArweaveTxId = sarco.arweaveTxIds[1];
     return fetchAndDecryptShardFromArweave(
       shardsArweaveTxId,
-      web3Interface.encryptionWallet.publicKey
+      web3Interface.encryptionHdWallet.publicKey
     );
   } catch (e) {
     archLogger.error(e);
