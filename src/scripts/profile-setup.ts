@@ -3,14 +3,13 @@ import "dotenv/config";
 import { getWeb3Interface } from "./web3-interface";
 import { validateEnvVars } from "../utils/validateEnv";
 import { exit } from "process";
-import { FILE_READ_EXCEPTION, RPC_EXCEPTION } from "../utils/exit-codes";
+import { RPC_EXCEPTION } from "../utils/exit-codes";
 import { archLogger } from "../logger/chalk-theme";
 import { BigNumber, ethers } from "ethers";
 import { requestApproval } from "./approve_utils";
 
-import jsonfile from "jsonfile";
 import { getOnchainProfile, inMemoryStore } from "../utils/onchain-data";
-import { logProfile } from "../cli/utils";
+import { formatFullPeerString, loadPeerIdJsonFromFileOrExit, logProfile } from "../cli/utils";
 
 validateEnvVars();
 
@@ -36,6 +35,7 @@ export async function profileSetup(
   skipApproval?: boolean
 ) {
   const { diggingFee, rewrapInterval, freeBond, peerId } = args;
+
   let freeBondDeposit = ethers.constants.Zero;
 
   if (freeBond && freeBond.gt(ethers.constants.Zero)) {
@@ -56,27 +56,25 @@ export async function profileSetup(
     }
   }
 
-  let peerIdJson;
+  const domain = process.env.DOMAIN;
+  let peerIdJson = await loadPeerIdJsonFromFileOrExit();
+  const pId = peerId || peerIdJson.id;
 
-  try {
-    peerIdJson = await jsonfile.readFile("./peer-id.json");
-  } catch (e) {
-    archLogger.error(`Error reading file: ${e}`);
-    exit(FILE_READ_EXCEPTION);
-  }
+  // If using websockets with a domain, use a delimiter
+  // to store domain + peerId on the contracts
+  const fullPeerString = formatFullPeerString(pId, domain);
 
   try {
     const txType = isUpdate ? "Updating" : "Registering";
-
     const tx = isUpdate
       ? await web3Interface.archaeologistFacet.updateArchaeologist(
-          peerId || peerIdJson.id,
+          fullPeerString,
           diggingFee,
           rewrapInterval,
           freeBondDeposit
         )
       : await web3Interface.archaeologistFacet.registerArchaeologist(
-          peerId || peerIdJson.id,
+          fullPeerString,
           diggingFee,
           rewrapInterval,
           freeBondDeposit

@@ -1,5 +1,4 @@
 import { Libp2p } from "libp2p";
-import { loadPeerIdFromFile } from "../utils";
 import { genListenAddresses } from "../utils/listen-addresses";
 import { createAndStartNode } from "../utils/create-and-start-node";
 import { NodeConfig } from "./node-config";
@@ -73,7 +72,12 @@ export class Archaeologist {
   async initNode(arg: { config: PublicEnvConfig; web3Interface: Web3Interface }) {
     if (this.listenAddressesConfig) {
       const { signalServerList } = this.listenAddressesConfig!;
-      this.listenAddresses = genListenAddresses(signalServerList, this.peerId.toJSON().id);
+      this.listenAddresses = genListenAddresses(
+        signalServerList,
+        this.peerId.toJSON().id,
+        false,
+        process.env.DOMAIN
+      );
     }
 
     this.nodeConfig.add("peerId", this.peerId);
