@@ -10,7 +10,7 @@ import { requestApproval } from "./approve_utils";
 
 import jsonfile from "jsonfile";
 import { getOnchainProfile, inMemoryStore } from "../utils/onchain-data";
-import { formatFullPeerString, logProfile } from "../cli/utils";
+import { formatFullPeerString, loadPeerIdJsonFromFileOrExit, logProfile } from "../cli/utils";
 
 validateEnvVars();
 
@@ -58,18 +58,10 @@ export async function profileSetup(
   }
 
   const domain = process.env.DOMAIN;
-  let peerIdJson;
-
-  try {
-    peerIdJson = await jsonfile.readFile("./peer-id.json");
-  } catch (e) {
-    archLogger.error(`Error reading file: ${e}`);
-    exit(FILE_READ_EXCEPTION);
-  }
-
+  let peerIdJson = await loadPeerIdJsonFromFileOrExit();
   const pId = peerId || peerIdJson.id;
 
-  // If using websockets with a domain, use a delimeter
+  // If using websockets with a domain, use a delimiter
   // to store domain + peerId on the contracts
   const fullPeerString = formatFullPeerString(pId, domain);
 

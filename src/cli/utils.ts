@@ -5,7 +5,9 @@ import { logCallout } from "../logger/formatter";
 import { archLogger } from "../logger/chalk-theme";
 import { formatEther } from "ethers/lib/utils";
 import { exit } from "process";
-import { BigNumber, ethers } from "ethers";
+import { BigNumber } from "ethers";
+import jsonfile from "jsonfile";
+import { FILE_READ_EXCEPTION } from "../utils/exit-codes";
 
 const PEER_ID_DELIMITER = ":";
 
@@ -109,4 +111,15 @@ export const formatFullPeerString = (peerId: string, domain?: string): string =>
   return domain ?
     domain + PEER_ID_DELIMITER + peerId :
     peerId;
+}
+
+export async function loadPeerIdJsonFromFileOrExit(): Promise<Record<string, string>> {
+  const peerIdFile = "./peer-id.json";
+
+  try {
+    return jsonfile.readFile(peerIdFile);
+  } catch (e) {
+    archLogger.error(`Error reading file: ${e}`);
+    exit(FILE_READ_EXCEPTION);
+  }
 }

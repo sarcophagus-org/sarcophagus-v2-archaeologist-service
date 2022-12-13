@@ -34,7 +34,7 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
 
     // Validate local peerId matches the one on the profile
     if (peerId) {
-      if (peerId !== profile.peerId && peerId !== formatFullPeerString(peerId, process.env.DOMAIN)) {
+      if (peerId !== profile.peerId && peerId !== formatFullPeerString(profile.peerId, process.env.DOMAIN)) {
         logCallout(async () => {
           archLogger.warn("Peer ID on profile does not match local Peer Id\n");
           archLogger.warn("Please update your profile \n");
