@@ -12,7 +12,7 @@ import {
   inMemoryStore,
   OnchainProfile,
 } from "./onchain-data";
-import { logBalances, logProfile } from "../cli/utils";
+import { formatFullPeerString, logBalances, logProfile } from "../cli/utils";
 import { registerPrompt } from "../cli/prompts/register-prompt";
 
 /**
@@ -34,14 +34,15 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
 
     // Validate local peerId matches the one on the profile
     if (peerId) {
-      if (peerId !== profile.peerId) {
+      if (peerId !== profile.peerId && peerId !== formatFullPeerString(peerId, process.env.DOMAIN)) {
         logCallout(async () => {
           archLogger.warn("Peer ID on profile does not match local Peer Id\n");
+          archLogger.warn("Please update your profile \n");
           archLogger.warn("Your archaeologist will not appear in the embalmer webapp\n");
         });
 
         // TODO -- add notification once notifications are setup
-        // TODO -- consider prompting user to update their profile
+        // TODO -- consider quitting and forcing user to update their profile
       }
     }
 

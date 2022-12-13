@@ -1,4 +1,5 @@
 import { getLocalStarSignallingPort } from "../scripts/run_local/helpers";
+import { archLogger } from "../logger/chalk-theme";
 
 export const genListenAddresses = (
   servers: string[],
@@ -7,14 +8,12 @@ export const genListenAddresses = (
   domain?: string
 ): string[] => {
   return domain ?
-    wssListenAddress(domain) :
+    wssListenAddress() :
     ssListenAddresses(isLocal === true, servers, peerId);
 };
 
-export const wssListenAddress = (
-  domain: string
-): string[] => {
-  console.log("listening on websocket")
+export const wssListenAddress = (): string[] => {
+  archLogger.info("using websockets")
   return [`/ip4/127.0.0.1/tcp/9000/wss`]
 };
 
@@ -23,7 +22,7 @@ export const ssListenAddresses = (
   servers: string[],
   peerId?: string
 ): string[] => {
-  console.log("listening on sig server");
+  archLogger.info("using signalling server");
   return servers.map(server => {
     const ssAddress = isLocal
       ? `/ip4/${server}/tcp/${getLocalStarSignallingPort()}/ws/p2p-webrtc-star`

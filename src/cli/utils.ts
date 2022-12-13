@@ -7,6 +7,8 @@ import { formatEther } from "ethers/lib/utils";
 import { exit } from "process";
 import { BigNumber, ethers } from "ethers";
 
+const PEER_ID_DELIMITER = ":";
+
 export const handleCommandArgs = (
   optionDefinitions: any,
   options: any,
@@ -102,3 +104,9 @@ export const randomIntFromInterval = (min, max) => {
   // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min);
 };
+
+export const formatFullPeerString = (peerId: string, domain?: string): string => {
+  return domain ?
+    domain + PEER_ID_DELIMITER + peerId :
+    peerId;
+}

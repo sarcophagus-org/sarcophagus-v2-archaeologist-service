@@ -10,7 +10,7 @@ import { requestApproval } from "./approve_utils";
 
 import jsonfile from "jsonfile";
 import { getOnchainProfile, inMemoryStore } from "../utils/onchain-data";
-import { logProfile } from "../cli/utils";
+import { formatFullPeerString, logProfile } from "../cli/utils";
 
 validateEnvVars();
 
@@ -36,7 +36,6 @@ export async function profileSetup(
   skipApproval?: boolean
 ) {
   const { diggingFee, rewrapInterval, freeBond, peerId } = args;
-  const domain = process.env.DOMAIN;
 
   let freeBondDeposit = ethers.constants.Zero;
 
@@ -58,6 +57,7 @@ export async function profileSetup(
     }
   }
 
+  const domain = process.env.DOMAIN;
   let peerIdJson;
 
   try {
@@ -67,18 +67,23 @@ export async function profileSetup(
     exit(FILE_READ_EXCEPTION);
   }
 
+  const pId = peerId || peerIdJson.id;
+
+  // If using websockets with a domain, use a delimeter
+  // to store domain + peerId on the contracts
+  const fullPeerString = formatFullPeerString(pId, domain);
+
   try {
     const txType = isUpdate ? "Updating" : "Registering";
-    console.log("domain", domain);
     const tx = isUpdate
       ? await web3Interface.archaeologistFacet.updateArchaeologist(
-          domain || peerId || peerIdJson.id,
+          fullPeerString,
           diggingFee,
           rewrapInterval,
           freeBondDeposit
         )
       : await web3Interface.archaeologistFacet.registerArchaeologist(
-          domain || peerId || peerIdJson.id,
+          fullPeerString,
           diggingFee,
           rewrapInterval,
           freeBondDeposit

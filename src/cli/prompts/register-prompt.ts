@@ -30,6 +30,7 @@ const confirmReviewQuestion = (diggingFee: string, rewrapInterval: string, freeB
       `Digging Fee: ${diggingFee} SARCO\n` +
       `Free Bond: ${freeBond} SARCO\n` +
       `Maximum Rewrap Interval: ${rewrapInterval}\n\n` +
+      `PeerId: ${process.env.DOMAIN}\n\n` +
       "Do you want to continue?",
     default: true,
   },
