@@ -2,17 +2,17 @@ import { Libp2p } from "libp2p";
 import { genListenAddresses } from "../utils/listen-addresses";
 import { createAndStartNode } from "../utils/create-and-start-node";
 import { NodeConfig } from "./node-config";
-import { PublicEnvConfig } from "./env-config";
 import { pipe } from "it-pipe";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../logger/chalk-theme";
 import { BigNumber, ethers } from "ethers";
 import { fetchAndValidateShardOnArweave } from "../utils/arweave";
 import { Web3Interface } from "scripts/web3-interface";
-import { PUBLIC_KEY_STREAM, NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
+import { NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
 import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
 import type { Stream } from "@libp2p/interface-connection";
+import { EncryptionWallet } from "./encryption-wallet";
 
 export interface ListenAddressesConfig {
   signalServerList: string[];
@@ -43,7 +43,7 @@ export class Archaeologist {
   private peerId: PeerId;
   private listenAddresses: string[] | undefined;
   private listenAddressesConfig: ListenAddressesConfig | undefined;
-  public encryptionHdWallet: ethers.utils.HDNode;
+  public encryptionWallet: EncryptionWallet;
   public web3Interface: Web3Interface;
 
   constructor(options: ArchaeologistInit) {
@@ -64,12 +64,7 @@ export class Archaeologist {
     this.listenAddressesConfig = options.listenAddressesConfig;
   }
 
-  async setupCommunicationStreams() {
-    await this._setupSarcophagusNegotiationStream();
-    await this._setupPublicKeyStream();
-  }
-
-  async initNode(encryptionHdWallet: ethers.utils.HDNode, web3Interface: Web3Interface): Promise<Libp2p> {
+  async initNode(web3Interface: Web3Interface): Promise<Libp2p> {
     if (this.listenAddressesConfig) {
       const { signalServerList } = this.listenAddressesConfig!;
       this.listenAddresses = genListenAddresses(
@@ -85,7 +80,7 @@ export class Archaeologist {
 
     this.node = await createAndStartNode(this.name, this.nodeConfig.configObj);
 
-    this.encryptionHdWallet = encryptionHdWallet;
+    this.encryptionWallet = new EncryptionWallet(web3Interface.encryptionHdWallet);
     this.web3Interface = web3Interface;
 
     return this.node;
@@ -121,7 +116,7 @@ export class Archaeologist {
     archLogger.error(`Error: ${error.message}`);
   }
 
-  async _setupSarcophagusNegotiationStream() {
+  async setupSarcophagusNegotiationStream() {
     this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
       try {
         await pipe(stream, async source => {
@@ -221,39 +216,6 @@ export class Archaeologist {
         });
       } catch (err) {
         archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`);
-      }
-    });
-  }
-
-  async _setupPublicKeyStream() {
-    this.node.handle([PUBLIC_KEY_STREAM], async ({ stream }) => {
-      try {
-        await pipe(stream, async source => {
-          for await (const data of source) {
-            if (data.length > 8) stream.close();
-            try {
-              const signature = await this.web3Interface.ethWallet.signMessage(
-                this.envConfig.encryptionPublicKey
-              );
-
-              this.streamToBrowser(
-                stream,
-                JSON.stringify({
-                  signature,
-                  encryptionPublicKey: this.envConfig.encryptionPublicKey,
-                })
-              );
-            } catch (e) {
-              archLogger.error(e);
-              this.emitError(stream, {
-                code: SarcophagusValidationError.UNKNOWN_ERROR,
-                message: e.code ? `${e.code}\n${e.message}` : e.message ?? e,
-              });
-            }
-          }
-        });
-      } catch (err) {
-        archLogger.error(`problem with pipe in public key stream: ${err}`);
       }
     });
   }

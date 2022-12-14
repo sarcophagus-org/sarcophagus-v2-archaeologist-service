@@ -1,5 +1,4 @@
 import "dotenv/config";
-import { PublicEnvConfig } from "models/env-config";
 import * as ethers from "ethers";
 import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "./exit-codes";
@@ -33,7 +32,7 @@ const _tryReadEnv = (
   }
 };
 
-export function validateEnvVars(): PublicEnvConfig {
+export function validateEnvVars() {
   const chainID = isLocalNetwork ? hardhatNetworkConfig.chainId.toString() : process.env.CHAIN_ID;
   _tryReadEnv("CHAIN_ID", chainID, {
     required: true,
@@ -49,7 +48,7 @@ export function validateEnvVars(): PublicEnvConfig {
     {
       required: true,
       callback: mnemonic => {
-        ethers.utils.HDNode.fromMnemonic(mnemonic);
+        ethers.utils.isValidMnemonic(mnemonic);
       },
     });
 

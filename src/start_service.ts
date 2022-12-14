@@ -37,8 +37,8 @@ export async function startService(opts: {
   fetchProfileAndSchedulePublish(web3Interface);
   setInterval(() => fetchProfileAndSchedulePublish(web3Interface), 300000); // refetch every 5mins
 
-  await arch.initNode(config, web3Interface);
-  arch.setupCommunicationStreams();
+  await arch.initNode(web3Interface);
+  arch.setupSarcophagusNegotiationStream();
 
   // TODO: remove once node connection issues are resolved
   // Restart node on 20 min interval in attempt to avoid websocket / wrtc issues
