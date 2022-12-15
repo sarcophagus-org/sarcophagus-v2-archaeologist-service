@@ -4,7 +4,7 @@ import { ViewStateFacet } from '@sarcophagus-org/sarcophagus-v2-contracts'
 // TODO -- update to more appropriate derivation path that isn't BIP44
 const PATH_WITHOUT_INDEX = "m/44'/60'/0'/0/"
 
-export class EncryptionWallet {
+export class KeyFinder {
   public wallet: ethers.utils.HDNode;
   private viewStateFacet: ViewStateFacet;
 

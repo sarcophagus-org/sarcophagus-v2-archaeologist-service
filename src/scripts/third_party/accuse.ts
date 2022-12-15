@@ -7,6 +7,7 @@ import { handleRpcError } from "../../utils/rpc-error-handler";
 import { RPC_EXCEPTION } from "../../utils/exit-codes";
 import { exit } from "process";
 
+// TODO -- update accuse to work with CLI and new private key setup
 validateEnvVars();
 
 const web3Interface = await getWeb3Interface();

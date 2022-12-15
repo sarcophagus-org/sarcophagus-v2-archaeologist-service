@@ -1,5 +1,5 @@
 import { Web3Interface } from "../../scripts/web3-interface";
-import { schedulePublishKeyShare } from "../scheduler";
+import { schedulePublishPrivateKey } from "../scheduler";
 import { getGracePeriod, getSarcophagiIds, inMemoryStore, SarcophagusData } from "../onchain-data";
 import { BigNumber, ethers } from "ethers";
 
@@ -7,7 +7,7 @@ import { BigNumber, ethers } from "ethers";
 // the types in this file and onchain-data can get updated
 const curseIsActive = (sarcophagus: any, archaeologist: any): boolean => {
   return (
-    archaeologist.rawKeyShare === "0x" &&
+    archaeologist.privateKey === "0x" &&
     !sarcophagus.isCompromised &&
     !sarcophagus.resurrectionTime.eq(ethers.constants.MaxUint256)
   );
@@ -48,7 +48,7 @@ export async function fetchSarcophagiAndSchedulePublish(
           ? new Date(Date.now() + 5000)
           : new Date(sarcophagus.resurrectionTime.toNumber() * 1000);
 
-      schedulePublishKeyShare(web3Interface, sarcoId, resurrectionTimeMs);
+      schedulePublishPrivateKey(web3Interface, sarcoId, resurrectionTimeMs);
 
       sarcophagi.push({
         id: sarcoId,

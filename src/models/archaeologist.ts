@@ -11,7 +11,7 @@ import { NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
 import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
 import type { Stream } from "@libp2p/interface-connection";
-import { EncryptionWallet } from "./encryption-wallet";
+import { KeyFinder } from "./key-finder";
 import { signPacked } from "../utils/signature";
 
 export interface ListenAddressesConfig {
@@ -41,12 +41,10 @@ export class Archaeologist {
   private peerId: PeerId;
   private listenAddresses: string[] | undefined;
   private listenAddressesConfig: ListenAddressesConfig | undefined;
-  public encryptionWallet: EncryptionWallet;
   public web3Interface: Web3Interface;
 
   constructor(
-    options: ArchaeologistInit,
-    web3Interface: Web3Interface
+    options: ArchaeologistInit
   ) {
     if (!options.listenAddresses && !options.listenAddressesConfig) {
       throw Error(
@@ -63,10 +61,6 @@ export class Archaeologist {
     this.peerId = options.peerId;
     this.listenAddresses = options.listenAddresses;
     this.listenAddressesConfig = options.listenAddressesConfig;
-    this.encryptionWallet = new EncryptionWallet(
-      web3Interface.encryptionHdWallet,
-      web3Interface.viewStateFacet
-    );
   }
 
   async initLibp2pNode(): Promise<Libp2p> {
@@ -179,7 +173,7 @@ export class Archaeologist {
                 return;
               }
 
-              const publicKey = await this.encryptionWallet.getNextPublicKey();
+              const publicKey = await this.web3Interface.keyFinder.getNextPublicKey();
 
               // sign sarcophagus parameters to demonstrate agreement
               const signature = await signPacked(

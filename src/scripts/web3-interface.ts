@@ -16,11 +16,13 @@ import {
 import { BAD_ENV } from "../utils/exit-codes";
 import { getNetworkConfigByChainId, localChainId } from "../lib/config";
 import { NetworkConfig } from "../lib/types/network-config";
+import { KeyFinder } from "../models/key-finder";
 
 export interface Web3Interface {
   networkName: string;
   ethWallet: ethers.Wallet;
   encryptionHdWallet: ethers.utils.HDNode;
+  keyFinder: KeyFinder;
   sarcoToken: IERC20;
   archaeologistFacet: ArchaeologistFacet;
   embalmerFacet: EmbalmerFacet;
@@ -68,12 +70,18 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       signer
     );
 
+    const keyFinder = new KeyFinder(
+      encryptionHdWallet,
+      viewStateFacet
+    );
+
     // Cannot confirm rpcProvider is valid until an actual network call is attempted
     sarcoToken.balanceOf(ethWallet.address);
 
     return {
       networkName: network.name,
       encryptionHdWallet,
+      keyFinder,
       ethWallet,
       sarcoToken,
       archaeologistFacet,

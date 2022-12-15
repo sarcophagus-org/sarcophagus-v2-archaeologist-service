@@ -31,8 +31,7 @@ export async function startService(opts: {
             signalServerList: SIGNAL_SERVER_LIST,
           }
           : undefined,
-    },
-    web3Interface
+    }
   );
 
   await healthCheck(web3Interface, peerId.toString());
@@ -44,7 +43,6 @@ export async function startService(opts: {
   await arch.initLibp2pNode();
   arch.setupSarcophagusNegotiationStream();
 
-  // TODO: remove once node connection issues are resolved
   // Restart node on 20 min interval in attempt to avoid websocket / wrtc issues
   setInterval(() => arch.restartNode(), 20 * 60 * 1000);
 
