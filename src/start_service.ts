@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { getWeb3Interface } from "./scripts/web3-interface";
+import { getWeb3Interface, Web3Interface } from "./scripts/web3-interface";
 import { Archaeologist } from "./models/archaeologist";
 import { validateEnvVars } from "./utils/validateEnv";
 import { fetchProfileAndSchedulePublish } from "./utils/onchain-data";
@@ -16,28 +16,32 @@ export async function startService(opts: {
 }) {
   validateEnvVars();
 
-  let { nodeName, bootstrapList, listenAddresses, peerId, isTest } = opts;
+  let {nodeName, bootstrapList, listenAddresses, peerId, isTest} = opts;
   const web3Interface = await getWeb3Interface(isTest);
   peerId = peerId ?? (await loadPeerIdFromFile());
 
   const arch = new Archaeologist({
-    name: nodeName,
-    bootstrapList: bootstrapList ?? process.env.BOOTSTRAP_LIST?.split(",").map(s => s.trim()),
-    listenAddresses,
-    peerId: peerId,
-    listenAddressesConfig:
-      listenAddresses === undefined
-        ? {
+      name: nodeName,
+      bootstrapList: bootstrapList ?? process.env.BOOTSTRAP_LIST?.split(",").map(s => s.trim()),
+      listenAddresses,
+      peerId: peerId,
+      listenAddressesConfig:
+        listenAddresses === undefined
+          ? {
             signalServerList: SIGNAL_SERVER_LIST,
           }
-        : undefined,
-  });
+          : undefined,
+    },
+    web3Interface
+  );
 
   await healthCheck(web3Interface, peerId.toString());
   fetchProfileAndSchedulePublish(web3Interface);
   setInterval(() => fetchProfileAndSchedulePublish(web3Interface), 300000); // refetch every 5mins
 
-  await arch.initNode(web3Interface);
+  // TODO -- delay starting the node until the creation window has passed
+  // Consider only doing this if arch as at least one sarcophagus
+  await arch.initLibp2pNode();
   arch.setupSarcophagusNegotiationStream();
 
   // TODO: remove once node connection issues are resolved

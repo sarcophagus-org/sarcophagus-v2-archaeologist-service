@@ -6,13 +6,13 @@ import { pipe } from "it-pipe";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../logger/chalk-theme";
 import { BigNumber, ethers } from "ethers";
-import { fetchAndValidateShardOnArweave } from "../utils/arweave";
 import { Web3Interface } from "scripts/web3-interface";
 import { NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
 import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
 import type { Stream } from "@libp2p/interface-connection";
 import { EncryptionWallet } from "./encryption-wallet";
+import { signPacked } from "../utils/signature";
 
 export interface ListenAddressesConfig {
   signalServerList: string[];
@@ -28,8 +28,6 @@ export interface ArchaeologistInit {
 }
 
 interface SarcophagusNegotiationParams {
-  arweaveTxId: string;
-  doubleHashedKeyShare: string;
   maxRewrapInterval: number;
   diggingFee: string;
   timestamp: number;
@@ -46,7 +44,10 @@ export class Archaeologist {
   public encryptionWallet: EncryptionWallet;
   public web3Interface: Web3Interface;
 
-  constructor(options: ArchaeologistInit) {
+  constructor(
+    options: ArchaeologistInit,
+    web3Interface: Web3Interface
+  ) {
     if (!options.listenAddresses && !options.listenAddressesConfig) {
       throw Error(
         "Either listenAddresses or listenAddressesConfig must be provided in archaeologist constructor"
@@ -62,9 +63,13 @@ export class Archaeologist {
     this.peerId = options.peerId;
     this.listenAddresses = options.listenAddresses;
     this.listenAddressesConfig = options.listenAddressesConfig;
+    this.encryptionWallet = new EncryptionWallet(
+      web3Interface.encryptionHdWallet,
+      web3Interface.viewStateFacet
+    );
   }
 
-  async initNode(web3Interface: Web3Interface): Promise<Libp2p> {
+  async initLibp2pNode(): Promise<Libp2p> {
     if (this.listenAddressesConfig) {
       const { signalServerList } = this.listenAddressesConfig!;
       this.listenAddresses = genListenAddresses(
@@ -79,9 +84,6 @@ export class Archaeologist {
     this.nodeConfig.add("addresses", { listen: this.listenAddresses });
 
     this.node = await createAndStartNode(this.name, this.nodeConfig.configObj);
-
-    this.encryptionWallet = new EncryptionWallet(web3Interface.encryptionHdWallet);
-    this.web3Interface = web3Interface;
 
     return this.node;
   }
@@ -117,6 +119,8 @@ export class Archaeologist {
   }
 
   async setupSarcophagusNegotiationStream() {
+    const errorMessagePrefix = `Archaeologist ${this.peerId.toString()} declined to sign: `;
+
     this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
       try {
         await pipe(stream, async source => {
@@ -124,8 +128,6 @@ export class Archaeologist {
             // validate that supplied sarcophagus parameters meet the requirements of the archaeologist
             try {
               const {
-                arweaveTxId,
-                doubleHashedKeyShare,
                 maxRewrapInterval,
                 diggingFee, // this is assumed to, and should, be in wei
                 timestamp,
@@ -134,8 +136,10 @@ export class Archaeologist {
               );
 
               const maximumRewrapIntervalBN = BigNumber.from(maxRewrapInterval);
-              const errorMessagePrefix = `Archaeologist ${this.peerId.toString()} declined to sign: `;
 
+              /**
+               * Validate maxRewrapInterval supplied is in line with our maxRewrapInterval
+               */
               if (maximumRewrapIntervalBN.gt(inMemoryStore.profile!.maximumRewrapInterval)) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE,
@@ -146,6 +150,9 @@ export class Archaeologist {
                 return;
               }
 
+              /**
+               * Validate supplied digging fee is sufficient
+               */
               if (
                 ethers.utils.parseEther(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)
               ) {
@@ -158,6 +165,9 @@ export class Archaeologist {
                 return;
               }
 
+              /**
+               * Validate negotiation timestamp is within 1 minute of when we received this request
+               */
               if (timestamp > Date.now() + 1000 * 60) {
                 // add 60 second buffer to account for differences in system times
                 this.emitError(stream, {
@@ -169,36 +179,14 @@ export class Archaeologist {
                 return;
               }
 
-              if (
-                !(await fetchAndValidateShardOnArweave(
-                  arweaveTxId,
-                  doubleHashedKeyShare,
-                  this.web3Interface.encryptionHdWallet.publicKey
-                ))
-              ) {
-                this.emitError(stream, {
-                  code: SarcophagusValidationError.INVALID_ARWEAVE_SHARD,
-                  message: `${errorMessagePrefix} \n Arweave shard is invalid.  
-                  \n Arweave TX ID: ${arweaveTxId}
-                  \n doubleHashedKeyShare value: ${doubleHashedKeyShare}`,
-                });
-                return;
-              }
+              const publicKey = await this.encryptionWallet.getNextPublicKey();
 
               // sign sarcophagus parameters to demonstrate agreement
-              const signPacked = async (types: string[], data: string[]) => {
-                const dataHex = ethers.utils.defaultAbiCoder.encode(types, data);
-                const dataHash = ethers.utils.keccak256(dataHex);
-                const dataHashBytes = ethers.utils.arrayify(dataHash);
-                const signature = await this.web3Interface.ethWallet.signMessage(dataHashBytes);
-                return signature;
-              };
-
               const signature = await signPacked(
-                ["string", "bytes32", "uint256", "uint256", "uint256"],
+                this.web3Interface.ethWallet,
+                ["bytes32", "uint256", "uint256", "uint256"],
                 [
-                  arweaveTxId,
-                  doubleHashedKeyShare,
+                  publicKey,
                   maximumRewrapIntervalBN.toString(),
                   diggingFee,
                   Math.trunc(timestamp / 1000).toString(),

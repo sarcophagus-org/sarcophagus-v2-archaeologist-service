@@ -1,6 +1,5 @@
 import { Web3Interface } from "../../scripts/web3-interface";
 import { archLogger } from "../../logger/chalk-theme";
-import { fetchAndDecryptShard } from "../arweave";
 import { handleRpcError } from "../rpc-error-handler";
 import { inMemoryStore } from "../onchain-data";
 import { retryFn } from "./helpers";
@@ -10,7 +9,7 @@ export async function publishKeyShare(web3Interface: Web3Interface, sarcoId: str
   inMemoryStore.sarcoIdsInProcessOfHavingKeySharesPublished.push(sarcoId);
 
   try {
-    const decryptedShard = await fetchAndDecryptShard(web3Interface, sarcoId);
+    const decryptedShard = "remove me";
 
     const callPublishKeyShareOnArchFacet = (): Promise<any> => {
       return web3Interface.archaeologistFacet.publishKeyShare(sarcoId, decryptedShard);
