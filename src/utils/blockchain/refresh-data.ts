@@ -3,11 +3,13 @@ import { schedulePublishPrivateKey } from "../scheduler";
 import { getGracePeriod, getSarcophagiIds, inMemoryStore, SarcophagusData } from "../onchain-data";
 import { BigNumber, ethers } from "ethers";
 
+const zeroPrivateKey = "0x0000000000000000000000000000000000000000000000000000000000000000";
+
 // TODO -- once typechain defs are in the sarcophagus-org package,
 // the types in this file and onchain-data can get updated
 const curseIsActive = (sarcophagus: any, archaeologist: any): boolean => {
   return (
-    archaeologist.privateKey === "0x" &&
+    archaeologist.privateKey === zeroPrivateKey &&
     !sarcophagus.isCompromised &&
     !sarcophagus.resurrectionTime.eq(ethers.constants.MaxUint256)
   );

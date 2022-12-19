@@ -9,7 +9,7 @@ export async function publishPrivateKey(web3Interface: Web3Interface, sarcoId: s
   inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
 
   try {
-    const myCursedArch = await this.viewStateFacet.getSarcophagusArchaeologist(
+    const myCursedArch = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(
       sarcoId,
       web3Interface.ethWallet.address
     );
