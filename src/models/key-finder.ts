@@ -19,7 +19,9 @@ export class KeyFinder {
   deriveHdWalletFromPublicKey(publicKey: string, index: number = 0): ethers.utils.HDNode {
     let walletAtCurrentIndex = this.getHdNodeAtIndex(index);
 
-    if (walletAtCurrentIndex.publicKey === publicKey) {
+    const uncompressedPublicKey = ethers.utils.computePublicKey(walletAtCurrentIndex.privateKey);
+
+    if (uncompressedPublicKey === publicKey) {
       return walletAtCurrentIndex;
     } else {
       return this.deriveHdWalletFromPublicKey(publicKey, index + 1)
