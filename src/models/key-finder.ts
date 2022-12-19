@@ -31,7 +31,7 @@ export class KeyFinder {
     return currentWallet.privateKey;
   }
 
-  // runs at startup to determine current HD wallet index
+  // runs during sarcophagus negotiation to determine current public key
   async getNextPublicKey() {
     const mySarcoIds = await this.viewStateFacet.getArchaeologistSarcophagi(
       this.viewStateFacet.signer.address
