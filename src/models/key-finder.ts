@@ -37,7 +37,9 @@ export class KeyFinder {
       this.viewStateFacet.signer.address
     );
 
-    return this.getHdNodeAtIndex(mySarcoIds.length + 1).publicKey;
+    const privateKey = this.getHdNodeAtIndex(mySarcoIds.length + 1).privateKey;
+
+    return ethers.utils.computePublicKey(privateKey);
   }
 
   getHdNodeAtIndex(index: number): ethers.utils.HDNode {
