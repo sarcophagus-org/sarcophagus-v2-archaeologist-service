@@ -6,7 +6,11 @@ import { inMemoryStore } from "./onchain-data";
 
 const scheduledPublishPrivateKey: Record<string, scheduler.Job | undefined> = {};
 
-export function schedulePublishPrivateKey(web3Interface: Web3Interface, sarcoId: string, date: Date) {
+export function schedulePublishPrivateKey(
+  web3Interface: Web3Interface,
+  sarcoId: string,
+  date: Date
+) {
   // If sarcophagus is being unwrapped, dont schedule job
   const sarcoIndex = inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.findIndex(
     id => id === sarcoId

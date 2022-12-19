@@ -70,10 +70,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       signer
     );
 
-    const keyFinder = new KeyFinder(
-      encryptionHdWallet,
-      viewStateFacet
-    );
+    const keyFinder = new KeyFinder(encryptionHdWallet, viewStateFacet);
 
     // Cannot confirm rpcProvider is valid until an actual network call is attempted
     sarcoToken.balanceOf(ethWallet.address);

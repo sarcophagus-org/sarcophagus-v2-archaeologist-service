@@ -108,10 +108,8 @@ export const randomIntFromInterval = (min, max) => {
 };
 
 export const formatFullPeerString = (peerId: string, domain?: string): string => {
-  return domain ?
-    domain + PEER_ID_DELIMITER + peerId :
-    peerId;
-}
+  return domain ? domain + PEER_ID_DELIMITER + peerId : peerId;
+};
 
 export async function loadPeerIdJsonFromFileOrExit(): Promise<Record<string, string>> {
   const peerIdFile = "./peer-id.json";

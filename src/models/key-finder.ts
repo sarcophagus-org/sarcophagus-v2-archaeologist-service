@@ -1,17 +1,14 @@
 import { ethers } from "ethers";
-import { ViewStateFacet } from '@sarcophagus-org/sarcophagus-v2-contracts'
+import { ViewStateFacet } from "@sarcophagus-org/sarcophagus-v2-contracts";
 
 // TODO -- update to more appropriate derivation path that isn't BIP44
-const PATH_WITHOUT_INDEX = "m/44'/60'/0'/0/"
+const PATH_WITHOUT_INDEX = "m/44'/60'/0'/0/";
 
 export class KeyFinder {
   public wallet: ethers.utils.HDNode;
   private viewStateFacet: ViewStateFacet;
 
-  constructor(
-    encryptionHdWallet: ethers.utils.HDNode,
-    viewStateFacet: ViewStateFacet
-    ) {
+  constructor(encryptionHdWallet: ethers.utils.HDNode, viewStateFacet: ViewStateFacet) {
     this.wallet = encryptionHdWallet;
     this.viewStateFacet = viewStateFacet;
   }
@@ -24,7 +21,7 @@ export class KeyFinder {
     if (uncompressedPublicKey === publicKey) {
       return walletAtCurrentIndex;
     } else {
-      return this.deriveHdWalletFromPublicKey(publicKey, index + 1)
+      return this.deriveHdWalletFromPublicKey(publicKey, index + 1);
     }
   }
 

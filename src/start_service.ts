@@ -16,24 +16,23 @@ export async function startService(opts: {
 }) {
   validateEnvVars();
 
-  let {nodeName, bootstrapList, listenAddresses, peerId, isTest} = opts;
+  let { nodeName, bootstrapList, listenAddresses, peerId, isTest } = opts;
   const web3Interface = await getWeb3Interface(isTest);
   peerId = peerId ?? (await loadPeerIdFromFile());
 
   const arch = new Archaeologist({
-      name: nodeName,
-      bootstrapList: bootstrapList ?? process.env.BOOTSTRAP_LIST?.split(",").map(s => s.trim()),
-      listenAddresses,
-      peerId: peerId,
-      listenAddressesConfig:
-        listenAddresses === undefined
-          ? {
+    name: nodeName,
+    bootstrapList: bootstrapList ?? process.env.BOOTSTRAP_LIST?.split(",").map(s => s.trim()),
+    listenAddresses,
+    peerId: peerId,
+    listenAddressesConfig:
+      listenAddresses === undefined
+        ? {
             signalServerList: SIGNAL_SERVER_LIST,
           }
-          : undefined,
-      web3Interface,
-    }
-  );
+        : undefined,
+    web3Interface,
+  });
 
   await healthCheck(web3Interface, peerId.toString());
   fetchProfileAndSchedulePublish(web3Interface);

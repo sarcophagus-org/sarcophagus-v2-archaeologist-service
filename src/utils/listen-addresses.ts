@@ -7,14 +7,12 @@ export const genListenAddresses = (
   isLocal?: boolean,
   domain?: string
 ): string[] => {
-  return domain ?
-    wssListenAddress() :
-    ssListenAddresses(isLocal === true, servers, peerId);
+  return domain ? wssListenAddress() : ssListenAddresses(isLocal === true, servers, peerId);
 };
 
 export const wssListenAddress = (): string[] => {
-  archLogger.info("using websockets")
-  return [`/ip4/127.0.0.1/tcp/9000/wss`]
+  archLogger.info("using websockets");
+  return [`/ip4/127.0.0.1/tcp/9000/wss`];
 };
 
 export const ssListenAddresses = (

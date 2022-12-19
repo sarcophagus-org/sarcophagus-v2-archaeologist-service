@@ -14,7 +14,9 @@ export async function publishPrivateKey(web3Interface: Web3Interface, sarcoId: s
       web3Interface.ethWallet.address
     );
 
-    const privateKey = web3Interface.keyFinder.derivePrivateKeyFromPublicKey(myCursedArch.publicKey);
+    const privateKey = web3Interface.keyFinder.derivePrivateKeyFromPublicKey(
+      myCursedArch.publicKey
+    );
 
     const callPublishPrivateKeyOnArchFacet = (): Promise<any> => {
       return web3Interface.archaeologistFacet.publishPrivateKey(sarcoId, privateKey);

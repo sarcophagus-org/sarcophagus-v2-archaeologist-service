@@ -44,9 +44,7 @@ export class Archaeologist {
   private listenAddressesConfig: ListenAddressesConfig | undefined;
   public web3Interface: Web3Interface;
 
-  constructor(
-    options: ArchaeologistInit
-  ) {
+  constructor(options: ArchaeologistInit) {
     if (!options.listenAddresses && !options.listenAddressesConfig) {
       throw Error(
         "Either listenAddresses or listenAddressesConfig must be provided in archaeologist constructor"
@@ -100,7 +98,7 @@ export class Archaeologist {
       return;
     }
 
-    archLogger.info('node restarting on set interval');
+    archLogger.info("node restarting on set interval");
     await this.node.stop();
     await this.node.start();
   }

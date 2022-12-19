@@ -44,13 +44,12 @@ export function validateEnvVars() {
   const providerURL = isLocalNetwork ? hardhatNetworkConfig.providerUrl : process.env.PROVIDER_URL;
   _tryReadEnv("PROVIDER_URL", providerURL, { required: true });
   _tryReadEnv("ETH_PRIVATE_KEY", process.env.ETH_PRIVATE_KEY, { required: true });
-  _tryReadEnv("ENCRYPTION_MNEMONIC", process.env.ENCRYPTION_MNEMONIC,
-    {
-      required: true,
-      callback: mnemonic => {
-        ethers.utils.isValidMnemonic(mnemonic);
-      },
-    });
+  _tryReadEnv("ENCRYPTION_MNEMONIC", process.env.ENCRYPTION_MNEMONIC, {
+    required: true,
+    callback: mnemonic => {
+      ethers.utils.isValidMnemonic(mnemonic);
+    },
+  });
 
   // TODO -- add validation for domain if it is present
 }

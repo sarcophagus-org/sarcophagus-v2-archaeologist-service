@@ -5,7 +5,7 @@ import { noise } from "@chainsafe/libp2p-noise";
 import { mplex } from "@libp2p/mplex";
 import { bootstrap } from "@libp2p/bootstrap";
 import { Libp2pOptions } from "libp2p";
-import { webSockets } from '@libp2p/websockets';
+import { webSockets } from "@libp2p/websockets";
 
 interface NodeConfigParams {
   bootstrapList?: string[];
@@ -28,15 +28,11 @@ const webRtcStar = webRTCStar({ wrtc });
 
 export class NodeConfig {
   public configObj: Libp2pOptions = {
-    transports: [
-      domain ? webSockets() : webRtcStar.transport
-    ],
+    transports: [domain ? webSockets() : webRtcStar.transport],
     connectionEncryption: [noise()],
     streamMuxers: [mplex()],
     dht,
-    peerDiscovery: [
-      webRtcStar.discovery
-    ],
+    peerDiscovery: [webRtcStar.discovery],
     connectionManager: {
       autoDial: false,
     },
@@ -44,7 +40,7 @@ export class NodeConfig {
 
   constructor(options: NodeConfigParams = {}) {
     if (!domain) {
-      this.configObj.peerDiscovery!.push(webRtcStar.discovery)
+      this.configObj.peerDiscovery!.push(webRtcStar.discovery);
     }
 
     if (options.bootstrapList) {
