@@ -31,6 +31,7 @@ export async function startService(opts: {
             signalServerList: SIGNAL_SERVER_LIST,
           }
           : undefined,
+      web3Interface,
     }
   );
 

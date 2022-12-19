@@ -25,6 +25,7 @@ export interface ArchaeologistInit {
   isBootstrap?: boolean;
   listenAddressesConfig?: ListenAddressesConfig;
   bootstrapList?: string[];
+  web3Interface: Web3Interface;
 }
 
 interface SarcophagusNegotiationParams {
@@ -61,6 +62,7 @@ export class Archaeologist {
     this.peerId = options.peerId;
     this.listenAddresses = options.listenAddresses;
     this.listenAddressesConfig = options.listenAddressesConfig;
+    this.web3Interface = options.web3Interface;
   }
 
   async initLibp2pNode(): Promise<Libp2p> {
@@ -178,7 +180,7 @@ export class Archaeologist {
               // sign sarcophagus parameters to demonstrate agreement
               const signature = await signPacked(
                 this.web3Interface.ethWallet,
-                ["bytes32", "uint256", "uint256", "uint256"],
+                ["bytes", "uint256", "uint256", "uint256"],
                 [
                   publicKey,
                   maximumRewrapIntervalBN.toString(),
@@ -186,7 +188,7 @@ export class Archaeologist {
                   Math.trunc(timestamp / 1000).toString(),
                 ]
               );
-              this.streamToBrowser(stream, JSON.stringify({ signature }));
+              this.streamToBrowser(stream, JSON.stringify({ signature, publicKey }));
             } catch (e) {
               archLogger.error(e);
               this.emitError(stream, {
