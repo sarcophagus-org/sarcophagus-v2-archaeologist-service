@@ -53,7 +53,6 @@
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
     "@types/node-schedule": "^2.1.0",
     "@types/prompt-sync": "^4.1.1",
-    "arweave": "^1.11.6",
     "cross-env": "^7.0.3",
     "ecies-geth": "^1.6.5",
     "execa": "^6.1.0",

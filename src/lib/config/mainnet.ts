@@ -6,11 +6,4 @@ export const mainnetNetworkConfig: NetworkConfig = {
   networkShortName: "Mainnet",
   sarcoTokenAddress: "",
   diamondDeployAddress: "",
-  arweave: {
-    host: "arweave.net",
-    port: 443,
-    protocol: "https",
-    timeout: 20000,
-    logging: false,
-  },
 };
