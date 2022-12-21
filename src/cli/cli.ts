@@ -11,6 +11,7 @@ import { View } from "./commands/view";
 import { FreeBond } from "./commands/free-bond";
 import { getOnchainProfile } from "../utils/onchain-data";
 import { exit } from "process";
+import { Reward } from "./commands/reward";
 
 const web3Interface = await getWeb3Interface();
 
@@ -25,6 +26,7 @@ export class ArchaeologistCli {
     this.addCommand(new Start(web3Interface));
     this.addCommand(new View(web3Interface));
     this.addCommand(new FreeBond(web3Interface));
+    this.addCommand(new Reward(web3Interface));
     this.addCommand(new Help(this.commands));
   }
 

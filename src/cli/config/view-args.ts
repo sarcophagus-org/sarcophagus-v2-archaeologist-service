@@ -23,4 +23,10 @@ export const viewOptionDefinitions = [
     type: Boolean,
     description: "Shows your available free bond",
   },
+  {
+    name: "rewards",
+    alias: "r",
+    type: Boolean,
+    description: "Shows your available rewards",
+  },
 ];

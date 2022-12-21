@@ -38,3 +38,17 @@ export const withdrawFreeBond = async (web3Interface: Web3Interface, amt: BigNum
     exit(RPC_EXCEPTION);
   }
 };
+
+export const withdrawRewards = async (web3Interface: Web3Interface) => {
+  archLogger.notice("Withdrawing your rewards...");
+  setInterval(() => process.stdout.write("."), 1000);
+
+  try {
+    const tx = await retryFn(() => web3Interface.archaeologistFacet.withdrawReward());
+    await tx.wait();
+    archLogger.notice("Success!");
+  } catch (error) {
+    archLogger.error(`Withdraw Failed: ${error.message}`);
+    exit(RPC_EXCEPTION);
+  }
+};

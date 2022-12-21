@@ -2,6 +2,7 @@ import { Command, CommandOptions } from "./command";
 import {
   getEthBalance,
   getOnchainProfile,
+  getRewards,
   getSarcoBalance,
   getSarcophagiIds,
 } from "../../utils/onchain-data";
@@ -55,6 +56,14 @@ export class View implements Command {
       logCallout(() => {
         archLogger.info("Your free bond:");
         archLogger.notice(ethers.utils.formatEther(profile.freeBond) + " SARCO");
+      });
+    }
+
+    if (options.rewards) {
+      const rewards = await getRewards(this.web3Interface);
+      logCallout(() => {
+        archLogger.info("Rewards available:");
+        archLogger.notice(ethers.utils.formatEther(rewards) + " SARCO");
       });
     }
   }
