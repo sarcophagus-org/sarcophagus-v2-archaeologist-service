@@ -32,10 +32,8 @@ export class View implements Command {
     if (options.sarcophagi) {
       const sarcoIds = await getSarcophagiIds(this.web3Interface);
       logCallout(() => {
-        archLogger.info("Sarcophagi:\n\n");
-        sarcoIds.map(sarcoId => {
-          archLogger.info(`${sarcoId}\n`);
-        });
+        archLogger.info("Your Sarcophagi:\n\n");
+        sarcoIds.map(sarcoId => archLogger.info(`${sarcoId}\n`));
       });
     }
 
@@ -45,9 +43,9 @@ export class View implements Command {
     }
 
     if (options.balance) {
-      logCallout(async () => {
-        const sarcoBalance = await getSarcoBalance(this.web3Interface);
-        const ethBalance = await getEthBalance(this.web3Interface);
+      const sarcoBalance = await getSarcoBalance(this.web3Interface);
+      const ethBalance = await getEthBalance(this.web3Interface);
+      logCallout(() => {
         logBalances(sarcoBalance, ethBalance, this.web3Interface.ethWallet.address);
       });
     }
