@@ -1,12 +1,11 @@
 import "dotenv/config";
+import inquirer from "inquirer";
 import { Web3Interface } from "./web3-interface";
-import { BigNumber, ethers } from "ethers";
-import { exit } from "process";
-import { RPC_EXCEPTION } from "../utils/exit-codes";
+import { BigNumber } from "ethers";
 import { archLogger } from "../logger/chalk-theme";
-import createPrompt from "prompt-sync";
-
-const prompt = createPrompt({ sigint: true });
+import { runApprove } from "../utils/blockchain/approve";
+import { DENIED_APPROVAL } from "../utils/exit-codes";
+import { exit } from "process";
 
 export const hasAllowance = async (web3Interface: Web3Interface, amt: BigNumber) => {
   const allowance = await web3Interface.sarcoToken.allowance(
@@ -18,58 +17,24 @@ export const hasAllowance = async (web3Interface: Web3Interface, amt: BigNumber)
 };
 
 /**
- * Approves Sarcophagus contracts' spending SARCO on the connected account's behalf up to `MaxUint256` tokens.
- *
- * `runApprove` is really only used by the approve script - which IS attempting to approve `MaxUint256` tokens -
- * or by `requestApproval` when there's either not enough allowance or the previous `MaxUint256` allowance has
- * somehow dropped so low that the pending transfer exceeds that allowance. So checking for allowance on `MaxUint256`
- * is exactly what is wanted.
+ * Request approval from user to spend SARCO. Will terminate the process if the user rejects the request.
  */
-export const runApprove = async (web3Interface: Web3Interface) => {
-  archLogger.notice("Approving Sarcophagus contracts to spend SARCO on your behalf...");
+export const requestApproval = async (web3Interface: Web3Interface) => {
+  const approvalAnswer = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "approval",
+      message:
+        "Do you approve the Sarcophagus contract to spend your SARCO? You must agree to continue.",
+      default: true,
+    },
+  ]);
 
-  if (await hasAllowance(web3Interface, ethers.constants.MaxUint256)) {
-    return;
+  // If user does not agree to approval, then exit
+  if (!approvalAnswer.approval) {
+    archLogger.error("You denied approval, quitting register archaeologist.");
+    exit(DENIED_APPROVAL);
   }
 
-  setInterval(() => process.stdout.write("."), 1000);
-
-  const handleException = e => {
-    archLogger.error(e);
-    exit(RPC_EXCEPTION);
-  };
-
-  const tx = await web3Interface.sarcoToken
-    .approve(web3Interface.networkConfig.diamondDeployAddress, ethers.constants.MaxUint256)
-    .catch(handleException);
-
-  archLogger.info("Waiting for transaction");
-  tx.wait()
-    .then(() => {
-      archLogger.notice("SUCCESS!");
-    })
-    .catch(handleException);
-
-  return tx;
-};
-
-export const requestApproval = async (
-  web3Interface: Web3Interface,
-  reason: string,
-  sarcoToTransfer: BigNumber
-): Promise<boolean> => {
-  if (await hasAllowance(web3Interface, sarcoToTransfer)) {
-    return true;
-  }
-
-  archLogger.warn(reason);
-  // @ts-ignore
-  const response = prompt();
-
-  if (response === "approve") {
-    await runApprove(web3Interface);
-    return true;
-  } else {
-    return false;
-  }
+  await runApprove(web3Interface);
 };

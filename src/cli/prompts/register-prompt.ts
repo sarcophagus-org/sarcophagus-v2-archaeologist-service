@@ -7,7 +7,7 @@ import { ProfileParams, profileSetup } from "../../scripts/profile-setup";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { hasAllowance } from "../../scripts/approve_utils";
 import { approve } from "../../utils/blockchain/approve";
-import { archLogger, logColors } from "../../logger/chalk-theme";
+import { runApprove } from "../../utils/blockchain/approve";
 
 const DEFAULT_DIGGING_FEES = "100";
 
@@ -125,7 +125,7 @@ const approveAndRegister = async (web3Interface: Web3Interface, profileParams: P
   const alreadyHasAllowance = await hasAllowance(web3Interface, profileParams.freeBond!);
 
   if (!alreadyHasAllowance) {
-    await approve(web3Interface, ethers.constants.MaxUint256);
+    await runApprove(web3Interface);
   }
 
   separator();

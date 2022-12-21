@@ -1,23 +1,36 @@
+import { ethers } from "ethers";
 import { archLogger } from "../../logger/chalk-theme";
-import { Web3Interface } from "../../scripts/web3-interface";
-import { BigNumber } from "ethers";
-import { RPC_EXCEPTION } from "../exit-codes";
 import { exit } from "process";
+import { hasAllowance } from "../../scripts/approve_utils";
+import { Web3Interface } from "../../scripts/web3-interface";
+import { RPC_EXCEPTION } from "../../utils/exit-codes";
 import { retryFn } from "./helpers";
 
-export const approve = async (web3Interface: Web3Interface, amt: BigNumber) => {
-  archLogger.notice("approving sarcophagus contract to spend your SARCO");
+/**
+ * Approves Sarcophagus contracts' spending SARCO on the connected account's behalf up to `MaxUint256` tokens.
+ */
+export const runApprove = async (web3Interface: Web3Interface) => {
+  archLogger.notice("Approving Sarcophagus contracts to spend SARCO on your behalf...");
   archLogger.info("Please wait for TX to confirm");
-  const approveFn = (): Promise<any> => {
-    return web3Interface.sarcoToken.approve(web3Interface.networkConfig.diamondDeployAddress, amt);
-  };
+
+  if (await hasAllowance(web3Interface, ethers.constants.MaxUint256)) {
+    return;
+  }
+
+  setInterval(() => process.stdout.write("."), 1000);
+
+  const approveFn = () =>
+    web3Interface.sarcoToken.approve(
+      web3Interface.networkConfig.diamondDeployAddress,
+      ethers.constants.MaxUint256
+    );
 
   try {
     const tx = await retryFn(approveFn);
     await tx.wait();
-    archLogger.notice("approval succeeded!");
+    archLogger.notice("Approval succeeded!");
   } catch (error) {
-    archLogger.error(`Approval Failed: ${error.message}`);
+    archLogger.error(`Approval failed: ${error.message}`);
     exit(RPC_EXCEPTION);
   }
 };
