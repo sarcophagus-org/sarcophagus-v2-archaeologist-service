@@ -8,6 +8,9 @@ import { Help } from "./commands/help";
 import { Update } from "./commands/update";
 import { archLogger } from "../logger/chalk-theme";
 import { View } from "./commands/view";
+import { FreeBond } from "./commands/free-bond";
+import { getOnchainProfile } from "../utils/onchain-data";
+import { exit } from "process";
 
 const web3Interface = await getWeb3Interface();
 
@@ -21,6 +24,7 @@ export class ArchaeologistCli {
     this.addCommand(new Update(web3Interface));
     this.addCommand(new Start(web3Interface));
     this.addCommand(new View(web3Interface));
+    this.addCommand(new FreeBond(web3Interface));
     this.addCommand(new Help(this.commands));
   }
 
@@ -62,6 +66,17 @@ export class ArchaeologistCli {
 
     if (typeof command.validateArgs === "function") {
       command.validateArgs(parsedCliArgs);
+    }
+
+    if (command.shouldBeRegistered === true) {
+      const profile = await getOnchainProfile(command.web3Interface!);
+
+      if (!profile.exists) {
+        archLogger.error("Archaeologist is not registered yet! Please run\n");
+        archLogger.info("cli help register\n");
+        archLogger.error("for help on registering a profile\n");
+        exit(0);
+      }
     }
 
     return command.run(parsedCliArgs);

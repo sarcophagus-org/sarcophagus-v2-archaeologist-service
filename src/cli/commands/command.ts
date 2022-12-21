@@ -12,6 +12,7 @@ export interface Command {
   run(options: CommandOptions, web3Interface?: Web3Interface): Promise<CommandResult | void>;
   validateArgs?(options: CommandOptions);
   web3Interface?: Web3Interface;
+  shouldBeRegistered?: boolean;
 }
 
 /**
