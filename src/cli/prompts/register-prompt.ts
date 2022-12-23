@@ -120,7 +120,7 @@ const approveAndRegister = async (web3Interface: Web3Interface, profileParams: P
   /**
    * Register Profile
    */
-  await profileSetup(profileParams, false, false, true);
+  await profileSetup(profileParams, false, true, true);
 };
 
 const parseRewrapInterval = (rewrapInterval: string | number): number => {

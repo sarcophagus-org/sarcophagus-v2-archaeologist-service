@@ -2,7 +2,7 @@ import chalk from "chalk";
 
 export const logColors = {
   error: chalk.bold.red,
-  warning: chalk.hex("#FFA500"),
+  warning: chalk.hex("#d8972f"),
   muted: chalk.dim,
   green: chalk.green,
 };

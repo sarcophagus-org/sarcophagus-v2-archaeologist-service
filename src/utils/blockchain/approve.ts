@@ -17,7 +17,7 @@ export const runApprove = async (web3Interface: Web3Interface) => {
     return;
   }
 
-  setInterval(() => process.stdout.write("."), 1000);
+  const interval = setInterval(() => process.stdout.write("."), 1000);
 
   const approveFn = () =>
     web3Interface.sarcoToken.approve(
@@ -32,5 +32,7 @@ export const runApprove = async (web3Interface: Web3Interface) => {
   } catch (error) {
     archLogger.error(`Approval failed: ${error.message}`);
     exit(RPC_EXCEPTION);
+  } finally {
+    clearInterval(interval);
   }
 };
