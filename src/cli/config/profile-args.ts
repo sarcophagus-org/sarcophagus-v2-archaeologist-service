@@ -8,6 +8,12 @@ export const profileOptionDefinitions = [
     description: "View your profile.",
   },
   {
+    name: "guided",
+    alias: "g",
+    type: Boolean,
+    description: "Run guided walk through to setup profile"
+  },
+  {
     name: "digging-fee",
     alias: "d",
     type: parseEther,
@@ -26,5 +32,5 @@ export const profileOptionDefinitions = [
     type: parseEther,
     description:
       "How much free bond you would like to deposit when registering. You can add more free bond later in a separate transaction. Free bond is locked up when you accept curses, and returned after a successful unwrapping.",
-  }
+  },
 ];

@@ -1,5 +1,4 @@
 import "dotenv/config";
-import { PublicEnvConfig } from "models/env-config";
 import * as ethers from "ethers";
 import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "./exit-codes";
@@ -33,32 +32,24 @@ const _tryReadEnv = (
   }
 };
 
-// TODO
-export function validateEnvVars(): PublicEnvConfig {
-  _tryReadEnv("CHAIN_ID", process.env.CHAIN_ID, {
+export function validateEnvVars() {
+  const chainID = isLocalNetwork ? hardhatNetworkConfig.chainId.toString() : process.env.CHAIN_ID;
+  _tryReadEnv("CHAIN_ID", chainID, {
     required: true,
     callback: envVar => {
       getNetworkConfigByChainId(envVar);
     },
   });
 
-  return validateBlockEnvVars(isLocalNetwork);
-}
-
-function validateBlockEnvVars(isLocal?: boolean) {
-  const publicConfig: PublicEnvConfig = {
-    encryptionPublicKey: "",
-  };
-
-  const providerURL = isLocal ? hardhatNetworkConfig.providerUrl : process.env.PROVIDER_URL;
-
+  const providerURL = isLocalNetwork ? hardhatNetworkConfig.providerUrl : process.env.PROVIDER_URL;
   _tryReadEnv("PROVIDER_URL", providerURL, { required: true });
-
-  _tryReadEnv("ETH_PRIVATE_KEY", process.env.ETH_PRIVATE_KEY, {
+  _tryReadEnv("ETH_PRIVATE_KEY", process.env.ETH_PRIVATE_KEY, { required: true });
+  _tryReadEnv("ENCRYPTION_MNEMONIC", process.env.ENCRYPTION_MNEMONIC, {
     required: true,
-    callback: walletPrivateKey =>
-      (publicConfig.encryptionPublicKey = new ethers.Wallet(walletPrivateKey).publicKey),
+    callback: mnemonic => {
+      ethers.utils.isValidMnemonic(mnemonic);
+    },
   });
 
-  return publicConfig;
+  // TODO -- add validation for domain if it is present
 }

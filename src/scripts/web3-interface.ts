@@ -16,12 +16,13 @@ import {
 import { BAD_ENV } from "../utils/exit-codes";
 import { getNetworkConfigByChainId, localChainId } from "../lib/config";
 import { NetworkConfig } from "../lib/types/network-config";
+import { KeyFinder } from "../models/key-finder";
 
 export interface Web3Interface {
   networkName: string;
   ethWallet: ethers.Wallet;
-  encryptionWallet: ethers.Wallet;
-  signer: ethers.Signer;
+  encryptionHdWallet: ethers.utils.HDNode;
+  keyFinder: KeyFinder;
   sarcoToken: IERC20;
   archaeologistFacet: ArchaeologistFacet;
   embalmerFacet: EmbalmerFacet;
@@ -39,15 +40,15 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       networkConfig.providerUrl || process.env.PROVIDER_URL
     );
 
-    // Note: currently using same wallet for eth signing + encryption
-    // some refactoring could be done to reduce required wallets here to
-    // a single wallet
+    // TODO -- if the mnemonic needs to gen the wallet for signing key
+    // this will need updated
     const ethWallet = isTest
       ? ethers.Wallet.createRandom()
       : new ethers.Wallet(process.env.ETH_PRIVATE_KEY!, rpcProvider);
-    const encryptionWallet = ethWallet;
-
     const signer = ethWallet;
+
+    const encryptionHdWallet = ethers.utils.HDNode.fromMnemonic(process.env.ENCRYPTION_MNEMONIC!);
+
     const network = await rpcProvider.detectNetwork();
 
     const sarcoToken = IERC20__factory.connect(networkConfig.sarcoTokenAddress, signer);
@@ -69,14 +70,16 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       signer
     );
 
+    const keyFinder = new KeyFinder(encryptionHdWallet, viewStateFacet);
+
     // Cannot confirm rpcProvider is valid until an actual network call is attempted
     sarcoToken.balanceOf(ethWallet.address);
 
     return {
       networkName: network.name,
-      encryptionWallet,
+      encryptionHdWallet,
+      keyFinder,
       ethWallet,
-      signer,
       sarcoToken,
       archaeologistFacet,
       embalmerFacet,

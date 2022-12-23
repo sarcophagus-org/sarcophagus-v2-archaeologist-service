@@ -32,28 +32,18 @@ export async function profileSetup(
   args: ProfileParams,
   isUpdate: boolean = false,
   exitAfterTx: boolean = true,
-  skipApproval?: boolean
+  skipApproval: boolean = false
 ) {
   const { diggingFee, rewrapInterval, freeBond, peerId } = args;
 
   let freeBondDeposit = ethers.constants.Zero;
 
   if (freeBond && freeBond.gt(ethers.constants.Zero)) {
-    if (skipApproval) {
-      freeBondDeposit = freeBond;
-    } else {
-      const approved = await requestApproval(
-        web3Interface,
-        "You will need to approve Sarcophagus contracts to use your SARCO in order to deposit free bond.\nEnter 'approve' to authorize this, or else hit <ENTER> to continue without a deposit:",
-        freeBond
-      );
-
-      if (approved) {
-        freeBondDeposit = freeBond;
-      } else {
-        archLogger.info("Skipping free bond deposit");
-      }
+    if (!skipApproval) {
+      await requestApproval(web3Interface);
     }
+
+    freeBondDeposit = freeBond;
   }
 
   const domain = process.env.DOMAIN;

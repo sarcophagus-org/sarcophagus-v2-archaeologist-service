@@ -2,17 +2,17 @@ import { Libp2p } from "libp2p";
 import { genListenAddresses } from "../utils/listen-addresses";
 import { createAndStartNode } from "../utils/create-and-start-node";
 import { NodeConfig } from "./node-config";
-import { PublicEnvConfig } from "./env-config";
 import { pipe } from "it-pipe";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../logger/chalk-theme";
 import { BigNumber, ethers } from "ethers";
-import { fetchAndValidateShardOnArweave } from "../utils/arweave";
 import { Web3Interface } from "scripts/web3-interface";
-import { PUBLIC_KEY_STREAM, NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
+import { NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
 import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
 import type { Stream } from "@libp2p/interface-connection";
+import { KeyFinder } from "./key-finder";
+import { signPacked } from "../utils/signature";
 
 export interface ListenAddressesConfig {
   signalServerList: string[];
@@ -25,11 +25,10 @@ export interface ArchaeologistInit {
   isBootstrap?: boolean;
   listenAddressesConfig?: ListenAddressesConfig;
   bootstrapList?: string[];
+  web3Interface: Web3Interface;
 }
 
 interface SarcophagusNegotiationParams {
-  arweaveTxId: string;
-  doubleHashedKeyShare: string;
   maxRewrapInterval: number;
   diggingFee: string;
   timestamp: number;
@@ -43,7 +42,6 @@ export class Archaeologist {
   private peerId: PeerId;
   private listenAddresses: string[] | undefined;
   private listenAddressesConfig: ListenAddressesConfig | undefined;
-  public envConfig: PublicEnvConfig;
   public web3Interface: Web3Interface;
 
   constructor(options: ArchaeologistInit) {
@@ -62,14 +60,10 @@ export class Archaeologist {
     this.peerId = options.peerId;
     this.listenAddresses = options.listenAddresses;
     this.listenAddressesConfig = options.listenAddressesConfig;
+    this.web3Interface = options.web3Interface;
   }
 
-  async setupCommunicationStreams() {
-    await this._setupSarcophagusNegotiationStream();
-    await this._setupPublicKeyStream();
-  }
-
-  async initNode(arg: { config: PublicEnvConfig; web3Interface: Web3Interface }) {
+  async initLibp2pNode(): Promise<Libp2p> {
     if (this.listenAddressesConfig) {
       const { signalServerList } = this.listenAddressesConfig!;
       this.listenAddresses = genListenAddresses(
@@ -84,9 +78,6 @@ export class Archaeologist {
     this.nodeConfig.add("addresses", { listen: this.listenAddresses });
 
     this.node = await createAndStartNode(this.name, this.nodeConfig.configObj);
-
-    this.envConfig = arg.config;
-    this.web3Interface = arg.web3Interface;
 
     return this.node;
   }
@@ -107,7 +98,7 @@ export class Archaeologist {
       return;
     }
 
-    archLogger.info('node restarting on set interval');
+    archLogger.info("node restarting on set interval");
     await this.node.stop();
     await this.node.start();
   }
@@ -121,7 +112,9 @@ export class Archaeologist {
     archLogger.error(`Error: ${error.message}`);
   }
 
-  async _setupSarcophagusNegotiationStream() {
+  async setupSarcophagusNegotiationStream() {
+    const errorMessagePrefix = `Archaeologist ${this.peerId.toString()} declined to sign: `;
+
     this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
       try {
         await pipe(stream, async source => {
@@ -129,8 +122,6 @@ export class Archaeologist {
             // validate that supplied sarcophagus parameters meet the requirements of the archaeologist
             try {
               const {
-                arweaveTxId,
-                doubleHashedKeyShare,
                 maxRewrapInterval,
                 diggingFee, // this is assumed to, and should, be in wei
                 timestamp,
@@ -139,8 +130,10 @@ export class Archaeologist {
               );
 
               const maximumRewrapIntervalBN = BigNumber.from(maxRewrapInterval);
-              const errorMessagePrefix = `Archaeologist ${this.peerId.toString()} declined to sign: `;
 
+              /**
+               * Validate maxRewrapInterval supplied is in line with our maxRewrapInterval
+               */
               if (maximumRewrapIntervalBN.gt(inMemoryStore.profile!.maximumRewrapInterval)) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE,
@@ -151,6 +144,9 @@ export class Archaeologist {
                 return;
               }
 
+              /**
+               * Validate supplied digging fee is sufficient
+               */
               if (
                 ethers.utils.parseEther(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)
               ) {
@@ -163,6 +159,9 @@ export class Archaeologist {
                 return;
               }
 
+              /**
+               * Validate negotiation timestamp is within 1 minute of when we received this request
+               */
               if (timestamp > Date.now() + 1000 * 60) {
                 // add 60 second buffer to account for differences in system times
                 this.emitError(stream, {
@@ -174,42 +173,20 @@ export class Archaeologist {
                 return;
               }
 
-              if (
-                !(await fetchAndValidateShardOnArweave(
-                  arweaveTxId,
-                  doubleHashedKeyShare,
-                  this.web3Interface.encryptionWallet.publicKey
-                ))
-              ) {
-                this.emitError(stream, {
-                  code: SarcophagusValidationError.INVALID_ARWEAVE_SHARD,
-                  message: `${errorMessagePrefix} \n Arweave shard is invalid.  
-                  \n Arweave TX ID: ${arweaveTxId}
-                  \n doubleHashedKeyShare value: ${doubleHashedKeyShare}`,
-                });
-                return;
-              }
+              const publicKey = await this.web3Interface.keyFinder.getNextPublicKey();
 
               // sign sarcophagus parameters to demonstrate agreement
-              const signPacked = async (types: string[], data: string[]) => {
-                const dataHex = ethers.utils.defaultAbiCoder.encode(types, data);
-                const dataHash = ethers.utils.keccak256(dataHex);
-                const dataHashBytes = ethers.utils.arrayify(dataHash);
-                const signature = await this.web3Interface.ethWallet.signMessage(dataHashBytes);
-                return signature;
-              };
-
               const signature = await signPacked(
-                ["string", "bytes32", "uint256", "uint256", "uint256"],
+                this.web3Interface.ethWallet,
+                ["bytes", "uint256", "uint256", "uint256"],
                 [
-                  arweaveTxId,
-                  doubleHashedKeyShare,
+                  publicKey,
                   maximumRewrapIntervalBN.toString(),
                   diggingFee,
                   Math.trunc(timestamp / 1000).toString(),
                 ]
               );
-              this.streamToBrowser(stream, JSON.stringify({ signature }));
+              this.streamToBrowser(stream, JSON.stringify({ signature, publicKey }));
             } catch (e) {
               archLogger.error(e);
               this.emitError(stream, {
@@ -221,39 +198,6 @@ export class Archaeologist {
         });
       } catch (err) {
         archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`);
-      }
-    });
-  }
-
-  async _setupPublicKeyStream() {
-    this.node.handle([PUBLIC_KEY_STREAM], async ({ stream }) => {
-      try {
-        await pipe(stream, async source => {
-          for await (const data of source) {
-            if (data.length > 8) stream.close();
-            try {
-              const signature = await this.web3Interface.ethWallet.signMessage(
-                this.envConfig.encryptionPublicKey
-              );
-
-              this.streamToBrowser(
-                stream,
-                JSON.stringify({
-                  signature,
-                  encryptionPublicKey: this.envConfig.encryptionPublicKey,
-                })
-              );
-            } catch (e) {
-              archLogger.error(e);
-              this.emitError(stream, {
-                code: SarcophagusValidationError.UNKNOWN_ERROR,
-                message: e.code ? `${e.code}\n${e.message}` : e.message ?? e,
-              });
-            }
-          }
-        });
-      } catch (err) {
-        archLogger.error(`problem with pipe in public key stream: ${err}`);
       }
     });
   }

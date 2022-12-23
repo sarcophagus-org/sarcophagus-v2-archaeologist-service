@@ -1,27 +1,32 @@
 import scheduler from "node-schedule";
 import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "../logger/chalk-theme";
-import { publishKeyShare } from "./blockchain/publish-key-share";
+import { publishPrivateKey } from "./blockchain/publish-private-key";
 import { inMemoryStore } from "./onchain-data";
 
-const scheduledPublishKeyShares: Record<string, scheduler.Job | undefined> = {};
+const scheduledPublishPrivateKey: Record<string, scheduler.Job | undefined> = {};
 
-export function schedulePublishKeyShare(web3Interface: Web3Interface, sarcoId: string, date: Date) {
+export function schedulePublishPrivateKey(
+  web3Interface: Web3Interface,
+  sarcoId: string,
+  date: Date
+) {
   // If sarcophagus is being unwrapped, dont schedule job
-  const sarcoIndex = inMemoryStore.sarcoIdsInProcessOfHavingKeySharesPublished.findIndex(
+  const sarcoIndex = inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.findIndex(
     id => id === sarcoId
   );
+
   if (sarcoIndex !== -1) {
     return;
   }
 
-  if (!scheduledPublishKeyShares[sarcoId]) {
-    archLogger.info(`Scheduling publish key share at: ${date.toString()}`);
+  if (!scheduledPublishPrivateKey[sarcoId]) {
+    archLogger.info(`Scheduling publish private key at: ${date.toString()}`);
   }
 
   // Cancel existing schedules, so no duplicate jobs will be created.
-  scheduledPublishKeyShares[sarcoId]?.cancel();
-  scheduledPublishKeyShares[sarcoId] = scheduler.scheduleJob(date, async () => {
-    await publishKeyShare(web3Interface, sarcoId);
+  scheduledPublishPrivateKey[sarcoId]?.cancel();
+  scheduledPublishPrivateKey[sarcoId] = scheduler.scheduleJob(date, async () => {
+    await publishPrivateKey(web3Interface, sarcoId);
   });
 }

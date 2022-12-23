@@ -5,6 +5,7 @@ import { CLI_BAD_ACCUSE_ARG, FILE_READ_EXCEPTION } from "../exit-codes";
 
 import jsonfile from "jsonfile";
 
+// TODO -- update accuse to work with CLI and new private key setup
 export enum AccuseArgNames {
   SARCO_ID = "id",
   PAYMENT_ADDRESS = "pay",
