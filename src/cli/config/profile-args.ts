@@ -8,6 +8,12 @@ export const profileOptionDefinitions = [
     description: "View your profile.",
   },
   {
+    name: "guided",
+    alias: "g",
+    type: Boolean,
+    description: "Run guided walk through to setup profile"
+  },
+  {
     name: "digging-fee",
     alias: "d",
     type: parseEther,

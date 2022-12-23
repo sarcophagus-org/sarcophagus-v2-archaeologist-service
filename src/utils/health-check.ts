@@ -2,7 +2,7 @@ import { BigNumber, ethers } from "ethers";
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "../logger/chalk-theme";
-import { RPC_EXCEPTION } from "./exit-codes";
+import { NO_ONCHAIN_PROFILE, RPC_EXCEPTION } from "./exit-codes";
 import { logCallout } from "../logger/formatter";
 import {
   getEthBalance,
@@ -28,7 +28,7 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
     const ethBalance = await getEthBalance(web3Interface);
     warnIfEthBalanceIsLow(ethBalance);
 
-    const profile = await fetchProfileOrPromptProfileSetup(web3Interface, () =>
+    const profile = await fetchProfileOrExit(web3Interface, () =>
       logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address)
     );
 
@@ -64,7 +64,7 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
   }
 }
 
-const fetchProfileOrPromptProfileSetup = async (
+const fetchProfileOrExit = async (
   web3Interface: Web3Interface,
   logBalances: Function
 ): Promise<OnchainProfile> => {
@@ -77,9 +77,7 @@ const fetchProfileOrPromptProfileSetup = async (
       archLogger.warn(`\nPlease register your archaeologist using the following prompts:`);
     });
 
-    // Begin flow for registering archaeologist
-    await registerPrompt(web3Interface);
-    return inMemoryStore.profile!;
+    exit(NO_ONCHAIN_PROFILE);
   }
 
   return profile;

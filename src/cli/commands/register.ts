@@ -1,6 +1,6 @@
 import { Command, CommandOptions } from "./command";
 import { profileOptionDefinitions } from "../config/profile-args";
-import { getOnchainProfile } from "../../utils/onchain-data";
+import { getOnchainProfile, inMemoryStore } from "../../utils/onchain-data";
 import { logProfile, logValidationErrorAndExit } from "../utils";
 import { validateEnvVars } from "../../utils/validateEnv";
 import { ProfileOptionNames, ProfileParams, profileSetup } from "../../scripts/profile-setup";
@@ -8,6 +8,7 @@ import { archLogger } from "../../logger/chalk-theme";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
 import { isFreeBondProvidedAndZero, validateRewrapInterval } from "../shared/profile-validations";
+import { registerPrompt } from "../prompts/register-prompt";
 
 export class Register implements Command {
   name = "register";
@@ -39,7 +40,7 @@ export class Register implements Command {
   }
 
   validateArgs(options: CommandOptions) {
-    if (options.view) {
+    if (options.view || options.guided) {
       return;
     }
 
@@ -67,6 +68,9 @@ export class Register implements Command {
       // output profile
       const profile = await getOnchainProfile(this.web3Interface);
       logProfile(profile);
+    } else if (options.guided) {
+      // Begin guided flow for registering archaeologist
+      await registerPrompt(this.web3Interface);
     } else {
       await this.registerArchaeologist(options as ProfileParams);
     }
