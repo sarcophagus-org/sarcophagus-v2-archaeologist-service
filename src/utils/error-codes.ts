@@ -9,7 +9,6 @@ export interface StreamCommsError {
 export enum SarcophagusValidationError {
   UNKNOWN_ERROR,
   MAX_REWRAP_INTERVAL_TOO_LARGE,
-  INVALID_ARWEAVE_SHARD,
   DIGGING_FEE_TOO_LOW,
   INVALID_TIMESTAMP,
 }

@@ -43,7 +43,7 @@ export async function runTests() {
   // Remove ETH from account
   const bal = await web3Interface.ethWallet.getBalance();
   await web3Interface.ethWallet.sendTransaction({
-    to: web3Interface.encryptionWallet.address,
+    to: web3Interface.encryptionHdWallet.address,
     value: bal.sub(ethers.utils.parseEther("0.0005")),
   });
 
@@ -64,11 +64,12 @@ export async function runTests() {
    **/
 
   // Send ETH back to account
-  const bal2 = await web3Interface.encryptionWallet.getBalance();
-  await web3Interface.encryptionWallet.sendTransaction({
-    to: web3Interface.ethWallet.address,
-    value: bal2.sub(ethers.utils.parseEther("0.0005")),
-  });
+  // TODO -- fix to work with a second wallet that's not the encryption wallet
+  // const bal2 = await web3Interface.encryptionHdWallet.getBalance();
+  // await web3Interface.encryptionHdWallet.sendTransaction({
+  //   to: web3Interface.ethWallet.address,
+  //   value: bal2.sub(ethers.utils.parseEther("0.0005")),
+  // });
 
   archLogger.warn("\n\n No notice needed if ETH available");
   await testSuite.expectOutput(noEthNotice, { ...opts, toNotShow: true });

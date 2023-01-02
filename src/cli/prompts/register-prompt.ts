@@ -1,25 +1,12 @@
 import inquirer from "inquirer";
 import { parseEther } from "ethers/lib/utils";
-import { exit } from "process";
-import { DENIED_APPROVAL } from "../../utils/exit-codes";
-import { ethers } from "ethers";
 import { ProfileParams, profileSetup } from "../../scripts/profile-setup";
 import { Web3Interface } from "../../scripts/web3-interface";
-import { hasAllowance } from "../../scripts/approve_utils";
-import { approve } from "../../utils/blockchain/approve";
-import { archLogger, logColors } from "../../logger/chalk-theme";
+import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
+import { logColors } from "../../logger/chalk-theme";
+import { runApprove } from "../../utils/blockchain/approve";
 
 const DEFAULT_DIGGING_FEES = "100";
-
-const approvalQuestion = [
-  {
-    type: "confirm",
-    name: "approval",
-    message:
-      "Do you approve the Sarcophagus contract to spend your SARCO? You must agree to continue.",
-    default: true,
-  },
-];
 
 const confirmReviewQuestion = (diggingFee: string, rewrapInterval: string, freeBond: string) => [
   {
@@ -30,6 +17,7 @@ const confirmReviewQuestion = (diggingFee: string, rewrapInterval: string, freeB
       `Digging Fee: ${diggingFee} SARCO\n` +
       `Free Bond: ${freeBond} SARCO\n` +
       `Maximum Rewrap Interval: ${rewrapInterval}\n\n` +
+      `Domain: ${process.env.DOMAIN}\n\n` +
       "Do you want to continue?",
     default: true,
   },
@@ -124,7 +112,7 @@ const approveAndRegister = async (web3Interface: Web3Interface, profileParams: P
   const alreadyHasAllowance = await hasAllowance(web3Interface, profileParams.freeBond!);
 
   if (!alreadyHasAllowance) {
-    await approve(web3Interface, ethers.constants.MaxUint256);
+    await runApprove(web3Interface);
   }
 
   separator();
@@ -132,7 +120,7 @@ const approveAndRegister = async (web3Interface: Web3Interface, profileParams: P
   /**
    * Register Profile
    */
-  await profileSetup(profileParams, false, false, true);
+  await profileSetup(profileParams, false, true, true);
 };
 
 const parseRewrapInterval = (rewrapInterval: string | number): number => {
@@ -155,14 +143,7 @@ export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?
    * Ask for approval
    */
   if (!skipApproval) {
-    const approvalAnswer = await inquirer.prompt(approvalQuestion);
-
-    // If user does not agree to approval, then exit
-    if (!approvalAnswer.approval) {
-      archLogger.error("You denied approval, quitting register archaeologist.");
-      exit(DENIED_APPROVAL);
-    }
-
+    await requestApproval(web3Interface);
     separator();
   }
 

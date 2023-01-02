@@ -2,7 +2,7 @@ import { BigNumber, ethers } from "ethers";
 import { exit } from "process";
 import { Web3Interface } from "scripts/web3-interface";
 import { archLogger } from "../logger/chalk-theme";
-import { RPC_EXCEPTION } from "./exit-codes";
+import { NO_ONCHAIN_PROFILE, RPC_EXCEPTION } from "./exit-codes";
 import { logCallout } from "../logger/formatter";
 import {
   getEthBalance,
@@ -12,7 +12,7 @@ import {
   inMemoryStore,
   OnchainProfile,
 } from "./onchain-data";
-import { logBalances, logProfile } from "../cli/utils";
+import { formatFullPeerString, logBalances, logProfile } from "../cli/utils";
 import { registerPrompt } from "../cli/prompts/register-prompt";
 
 /**
@@ -28,20 +28,24 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
     const ethBalance = await getEthBalance(web3Interface);
     warnIfEthBalanceIsLow(ethBalance);
 
-    const profile = await fetchProfileOrPromptProfileSetup(web3Interface, () =>
+    const profile = await fetchProfileOrExit(web3Interface, () =>
       logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address)
     );
 
     // Validate local peerId matches the one on the profile
     if (peerId) {
-      if (peerId !== profile.peerId) {
+      if (
+        peerId !== profile.peerId &&
+        peerId !== formatFullPeerString(profile.peerId, process.env.DOMAIN)
+      ) {
         logCallout(async () => {
           archLogger.warn("Peer ID on profile does not match local Peer Id\n");
+          archLogger.warn("Please update your profile \n");
           archLogger.warn("Your archaeologist will not appear in the embalmer webapp\n");
         });
 
         // TODO -- add notification once notifications are setup
-        // TODO -- consider prompting user to update their profile
+        // TODO -- consider quitting and forcing user to update their profile
       }
     }
 
@@ -60,7 +64,7 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
   }
 }
 
-const fetchProfileOrPromptProfileSetup = async (
+const fetchProfileOrExit = async (
   web3Interface: Web3Interface,
   logBalances: Function
 ): Promise<OnchainProfile> => {
@@ -73,9 +77,7 @@ const fetchProfileOrPromptProfileSetup = async (
       archLogger.warn(`\nPlease register your archaeologist using the following prompts:`);
     });
 
-    // Begin flow for registering archaeologist
-    await registerPrompt(web3Interface);
-    return inMemoryStore.profile!;
+    exit(NO_ONCHAIN_PROFILE);
   }
 
   return profile;

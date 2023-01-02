@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { getWeb3Interface } from "./scripts/web3-interface";
+import { getWeb3Interface, Web3Interface } from "./scripts/web3-interface";
 import { Archaeologist } from "./models/archaeologist";
 import { validateEnvVars } from "./utils/validateEnv";
 import { fetchProfileAndSchedulePublish } from "./utils/onchain-data";
@@ -14,13 +14,10 @@ export async function startService(opts: {
   bootstrapList?: string[];
   isTest?: boolean;
 }) {
-  const web3Interface = await getWeb3Interface(opts.isTest);
-  const config = opts.isTest
-    ? { encryptionPublicKey: web3Interface.encryptionWallet.publicKey }
-    : validateEnvVars();
+  validateEnvVars();
 
-  let { nodeName, bootstrapList, listenAddresses, peerId } = opts;
-
+  let { nodeName, bootstrapList, listenAddresses, peerId, isTest } = opts;
+  const web3Interface = await getWeb3Interface(isTest);
   peerId = peerId ?? (await loadPeerIdFromFile());
 
   const arch = new Archaeologist({
@@ -34,16 +31,18 @@ export async function startService(opts: {
             signalServerList: SIGNAL_SERVER_LIST,
           }
         : undefined,
+    web3Interface,
   });
 
   await healthCheck(web3Interface, peerId.toString());
   fetchProfileAndSchedulePublish(web3Interface);
   setInterval(() => fetchProfileAndSchedulePublish(web3Interface), 300000); // refetch every 5mins
 
-  await arch.initNode({ config, web3Interface });
-  arch.setupCommunicationStreams();
+  // TODO -- delay starting the node until the creation window has passed
+  // Consider only doing this if arch as at least one sarcophagus
+  await arch.initLibp2pNode();
+  arch.setupSarcophagusNegotiationStream();
 
-  // TODO: remove once node connection issues are resolved
   // Restart node on 20 min interval in attempt to avoid websocket / wrtc issues
   setInterval(() => arch.restartNode(), 20 * 60 * 1000);
 

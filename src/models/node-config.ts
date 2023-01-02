@@ -5,6 +5,7 @@ import { noise } from "@chainsafe/libp2p-noise";
 import { mplex } from "@libp2p/mplex";
 import { bootstrap } from "@libp2p/bootstrap";
 import { Libp2pOptions } from "libp2p";
+import { webSockets } from "@libp2p/websockets";
 
 interface NodeConfigParams {
   bootstrapList?: string[];
@@ -13,10 +14,10 @@ interface NodeConfigParams {
 }
 
 // protocol names used to set up communication with embalmer node nodes
-export const PUBLIC_KEY_STREAM = "/archaeologist-public-key";
 export const NEGOTIATION_SIGNATURE_STREAM = "/archaeologist-negotiation-signature";
 export const SIGNAL_SERVER_LIST = ["sig.encryptafile.com"];
 const DHT_PROTOCOL_PREFIX = "/archaeologist-service";
+const domain = process.env.DOMAIN;
 
 const dht = kadDHT({
   protocolPrefix: DHT_PROTOCOL_PREFIX,
@@ -27,7 +28,7 @@ const webRtcStar = webRTCStar({ wrtc });
 
 export class NodeConfig {
   public configObj: Libp2pOptions = {
-    transports: [webRtcStar.transport],
+    transports: [domain ? webSockets() : webRtcStar.transport],
     connectionEncryption: [noise()],
     streamMuxers: [mplex()],
     dht,
@@ -38,6 +39,10 @@ export class NodeConfig {
   };
 
   constructor(options: NodeConfigParams = {}) {
+    if (!domain) {
+      this.configObj.peerDiscovery!.push(webRtcStar.discovery);
+    }
+
     if (options.bootstrapList) {
       this.configObj.peerDiscovery!.push(
         bootstrap({

@@ -18,14 +18,14 @@ export interface SarcophagusData {
 
 interface InMemoryStore {
   sarcophagi: SarcophagusData[];
-  sarcoIdsInProcessOfHavingKeySharesPublished: string[];
+  sarcoIdsInProcessOfHavingPrivateKeyPublished: string[];
   profile?: OnchainProfile;
   gracePeriod?: BigNumber;
 }
 
 export const inMemoryStore: InMemoryStore = {
   sarcophagi: [],
-  sarcoIdsInProcessOfHavingKeySharesPublished: [],
+  sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
 };
 
 export async function fetchProfileAndSchedulePublish(web3Interface: Web3Interface) {
@@ -37,6 +37,10 @@ export async function getOnchainProfile(web3Interface: Web3Interface): Promise<O
   return web3Interface.viewStateFacet.getArchaeologistProfile(web3Interface.ethWallet.address);
 }
 
+export async function getRewards(web3Interface: Web3Interface): Promise<BigNumber> {
+  return web3Interface.viewStateFacet.getRewards(web3Interface.ethWallet.address);
+}
+
 export async function getSarcoBalance(web3Interface: Web3Interface): Promise<BigNumber> {
   return web3Interface.sarcoToken.balanceOf(web3Interface.ethWallet.address);
 }
@@ -46,7 +50,7 @@ export async function getGracePeriod(web3Interface: Web3Interface): Promise<BigN
 }
 
 export async function getEthBalance(web3Interface: Web3Interface): Promise<BigNumber> {
-  return web3Interface.signer.getBalance();
+  return web3Interface.ethWallet.getBalance();
 }
 
 export async function getFreeBondBalance(web3Interface: Web3Interface): Promise<BigNumber> {

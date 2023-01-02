@@ -3,7 +3,7 @@ import { profileOptionDefinitions } from "../config/profile-args";
 import { getOnchainProfile, OnchainProfile } from "../../utils/onchain-data";
 import { logProfile, logValidationErrorAndExit } from "../utils";
 import { validateEnvVars } from "../../utils/validateEnv";
-import { ProfileOptionNames, ProfileParams, profileSetup } from "../../scripts/profile-setup";
+import { ProfileParams, profileSetup } from "../../scripts/profile-setup";
 import { archLogger } from "../../logger/chalk-theme";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
