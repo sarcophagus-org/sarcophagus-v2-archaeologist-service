@@ -34,21 +34,21 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
     if (peerId) {
       if (
         peerId !== profile.peerId &&
-        `${process.env.DOMAIN}:${peerId}` !== formatFullPeerString(profile.peerId, process.env.DOMAIN)
+        profile.peerId !== formatFullPeerString(peerId, process.env.DOMAIN)
       ) {
         logCallout(async () => {
           archLogger.warn("Peer ID on profile does not match local Peer Id!\n");
           archLogger.warn("Please update your profile \n");
           archLogger.warn("Your archaeologist will not appear in the embalmer webapp\n");
           archLogger.warn(`Local Peer ID: ${process.env.DOMAIN}:${peerId}`);
-          archLogger.warn(`Profile Peer ID: ${formatFullPeerString(profile.peerId, process.env.DOMAIN)}`);
+          archLogger.warn(`Profile Peer ID: ${profile.peerId}`);
         });
 
         // TODO -- add notification once notifications are setup
         // TODO -- consider quitting and forcing user to update their profile
+      } else {
+        archLogger.info('local PeerID and domain matches profile value')
       }
-    } else {
-      archLogger.info('local PeerID and domain matches profile value')
     }
 
     const freeBondBalance = await getFreeBondBalance(web3Interface);
