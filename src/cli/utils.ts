@@ -5,7 +5,7 @@ import { logCallout } from "../logger/formatter";
 import { archLogger } from "../logger/chalk-theme";
 import { formatEther } from "ethers/lib/utils";
 import { exit } from "process";
-import { BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import jsonfile from "jsonfile";
 import { FILE_READ_EXCEPTION } from "../utils/exit-codes";
 
@@ -62,6 +62,8 @@ export const logProfile = (profile: OnchainProfile): void => {
           formattedProfile[key] = value;
         }
       }
+
+      formattedProfile['address'] = ethers.utils.computeAddress(process.env.ETH_PRIVATE_KEY!);
 
       console.log(columnify(formattedProfile, { columns: ["FIELD", "VALUE"] }));
     }

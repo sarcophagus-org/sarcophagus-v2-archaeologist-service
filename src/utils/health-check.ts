@@ -40,6 +40,8 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
           archLogger.warn("Peer ID on profile does not match local Peer Id!\n");
           archLogger.warn("Please update your profile \n");
           archLogger.warn("Your archaeologist will not appear in the embalmer webapp\n");
+          archLogger.warn(`Local Peer ID: ${process.env.DOMAIN}:${peerId}`);
+          archLogger.warn(`Profile Peer ID: ${formatFullPeerString(profile.peerId, process.env.DOMAIN)}`);
         });
 
         // TODO -- add notification once notifications are setup
