@@ -76,7 +76,8 @@ const fetchProfileOrExit = async (
       logBalances();
       archLogger.warn("\n\nARCHAEOLOGIST NOT REGISTERED:\n");
       archLogger.warn(`\nYour archaeologist is not yet registered.`);
-      archLogger.warn(`\nPlease register your archaeologist using the following prompts:`);
+      archLogger.warn(`\nYou can use a guided walk through to register a profile by running the command:`);
+      archLogger.info(`\ncli register --guided`);
     });
 
     exit(NO_ONCHAIN_PROFILE);
