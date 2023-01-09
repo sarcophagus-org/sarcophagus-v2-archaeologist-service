@@ -9,11 +9,9 @@ import {
   getFreeBondBalance,
   getOnchainProfile,
   getSarcoBalance,
-  inMemoryStore,
   OnchainProfile,
 } from "./onchain-data";
 import { formatFullPeerString, logBalances, logProfile } from "../cli/utils";
-import { registerPrompt } from "../cli/prompts/register-prompt";
 
 /**
  * Runs on service startup
@@ -36,16 +34,20 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
     if (peerId) {
       if (
         peerId !== profile.peerId &&
-        peerId !== formatFullPeerString(profile.peerId, process.env.DOMAIN)
+        profile.peerId !== formatFullPeerString(peerId, process.env.DOMAIN)
       ) {
         logCallout(async () => {
-          archLogger.warn("Peer ID on profile does not match local Peer Id\n");
+          archLogger.warn("Peer ID on profile does not match local Peer Id!\n");
           archLogger.warn("Please update your profile \n");
           archLogger.warn("Your archaeologist will not appear in the embalmer webapp\n");
+          archLogger.warn(`Local Peer ID: ${process.env.DOMAIN}:${peerId}`);
+          archLogger.warn(`Profile Peer ID: ${profile.peerId}`);
         });
 
         // TODO -- add notification once notifications are setup
         // TODO -- consider quitting and forcing user to update their profile
+      } else {
+        archLogger.info('local PeerID and domain matches profile value')
       }
     }
 
@@ -74,7 +76,8 @@ const fetchProfileOrExit = async (
       logBalances();
       archLogger.warn("\n\nARCHAEOLOGIST NOT REGISTERED:\n");
       archLogger.warn(`\nYour archaeologist is not yet registered.`);
-      archLogger.warn(`\nPlease register your archaeologist using the following prompts:`);
+      archLogger.warn(`\nYou can use a guided walk through to register a profile by running the command:`);
+      archLogger.info(`\ncli register --guided`);
     });
 
     exit(NO_ONCHAIN_PROFILE);

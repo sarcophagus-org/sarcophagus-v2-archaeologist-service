@@ -16,6 +16,7 @@
     "start:debug": "tsc -p tsconfig.json && cross-env NODE_ENV=production DEBUG=libp2p:* NODE_PATH=./build node build/src/index.js",
     "prettier": "npx prettier --write src/**",
     "peer-id-gen": "node ./src/scripts/peer-id-gen.js",
+    "seed-gen": "node ./src/scripts/mnemonic-gen.js",
     "test": "tsc -p tsconfig.json && cross-env NODE_ENV=test NODE_PATH=./build node -r dotenv/config --experimental-specifier-resolution=node build/src/test/index.js dotenv_config_path=.env"
   },
   "license": "MIT",
@@ -30,6 +31,7 @@
     "@mapbox/node-pre-gyp": "^1.0.10",
     "@sarcophagus-org/sarcophagus-v2-contracts": "^0.10.0",
     "@types/node": "^18.0.0",
+    "bip39": "^3.0.4",
     "chalk": "^5.0.1",
     "columnify": "^1.6.0",
     "command-line-args": "^5.2.1",

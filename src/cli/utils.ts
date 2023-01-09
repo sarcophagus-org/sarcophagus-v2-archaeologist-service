@@ -5,7 +5,7 @@ import { logCallout } from "../logger/formatter";
 import { archLogger } from "../logger/chalk-theme";
 import { formatEther } from "ethers/lib/utils";
 import { exit } from "process";
-import { BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import jsonfile from "jsonfile";
 import { FILE_READ_EXCEPTION } from "../utils/exit-codes";
 
@@ -62,6 +62,12 @@ export const logProfile = (profile: OnchainProfile): void => {
           formattedProfile[key] = value;
         }
       }
+
+      // TODO: update this to use menmonic if private key changes to that
+      const privKey = process.env.ETH_PRIVATE_KEY!;
+      formattedProfile['address'] = privKey.startsWith("0x") ?
+        ethers.utils.computeAddress(process.env.ETH_PRIVATE_KEY!) :
+        ethers.utils.computeAddress("0x" + process.env.ETH_PRIVATE_KEY!);
 
       console.log(columnify(formattedProfile, { columns: ["FIELD", "VALUE"] }));
     }
