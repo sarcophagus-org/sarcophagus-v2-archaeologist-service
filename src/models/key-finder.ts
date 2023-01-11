@@ -8,9 +8,12 @@ export class KeyFinder {
   public wallet: ethers.utils.HDNode;
   private viewStateFacet: ViewStateFacet;
 
-  constructor(encryptionHdWallet: ethers.utils.HDNode, viewStateFacet: ViewStateFacet) {
+  constructor(encryptionHdWallet: ethers.utils.HDNode, viewStateFacet?: ViewStateFacet) {
     this.wallet = encryptionHdWallet;
-    this.viewStateFacet = viewStateFacet;
+
+    if (viewStateFacet) {
+      this.viewStateFacet = viewStateFacet;
+    }
   }
 
   deriveHdWalletFromPublicKey(publicKey: string, index: number = 0): ethers.utils.HDNode {
@@ -28,6 +31,11 @@ export class KeyFinder {
   derivePrivateKeyFromPublicKey(publicKey: string, index: number = 0): string {
     const currentWallet = this.deriveHdWalletFromPublicKey(publicKey);
     return currentWallet.privateKey;
+  }
+
+  derivePrivateKeyAtIndex(index): string {
+    const walletAtCurrentIndex = this.getHdNodeAtIndex(index);
+    return walletAtCurrentIndex.privateKey;
   }
 
   // runs during sarcophagus negotiation to determine current public key

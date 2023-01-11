@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon --watch 'src/**' index.ts",
     "build": "tsc -p tsconfig.json",
+    "pk": "tsc -p tsconfig.json && cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/scripts/priv-key-tool.js",
     "cli": "cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/cli/run.js",
     "cli:install": "npm run build && chmod +x build/src/cli/run.js && npm link",
     "start": "tsc -p tsconfig.json && cross-env NODE_ENV=production NODE_PATH=./build node --experimental-specifier-resolution=node build/src/index.js",
