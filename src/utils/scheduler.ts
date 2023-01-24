@@ -21,7 +21,7 @@ export function schedulePublishPrivateKey(
   }
 
   if (!scheduledPublishPrivateKey[sarcoId]) {
-    archLogger.info(`Scheduling publish private key at: ${date.toString()}`);
+    archLogger.notice(`Scheduling publish private key at: ${date.toString()}`);
   }
 
   // Cancel existing schedules, so no duplicate jobs will be created.

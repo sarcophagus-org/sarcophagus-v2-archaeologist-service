@@ -8,6 +8,12 @@ export const logColors = {
 };
 
 export const archLogger = {
+  debug: msg => {
+    if (process.env.DEBUG) {
+      const debugLog = logColors.muted(`debug-${process.env.npm_package_version}::${msg}`);
+      console.log(debugLog);
+    }
+  },
   info: msg => console.log(logColors.muted(msg)),
   notice: msg => console.log(logColors.green(msg)),
   warn: msg => console.log(logColors.warning(msg)),

@@ -1,6 +1,6 @@
 {
   "name": "archaeologist-service",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Service used to perform jobs in the Sarcophagus ecosystem",
   "type": "module",
   "bin": {

@@ -47,7 +47,7 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
         // TODO -- add notification once notifications are setup
         // TODO -- consider quitting and forcing user to update their profile
       } else {
-        archLogger.info('local PeerID and domain matches profile value')
+        archLogger.debug('local PeerID and domain matches profile value')
       }
     }
 
