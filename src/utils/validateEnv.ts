@@ -26,8 +26,9 @@ const _tryReadEnv = (
 
   try {
     config.callback(envVar);
-  } catch (_) {
-    archLogger.error(`${envName} is invalid`);
+  } catch (e) {
+    archLogger.debug(e);
+    archLogger.error(`${envName} is invalid: ${envVar}`);
     exit(BAD_ENV);
   }
 };
@@ -47,7 +48,9 @@ export function validateEnvVars() {
   _tryReadEnv("ENCRYPTION_MNEMONIC", process.env.ENCRYPTION_MNEMONIC, {
     required: true,
     callback: mnemonic => {
-      ethers.utils.isValidMnemonic(mnemonic);
+      if (!ethers.utils.isValidMnemonic(mnemonic)) {
+        throw new Error("Invalid mnemonic");
+      }
     },
   });
 
