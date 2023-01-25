@@ -11,7 +11,7 @@ export const genListenAddresses = (
 };
 
 export const wssListenAddress = (): string[] => {
-  archLogger.info("using websockets");
+  archLogger.debug("using websockets");
   return [`/ip4/127.0.0.1/tcp/9000/wss`];
 };
 
@@ -20,7 +20,7 @@ export const ssListenAddresses = (
   servers: string[],
   peerId?: string
 ): string[] => {
-  archLogger.info("using signalling server");
+  archLogger.debug("using signalling server");
   return servers.map(server => {
     const ssAddress = isLocal
       ? `/ip4/${server}/tcp/${getLocalStarSignallingPort()}/ws/p2p-webrtc-star`

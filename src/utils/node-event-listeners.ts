@@ -17,7 +17,7 @@ export function setupNodeEventListeners(node: Libp2p, name: string) {
 
     if (discoveredPeers.find(p => p === formattedPeerId) === undefined) {
       discoveredPeers.push(formattedPeerId);
-      archLogger.info(`${name}: discovered ${peerId.slice(peerId.length - idTruncateLimit)}`);
+      archLogger.debug(`${name}: discovered ${peerId.slice(peerId.length - idTruncateLimit)}`);
     }
   });
 

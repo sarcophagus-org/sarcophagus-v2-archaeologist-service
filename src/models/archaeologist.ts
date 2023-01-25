@@ -98,7 +98,7 @@ export class Archaeologist {
       return;
     }
 
-    archLogger.info("node restarting on set interval");
+    archLogger.debug("node restarting on set interval");
     await this.node.stop();
     await this.node.start();
   }
