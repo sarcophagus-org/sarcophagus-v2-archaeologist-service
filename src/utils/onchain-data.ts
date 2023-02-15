@@ -6,6 +6,7 @@ export interface OnchainProfile {
   exists: boolean;
   minimumDiggingFeePerSecond: BigNumber;
   maximumRewrapInterval: BigNumber;
+  maximumSarcophagusLifeSpan: BigNumber;
   freeBond: BigNumber;
   cursedBond: BigNumber;
   peerId: string;

@@ -7,7 +7,11 @@ import { ProfileOptionNames, ProfileParams, profileSetup } from "../../scripts/p
 import { archLogger } from "../../logger/chalk-theme";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
-import { isFreeBondProvidedAndZero, validateRewrapInterval } from "../shared/profile-validations";
+import {
+  isFreeBondProvidedAndZero,
+  validateMaxSarcophagusLifeSpan,
+  validateRewrapInterval,
+} from "../shared/profile-validations";
 import { registerPrompt } from "../prompts/register-prompt";
 
 export class Register implements Command {
@@ -57,6 +61,7 @@ export class Register implements Command {
     }
 
     validateRewrapInterval(options.rewrapInterval);
+    validateMaxSarcophagusLifeSpan(options.maximumSarcophagusLifeSpan);
 
     if (isFreeBondProvidedAndZero(options.freeBond)) {
       delete options.freeBond;
