@@ -47,7 +47,7 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
         // TODO -- add notification once notifications are setup
         // TODO -- consider quitting and forcing user to update their profile
       } else {
-        archLogger.debug('local PeerID and domain matches profile value')
+        archLogger.debug("local PeerID and domain matches profile value");
       }
     }
 
@@ -76,7 +76,9 @@ const fetchProfileOrExit = async (
       logBalances();
       archLogger.warn("\n\nARCHAEOLOGIST NOT REGISTERED:\n");
       archLogger.warn(`\nYour archaeologist is not yet registered.`);
-      archLogger.warn(`\nYou can use a guided walk through to register a profile by running the command:`);
+      archLogger.warn(
+        `\nYou can use a guided walk through to register a profile by running the command:`
+      );
       archLogger.info(`\ncli register --guided`);
     });
 

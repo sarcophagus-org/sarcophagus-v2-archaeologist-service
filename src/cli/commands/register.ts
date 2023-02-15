@@ -1,6 +1,6 @@
 import { Command, CommandOptions } from "./command";
 import { profileOptionDefinitions } from "../config/profile-args";
-import { getOnchainProfile, inMemoryStore } from "../../utils/onchain-data";
+import { getOnchainProfile } from "../../utils/onchain-data";
 import { logProfile, logValidationErrorAndExit } from "../utils";
 import { validateEnvVars } from "../../utils/validateEnv";
 import { ProfileOptionNames, ProfileParams, profileSetup } from "../../scripts/profile-setup";

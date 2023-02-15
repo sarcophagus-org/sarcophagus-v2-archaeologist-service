@@ -65,9 +65,9 @@ export const logProfile = (profile: OnchainProfile): void => {
 
       // TODO: update this to use menmonic if private key changes to that
       const privKey = process.env.ETH_PRIVATE_KEY!;
-      formattedProfile['address'] = privKey.startsWith("0x") ?
-        ethers.utils.computeAddress(process.env.ETH_PRIVATE_KEY!) :
-        ethers.utils.computeAddress("0x" + process.env.ETH_PRIVATE_KEY!);
+      formattedProfile["address"] = privKey.startsWith("0x")
+        ? ethers.utils.computeAddress(process.env.ETH_PRIVATE_KEY!)
+        : ethers.utils.computeAddress("0x" + process.env.ETH_PRIVATE_KEY!);
 
       console.log(columnify(formattedProfile, { columns: ["FIELD", "VALUE"] }));
     }

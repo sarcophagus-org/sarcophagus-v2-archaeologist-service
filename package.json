@@ -46,13 +46,11 @@
     "libp2p": "^0.40.0",
     "node-schedule": "^2.1.0",
     "peer-id": "^0.16.0",
-    "prompt-sync": "^4.2.0",
     "@koush/wrtc": "^0.5.3"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
     "@types/node-schedule": "^2.1.0",
-    "@types/prompt-sync": "^4.1.1",
     "cross-env": "^7.0.3",
     "ecies-geth": "^1.6.5",
     "execa": "^6.1.0",
