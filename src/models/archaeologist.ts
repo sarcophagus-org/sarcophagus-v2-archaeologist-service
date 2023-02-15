@@ -148,13 +148,15 @@ export class Archaeologist {
                * Validate supplied digging fee is sufficient
                */
               if (
-                ethers.utils.parseEther(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)
+                ethers.utils
+                  .parseEther(diggingFee)
+                  .lt(inMemoryStore.profile!.minimumDiggingFeePerSecond)
               ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.DIGGING_FEE_TOO_LOW,
                   message: `${errorMessagePrefix} \n Digging fee sent is too low.  
                   \n Got: ${diggingFee.toString()}
-                  \n Minimum needed: ${inMemoryStore.profile!.minimumDiggingFee.toString()}`,
+                  \n Minimum needed: ${inMemoryStore.profile!.minimumDiggingFeePerSecond.toString()}`,
                 });
                 return;
               }

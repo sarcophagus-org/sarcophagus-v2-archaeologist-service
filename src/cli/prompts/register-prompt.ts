@@ -6,17 +6,28 @@ import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
 
-const DEFAULT_DIGGING_FEES = "100";
+const DEFAULT_DIGGING_FEES_MONTHLY = "1000";
+const ONE_MONTH_IN_SECONDS = 2628288;
 
-const confirmReviewQuestion = (diggingFee: string, rewrapInterval: string, freeBond: string) => [
+//
+// PROMPT QUESTIONS
+//////////////////////////////////////////
+
+const confirmReviewQuestion = (
+  diggingFeePerMonth: string,
+  rewrapInterval: string,
+  freeBond: string,
+  maxSarcophagusLifeSpan: string
+) => [
   {
     type: "confirm",
     name: "isConfirmed",
     message:
       "You will be registering your profile with the values below:\n\n" +
-      `Digging Fee: ${diggingFee} SARCO\n` +
+      `Digging Fee (monthly): ${diggingFeePerMonth} SARCO\n` +
       `Free Bond: ${freeBond} SARCO\n` +
-      `Maximum Rewrap Interval: ${rewrapInterval}\n\n` +
+      `Maximum Rewrap Interval: ${rewrapInterval}\n` +
+      `Maximum Sarcophagus Lifespan: ${maxSarcophagusLifeSpan}\n` +
       `Domain: ${process.env.DOMAIN}\n\n` +
       "Do you want to continue?",
     default: true,
@@ -28,11 +39,11 @@ const diggingFeeQuestion = [
     type: "input",
     name: "diggingFee",
     message:
-      `What is your digging fee in SARCO? \n\n` +
+      `How much would you like to earn in SARCO (per month)? \n\n` +
       `${logColors.muted(
-        `Examples: 10 SARCO, 15.5 SARCO, 100 SARCO. Default is ${DEFAULT_DIGGING_FEES} SARCO.`
+        `Actual earnings will depend on the number of Sarcophagi, and length of time for each, you are assigned to. Default is ${DEFAULT_DIGGING_FEES_MONTHLY} SARCO per month.`
       )}\n\n` +
-      `Enter SARCO Amount:`,
+      `Enter SARCO Amount (per month):`,
     validate(value) {
       if (value) {
         console.log("validating with", value);
@@ -44,21 +55,29 @@ const diggingFeeQuestion = [
       }
       return true;
     },
-    default: DEFAULT_DIGGING_FEES,
+    default: DEFAULT_DIGGING_FEES_MONTHLY,
   },
 ];
 
-const freeBondQuestion = (diggingFee: string) => {
+const freeBondQuestion = (args: {
+  diggingFeePerSecond: number;
+  maxRewrapIntervalSeconds: number;
+}) => {
+  const maxFeeOnSingleSarcophagus = Math.ceil(
+    args.diggingFeePerSecond * args.maxRewrapIntervalSeconds
+  );
+
   return [
     {
       type: "input",
       name: "freeBond",
       message:
-        `How much would you like to deposit in Free Bond (expressed in SARCO)?\n\n` +
+        `How much would you like to deposit in your Free Bond (expressed in SARCO)?\n\n` +
         `${logColors.muted(
-          `Minimum to accept a job is your digging fee of ${diggingFee.toString()}.\n\n` +
-            `This bond will be locked when you are assigned to a sarcophagus, and released when either you complete your unwrapping duties or the sarcophagus is buried.`
-        )}\n` +
+          `  - You may need a minimum of ${maxFeeOnSingleSarcophagus} in order to be assigned to and maintain one sarcophagus.\n\n` +
+            `  - A portion of your free bond (a function of your monthly digging fees and the time you will be responsible for it) will be locked whenever you are assigned to a sarcophagus. This will be released when either you complete your unwrapping duties or the sarcophagus is buried.\n\n` +
+            `  - You will need to have enough SARCO in your free bond in order to be successfully assigned to a new Sarcophagus.\n\n`
+        )}` +
         `Enter SARCO amount:`,
       validate(value) {
         try {
@@ -94,21 +113,48 @@ const maxRewrapIntervalDaysQuestion = [
       "Expressed in days, how long do you want your maximum rewrap interval to be?\n\n" +
       "Enter number of days:",
     validate(value) {
-      const valid = !isNaN(parseFloat(value));
-      return valid || "Please enter a number";
+      const valid = !isNaN(parseFloat(value)) && parseFloat(value) > 0;
+      return valid || "Please enter a non-zero number";
     },
     filter: Number,
   },
 ];
 
-const separator = () => {
-  console.log("\n\n");
-};
+const maxSarcophagusLifeSpanQuestion = [
+  {
+    type: "list",
+    name: "maxSarcophagusLifeSpan",
+    message:
+      `What is your maximum sarcophagus lifespan? \n\n` +
+      `${logColors.muted(
+        "This is maximum amount of time you are willing to be responsible for any one Sarcophagus."
+      )}`,
+    choices: ["2 years", "1 year", "6 months", "3 months", "other"],
+  },
+];
+
+const maxSarcophagusLifeSpanMonthsQuestion = [
+  {
+    type: "input",
+    name: "maxSarcophagusLifeSpanMonths",
+    message:
+      "Expressed in months, how long are you willing to be responsible for any one Sarcophagus?\n\n" +
+      "Enter number of months:",
+    validate(value) {
+      const valid = !isNaN(parseFloat(value)) && parseFloat(value) > 0;
+      return valid || "Please enter a non-zero number";
+    },
+    filter: Number,
+  },
+];
+
+//
+// HELPER FUNCTIONS
+//////////////////////////////////////////////////////////////
+const separator = () => console.log("\n\n");
 
 const approveAndRegister = async (web3Interface: Web3Interface, profileParams: ProfileParams) => {
-  /**
-   * Execute approval if necessary
-   */
+  // Execute approval if necessary
   const alreadyHasAllowance = await hasAllowance(web3Interface, profileParams.freeBond!);
 
   if (!alreadyHasAllowance) {
@@ -117,27 +163,47 @@ const approveAndRegister = async (web3Interface: Web3Interface, profileParams: P
 
   separator();
 
-  /**
-   * Register Profile
-   */
+  // Register Profile
   await profileSetup(profileParams, false, true, true);
 };
 
-const parseRewrapInterval = (rewrapInterval: string | number): number => {
+const parseRewrapIntervalAnswer = (rewrapIntervalAnswer: string | number): number => {
   const oneDayInSeconds = 24 * 60 * 60;
-  if (typeof rewrapInterval === "string") {
-    if (rewrapInterval === "1 year") {
+  if (typeof rewrapIntervalAnswer === "string") {
+    if (rewrapIntervalAnswer === "1 year") {
       return 365 * oneDayInSeconds;
     }
 
-    return Number(rewrapInterval.split(" ")[0]) * oneDayInSeconds;
+    return Number(rewrapIntervalAnswer.split(" ")[0]) * oneDayInSeconds;
   }
 
-  return Number(rewrapInterval) * oneDayInSeconds;
+  return rewrapIntervalAnswer * oneDayInSeconds;
 };
 
+const parseMaxSarcophagusLifeSpanAnswer = (maxSarcophagusLifeSpan: string | number): number => {
+  if (typeof maxSarcophagusLifeSpan === "string") {
+    if (maxSarcophagusLifeSpan === "2 years") {
+      return 24 * ONE_MONTH_IN_SECONDS;
+    }
+
+    if (maxSarcophagusLifeSpan === "1 year") {
+      return 12 * ONE_MONTH_IN_SECONDS;
+    }
+
+    return Number(maxSarcophagusLifeSpan.split(" ")[0]) * ONE_MONTH_IN_SECONDS;
+  }
+
+  return maxSarcophagusLifeSpan * ONE_MONTH_IN_SECONDS;
+};
+
+//
+// REGISTER PROMPT
+// ////////////////////
 export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?: boolean) => {
-  let diggingFee: string, rewrapInterval: string, freeBond: string;
+  let diggingFeePerMonth: string,
+    rewrapInterval: string,
+    maxSarcophagusLifeSpan: string,
+    freeBond: string;
 
   /**
    * Ask for approval
@@ -148,18 +214,16 @@ export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?
   }
 
   /**
-   * Digging Fees
+   * Max Sarcophagus Life Span
    */
-  const diggingFeesAnswer = await inquirer.prompt(diggingFeeQuestion);
-  diggingFee = diggingFeesAnswer.diggingFee;
+  const maxSarcophagusLifeSpanAnswer = await inquirer.prompt(maxSarcophagusLifeSpanQuestion);
 
-  separator();
-
-  /**
-   * Free Bond
-   */
-  const freeBondAnswer = await inquirer.prompt(freeBondQuestion(diggingFee));
-  freeBond = freeBondAnswer.freeBond;
+  if (maxSarcophagusLifeSpanAnswer.maxSarcophagusLifeSpan !== "other") {
+    maxSarcophagusLifeSpan = maxSarcophagusLifeSpanAnswer.maxSarcophagusLifeSpan;
+  } else {
+    const maxMonthsAnswer = await inquirer.prompt(maxSarcophagusLifeSpanMonthsQuestion);
+    maxSarcophagusLifeSpan = maxMonthsAnswer.maxSarcophagusLifeSpan;
+  }
 
   separator();
 
@@ -178,10 +242,31 @@ export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?
   separator();
 
   /**
+   * Digging Fees
+   */
+  const diggingFeesAnswer = await inquirer.prompt(diggingFeeQuestion);
+  diggingFeePerMonth = diggingFeesAnswer.diggingFee;
+
+  separator();
+
+  /**
+   * Free Bond
+   */
+  const freeBondAnswer = await inquirer.prompt(
+    freeBondQuestion({
+      diggingFeePerSecond: Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS,
+      maxRewrapIntervalSeconds: parseRewrapIntervalAnswer(rewrapInterval),
+    })
+  );
+  freeBond = freeBondAnswer.freeBond;
+
+  separator();
+
+  /**
    * Confirm answers
    */
   const confirmReviewAnswer = await inquirer.prompt(
-    confirmReviewQuestion(diggingFee, rewrapInterval, freeBond)
+    confirmReviewQuestion(diggingFeePerMonth, rewrapInterval, freeBond, maxSarcophagusLifeSpan)
   );
 
   // If user doesn't confirm, then walk through the prompt again
@@ -190,8 +275,11 @@ export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?
     await registerPrompt(web3Interface, true);
   } else {
     const profileParams: ProfileParams = {
-      diggingFee: parseEther(diggingFee),
-      rewrapInterval: parseRewrapInterval(rewrapInterval),
+      diggingFeePerSecond: parseEther(
+        (Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS).toFixed(18)
+      ),
+      rewrapInterval: parseRewrapIntervalAnswer(rewrapInterval),
+      maximumSarcophagusLifeSpan: parseMaxSarcophagusLifeSpanAnswer(maxSarcophagusLifeSpan),
       freeBond: parseEther(freeBond),
     };
     await approveAndRegister(web3Interface, profileParams);

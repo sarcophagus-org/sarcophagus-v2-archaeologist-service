@@ -4,7 +4,7 @@ import { fetchSarcophagiAndSchedulePublish } from "./blockchain/refresh-data";
 
 export interface OnchainProfile {
   exists: boolean;
-  minimumDiggingFee: BigNumber;
+  minimumDiggingFeePerSecond: BigNumber;
   maximumRewrapInterval: BigNumber;
   freeBond: BigNumber;
   cursedBond: BigNumber;

@@ -39,8 +39,8 @@ export class Update implements Command {
     archLogger.notice("Updating your Archaeologist profile...");
 
     // If update arg doesn't exist on args provided, use existing profile value
-    if (!updateArgs.diggingFee) {
-      updateArgs.diggingFee = this.profile!.minimumDiggingFee;
+    if (!updateArgs.diggingFeePerSecond) {
+      updateArgs.diggingFeePerSecond = this.profile!.minimumDiggingFeePerSecond;
     }
 
     if (!updateArgs.rewrapInterval) {

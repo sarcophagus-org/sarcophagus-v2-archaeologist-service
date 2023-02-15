@@ -58,7 +58,7 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
       logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address);
 
       // Free bond must be >= their min digging fee to accept new jobs
-      await warnIfFreeBondIsLessThanMinDiggingFee(freeBondBalance, profile.minimumDiggingFee);
+      warnIfFreeBondIsLessThanMinDiggingFee(freeBondBalance, profile.minimumDiggingFeePerSecond);
     });
   } catch (e) {
     archLogger.error(e);
