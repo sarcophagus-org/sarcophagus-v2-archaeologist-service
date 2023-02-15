@@ -20,9 +20,9 @@ export class Start implements Command {
   }
 
   defaultProfileParams: ProfileParams = {
-    diggingFeePerSecond: parseEther("1000"),
+    diggingFee: parseEther("1000"),
     rewrapInterval: 31536000, // 1 year
-    maximumSarcophagusLifeSpan: 2628288 * 24, // 2 years
+    maxSarcoLifespan: 2628288 * 24, // 2 years
     freeBond: parseEther("100"),
   };
 

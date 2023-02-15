@@ -275,11 +275,12 @@ export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?
     await registerPrompt(web3Interface, true);
   } else {
     const profileParams: ProfileParams = {
-      diggingFeePerSecond: parseEther(
+      // ie, Digging Fees Per Second
+      diggingFee: parseEther(
         (Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS).toFixed(18)
       ),
       rewrapInterval: parseRewrapIntervalAnswer(rewrapInterval),
-      maximumSarcophagusLifeSpan: parseMaxSarcophagusLifeSpanAnswer(maxSarcophagusLifeSpan),
+      maxSarcoLifespan: parseMaxSarcophagusLifeSpanAnswer(maxSarcophagusLifeSpan),
       freeBond: parseEther(freeBond),
     };
     await approveAndRegister(web3Interface, profileParams);

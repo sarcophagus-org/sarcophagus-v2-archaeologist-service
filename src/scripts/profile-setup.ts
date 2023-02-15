@@ -21,9 +21,9 @@ export enum ProfileOptionNames {
 }
 
 export interface ProfileParams {
-  diggingFeePerSecond?: BigNumber;
+  diggingFee?: BigNumber;
   rewrapInterval?: number;
-  maximumSarcophagusLifeSpan?: number;
+  maxSarcoLifespan?: number;
   freeBond?: BigNumber;
   peerId?: string;
 }
@@ -36,8 +36,13 @@ export async function profileSetup(
   exitAfterTx: boolean = true,
   skipApproval: boolean = false
 ) {
-  const { diggingFeePerSecond, rewrapInterval, freeBond, peerId, maximumSarcophagusLifeSpan } =
-    args;
+  const {
+    diggingFee: diggingFeePerSecond,
+    rewrapInterval,
+    freeBond,
+    peerId,
+    maxSarcoLifespan,
+  } = args;
 
   let freeBondDeposit = ethers.constants.Zero;
 
@@ -65,14 +70,14 @@ export async function profileSetup(
           diggingFeePerSecond,
           rewrapInterval,
           freeBondDeposit,
-          maximumSarcophagusLifeSpan
+          maxSarcoLifespan
         )
       : await web3Interface.archaeologistFacet.registerArchaeologist(
           fullPeerString,
           diggingFeePerSecond,
           rewrapInterval,
           freeBondDeposit,
-          maximumSarcophagusLifeSpan
+          maxSarcoLifespan
         );
 
     archLogger.notice(`${txType} Archaeologist`);

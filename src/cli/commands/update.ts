@@ -43,16 +43,16 @@ export class Update implements Command {
     archLogger.notice("Updating your Archaeologist profile...");
 
     // If update arg doesn't exist on args provided, use existing profile value
-    if (!updateArgs.diggingFeePerSecond) {
-      updateArgs.diggingFeePerSecond = this.profile!.minimumDiggingFeePerSecond;
+    if (!updateArgs.diggingFee) {
+      updateArgs.diggingFee = this.profile!.minimumDiggingFeePerSecond;
     }
 
     if (!updateArgs.rewrapInterval) {
       updateArgs.rewrapInterval = Number(this.profile!.maximumRewrapInterval);
     }
 
-    if (!updateArgs.maximumSarcophagusLifeSpan) {
-      updateArgs.maximumSarcophagusLifeSpan = Number(this.profile!.maximumSarcophagusLifeSpan);
+    if (!updateArgs.maxSarcoLifespan) {
+      updateArgs.maxSarcoLifespan = Number(this.profile!.maximumSarcophagusLifeSpan);
     }
 
     await profileSetup(updateArgs, true);
@@ -80,6 +80,8 @@ export class Update implements Command {
       // output profile
       const profile = await getOnchainProfile(this.web3Interface);
       logProfile(profile);
+    } else if (options.domain) {
+      await this.updateArchaeologist({});
     } else {
       await this.updateArchaeologist(options as ProfileParams);
     }

@@ -14,6 +14,13 @@ export const profileOptionDefinitions = [
     description: "Run guided walk through to setup profile",
   },
   {
+    name: "domain",
+    alias: "u",
+    type: Boolean,
+    description:
+      "Update the domain associated with your archaeologist. You will need to set the DOMAIN variable in your .env file before using this.",
+  },
+  {
     name: "digging-fee",
     alias: "d",
     type: parseEther,
