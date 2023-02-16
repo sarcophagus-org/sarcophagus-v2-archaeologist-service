@@ -18,7 +18,8 @@ export const profileOptionDefinitions = [
     name: "digging-fee",
     alias: "d",
     type: parseEther,
-    description: "Minimum payment you want to receive for rewrappings and unwrappings on a curse.",
+    description:
+      "Minimum amount of SARCO you want to receive for being cursed on a Sarcophagus per month.",
   },
   {
     name: "rewrap-interval",

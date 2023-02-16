@@ -195,6 +195,14 @@ const parseMaxResTimeAnswer = (maxResTime: string | number): number => {
         maxResurrectionTimeInterval = 12 * ONE_MONTH_IN_SECONDS;
         break;
 
+      case "6 months":
+        maxResurrectionTimeInterval = 6 * ONE_MONTH_IN_SECONDS;
+        break;
+
+      case "3 months":
+        maxResurrectionTimeInterval = 3 * ONE_MONTH_IN_SECONDS;
+        break;
+
       default:
         maxResurrectionTimeInterval = Number(maxResTime.split(" ")[0]) * ONE_MONTH_IN_SECONDS;
         break;
