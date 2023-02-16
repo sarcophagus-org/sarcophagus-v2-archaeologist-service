@@ -41,9 +41,7 @@ export async function getOnchainProfile(web3Interface: Web3Interface): Promise<O
       ...(await web3Interface.viewStateFacet.getArchaeologistProfile(web3Interface.ethWallet.address))
     };
   } catch (e) {
-    console.log(e);
-
-    if (e.toString().includes("ArchaeologistProfileExistsShouldBe(true")) {
+    if (e.errorName === "ArchaeologistProfileExistsShouldBe" && e.errorArgs.includes(true)) {
       return {
         exists: false,
         cursedBond: ethers.constants.Zero,
