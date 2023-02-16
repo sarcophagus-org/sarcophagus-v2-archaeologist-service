@@ -3,13 +3,13 @@ import { profileOptionDefinitions } from "../config/profile-args";
 import { getOnchainProfile, OnchainProfile } from "../../utils/onchain-data";
 import { logProfile, logValidationErrorAndExit } from "../utils";
 import { validateEnvVars } from "../../utils/validateEnv";
-import { ProfileParams, profileSetup } from "../../scripts/profile-setup";
+import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { archLogger } from "../../logger/chalk-theme";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
 import {
   isFreeBondProvidedAndZero,
-  validateMaxSarcophagusLifeSpan,
+  validateMaxResurrectionTime,
   validateRewrapInterval,
 } from "../shared/profile-validations";
 
@@ -36,7 +36,7 @@ export class Update implements Command {
     this.profile = profile;
   }
 
-  async updateArchaeologist(updateArgs: ProfileParams) {
+  async updateArchaeologist(updateArgs: ProfileCliParams) {
     validateEnvVars();
     await this.setProfileOrExit();
 
@@ -51,8 +51,8 @@ export class Update implements Command {
       updateArgs.rewrapInterval = Number(this.profile!.maximumRewrapInterval);
     }
 
-    if (!updateArgs.maxSarcoLifespan) {
-      updateArgs.maxSarcoLifespan = Number(this.profile!.maximumSarcophagusLifeSpan);
+    if (!updateArgs.maxResTime) {
+      updateArgs.maxResTime = Number(this.profile!.maximumResurrectionTime);
     }
 
     await profileSetup(updateArgs, true);
@@ -68,7 +68,7 @@ export class Update implements Command {
     }
 
     validateRewrapInterval(options.rewrapInterval);
-    validateMaxSarcophagusLifeSpan(options.maximumSarcophagusLifeSpan);
+    validateMaxResurrectionTime(options.maxResTime);
 
     if (isFreeBondProvidedAndZero(options.freeBond)) {
       delete options.freeBond;
@@ -83,7 +83,7 @@ export class Update implements Command {
     } else if (options.domain) {
       await this.updateArchaeologist({});
     } else {
-      await this.updateArchaeologist(options as ProfileParams);
+      await this.updateArchaeologist(options as ProfileCliParams);
     }
   }
 }

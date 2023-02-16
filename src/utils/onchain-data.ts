@@ -6,7 +6,7 @@ export interface OnchainProfile {
   exists: boolean;
   minimumDiggingFeePerSecond: BigNumber;
   maximumRewrapInterval: BigNumber;
-  maximumSarcophagusLifeSpan: BigNumber;
+  maximumResurrectionTime: BigNumber;
   freeBond: BigNumber;
   cursedBond: BigNumber;
   peerId: string;
@@ -38,7 +38,9 @@ export async function getOnchainProfile(web3Interface: Web3Interface): Promise<O
   try {
     return {
       exists: true,
-      ...(await web3Interface.viewStateFacet.getArchaeologistProfile(web3Interface.ethWallet.address))
+      ...(await web3Interface.viewStateFacet.getArchaeologistProfile(
+        web3Interface.ethWallet.address
+      )),
     };
   } catch (e) {
     if (e.errorName === "ArchaeologistProfileExistsShouldBe" && e.errorArgs.includes(true)) {
@@ -47,12 +49,11 @@ export async function getOnchainProfile(web3Interface: Web3Interface): Promise<O
         cursedBond: ethers.constants.Zero,
         freeBond: ethers.constants.Zero,
         maximumRewrapInterval: ethers.constants.Zero,
-        maximumSarcophagusLifeSpan: ethers.constants.Zero,
+        maximumResurrectionTime: ethers.constants.Zero,
         minimumDiggingFeePerSecond: ethers.constants.Zero,
         peerId: "",
       };
-    }
-    else throw e;
+    } else throw e;
   }
 }
 

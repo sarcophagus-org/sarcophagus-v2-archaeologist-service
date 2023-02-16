@@ -28,11 +28,11 @@ export const profileOptionDefinitions = [
       "Determines how long in the future the resurrection time can be for curses you will accept. The rewrap interval is expressed in seconds. If the resurrection time for a curse is *greater* than the rewrap interval *plus* the time the sarcophagus is created, then you will not be assigned to that curse.",
   },
   {
-    name: "max-sarco-lifespan",
+    name: "max-res-time",
     alias: "s",
     type: Number,
     description:
-      "Determines the maximum length of time you will agree to be responsible for continuously rewrapped Sarcophagi. The maximum sarcophagus lifespan is expressed in seconds. If the resurrection time for a curse is *greater* than the maximum sarcophagus lifespan *plus* the time the sarcophagus is created, then you will not be assigned to that curse. Sarcophagi that are created with this lifespan can not be rewrapped past the time the sarcophagus is created *plus* the agreed lifespan.",
+      "Determines the maximum time you guarantee to be available for curses and/or rewraps on any Sarcophagi. The maximum resurrection time is expressed in seconds. If the resurrection time for a curse is *greater* than this maximum resurrection time, then you will not be assigned to that curse. Sarcophagi are created with a snapshot of this time, and can be rewrapped until then, after which you will no longer be responsible for it and can receive your rewards for it. Updating this will only affect future Sarcophagus curses.",
   },
   {
     name: "free-bond",

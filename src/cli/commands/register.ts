@@ -3,13 +3,13 @@ import { profileOptionDefinitions } from "../config/profile-args";
 import { getOnchainProfile } from "../../utils/onchain-data";
 import { logProfile, logValidationErrorAndExit } from "../utils";
 import { validateEnvVars } from "../../utils/validateEnv";
-import { ProfileOptionNames, ProfileParams, profileSetup } from "../../scripts/profile-setup";
+import { ProfileOptionNames, ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { archLogger } from "../../logger/chalk-theme";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
 import {
   isFreeBondProvidedAndZero,
-  validateMaxSarcophagusLifeSpan,
+  validateMaxResurrectionTime,
   validateRewrapInterval,
 } from "../shared/profile-validations";
 import { registerPrompt } from "../prompts/register-prompt";
@@ -35,7 +35,7 @@ export class Register implements Command {
     }
   }
 
-  async registerArchaeologist(registerArgs: ProfileParams) {
+  async registerArchaeologist(registerArgs: ProfileCliParams) {
     validateEnvVars();
     await this.exitIfArchaeologistProfileExists();
 
@@ -61,7 +61,7 @@ export class Register implements Command {
     }
 
     validateRewrapInterval(options.rewrapInterval);
-    validateMaxSarcophagusLifeSpan(options.maximumSarcophagusLifeSpan);
+    validateMaxResurrectionTime(options.maxResTime);
 
     if (isFreeBondProvidedAndZero(options.freeBond)) {
       delete options.freeBond;
@@ -77,7 +77,7 @@ export class Register implements Command {
       // Begin guided flow for registering archaeologist
       await registerPrompt(this.web3Interface);
     } else {
-      await this.registerArchaeologist(options as ProfileParams);
+      await this.registerArchaeologist(options as ProfileCliParams);
     }
   }
 }

@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
 import { parseEther } from "ethers/lib/utils";
-import { ProfileParams, profileSetup } from "../../scripts/profile-setup";
+import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
@@ -17,7 +17,7 @@ const confirmReviewQuestion = (
   diggingFeePerMonth: string,
   rewrapInterval: string,
   freeBond: string,
-  maxSarcophagusLifeSpan: string
+  maxResTime: string
 ) => [
   {
     type: "confirm",
@@ -27,7 +27,7 @@ const confirmReviewQuestion = (
       `Digging Fee (monthly): ${diggingFeePerMonth} SARCO\n` +
       `Free Bond: ${freeBond} SARCO\n` +
       `Maximum Rewrap Interval: ${rewrapInterval}\n` +
-      `Maximum Sarcophagus Lifespan: ${maxSarcophagusLifeSpan}\n` +
+      `Maximum Resurrection Time: ${maxResTime}\n` +
       `Domain: ${process.env.DOMAIN}\n\n` +
       "Do you want to continue?",
     default: true,
@@ -120,25 +120,25 @@ const maxRewrapIntervalDaysQuestion = [
   },
 ];
 
-const maxSarcophagusLifeSpanQuestion = [
+const maxResTimeQuestion = [
   {
     type: "list",
-    name: "maxSarcophagusLifeSpan",
+    name: "maxResTime",
     message:
-      `What is your maximum sarcophagus lifespan? \n\n` +
+      `What is your maximum resurrection time? \n\n` +
       `${logColors.muted(
-        "This is maximum amount of time you are willing to be responsible for any one Sarcophagus."
+        "This is maximum amount of time, from now, you are willing to accept any Sarcophagus curses or rewraps."
       )}`,
     choices: ["2 years", "1 year", "6 months", "3 months", "other"],
   },
 ];
 
-const maxSarcophagusLifeSpanMonthsQuestion = [
+const maxResTimeMonthsQuestion = [
   {
     type: "input",
-    name: "maxSarcophagusLifeSpanMonths",
+    name: "maxResTimeMonths",
     message:
-      "Expressed in months, how long are you willing to be responsible for any one Sarcophagus?\n\n" +
+      "Expressed in months, how long are you willing to continue to accept Sarcophagus curses or rewraps?\n\n" +
       "Enter number of months:",
     validate(value) {
       const valid = !isNaN(parseFloat(value)) && parseFloat(value) > 0;
@@ -153,7 +153,10 @@ const maxSarcophagusLifeSpanMonthsQuestion = [
 //////////////////////////////////////////////////////////////
 const separator = () => console.log("\n\n");
 
-const approveAndRegister = async (web3Interface: Web3Interface, profileParams: ProfileParams) => {
+const approveAndRegister = async (
+  web3Interface: Web3Interface,
+  profileParams: ProfileCliParams
+) => {
   // Execute approval if necessary
   const alreadyHasAllowance = await hasAllowance(web3Interface, profileParams.freeBond!);
 
@@ -180,30 +183,29 @@ const parseRewrapIntervalAnswer = (rewrapIntervalAnswer: string | number): numbe
   return rewrapIntervalAnswer * oneDayInSeconds;
 };
 
-const parseMaxSarcophagusLifeSpanAnswer = (maxSarcophagusLifeSpan: string | number): number => {
-  if (typeof maxSarcophagusLifeSpan === "string") {
-    if (maxSarcophagusLifeSpan === "2 years") {
-      return 24 * ONE_MONTH_IN_SECONDS;
+const parseMaxResTimeAnswer = (maxResTime: string | number): number => {
+  let resTimeInterval = 0;
+  if (typeof maxResTime === "string") {
+    if (maxResTime === "2 years") {
+      resTimeInterval = 24 * ONE_MONTH_IN_SECONDS;
     }
 
-    if (maxSarcophagusLifeSpan === "1 year") {
-      return 12 * ONE_MONTH_IN_SECONDS;
+    if (maxResTime === "1 year") {
+      resTimeInterval = 12 * ONE_MONTH_IN_SECONDS;
     }
 
-    return Number(maxSarcophagusLifeSpan.split(" ")[0]) * ONE_MONTH_IN_SECONDS;
+    resTimeInterval = Number(maxResTime.split(" ")[0]) * ONE_MONTH_IN_SECONDS;
   }
 
-  return maxSarcophagusLifeSpan * ONE_MONTH_IN_SECONDS;
+  resTimeInterval = Number(maxResTime) * ONE_MONTH_IN_SECONDS;
+  return Date.now() / 1000 + resTimeInterval;
 };
 
 //
 // REGISTER PROMPT
 // ////////////////////
 export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?: boolean) => {
-  let diggingFeePerMonth: string,
-    rewrapInterval: string,
-    maxSarcophagusLifeSpan: string,
-    freeBond: string;
+  let diggingFeePerMonth: string, rewrapInterval: string, maxResTime: string, freeBond: string;
 
   /**
    * Ask for approval
@@ -216,13 +218,13 @@ export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?
   /**
    * Max Sarcophagus Life Span
    */
-  const maxSarcophagusLifeSpanAnswer = await inquirer.prompt(maxSarcophagusLifeSpanQuestion);
+  const maxResTimeAnswer = await inquirer.prompt(maxResTimeQuestion);
 
-  if (maxSarcophagusLifeSpanAnswer.maxSarcophagusLifeSpan !== "other") {
-    maxSarcophagusLifeSpan = maxSarcophagusLifeSpanAnswer.maxSarcophagusLifeSpan;
+  if (maxResTimeAnswer.maxResTime !== "other") {
+    maxResTime = maxResTimeAnswer.maxResTime;
   } else {
-    const maxMonthsAnswer = await inquirer.prompt(maxSarcophagusLifeSpanMonthsQuestion);
-    maxSarcophagusLifeSpan = maxMonthsAnswer.maxSarcophagusLifeSpan;
+    const maxMonthsAnswer = await inquirer.prompt(maxResTimeMonthsQuestion);
+    maxResTime = maxMonthsAnswer.maxResTimeMonths;
   }
 
   separator();
@@ -266,7 +268,7 @@ export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?
    * Confirm answers
    */
   const confirmReviewAnswer = await inquirer.prompt(
-    confirmReviewQuestion(diggingFeePerMonth, rewrapInterval, freeBond, maxSarcophagusLifeSpan)
+    confirmReviewQuestion(diggingFeePerMonth, rewrapInterval, freeBond, maxResTime)
   );
 
   // If user doesn't confirm, then walk through the prompt again
@@ -274,13 +276,13 @@ export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?
     separator();
     await registerPrompt(web3Interface, true);
   } else {
-    const profileParams: ProfileParams = {
+    const profileParams: ProfileCliParams = {
       // ie, Digging Fees Per Second
       diggingFee: parseEther(
         (Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS).toFixed(18)
       ),
       rewrapInterval: parseRewrapIntervalAnswer(rewrapInterval),
-      maxSarcoLifespan: parseMaxSarcophagusLifeSpanAnswer(maxSarcophagusLifeSpan),
+      maxResTime: parseMaxResTimeAnswer(maxResTime),
       freeBond: parseEther(freeBond),
     };
     await approveAndRegister(web3Interface, profileParams);
