@@ -1,7 +1,7 @@
 import { Command, CommandOptions } from "./command";
 import { getOnchainProfile } from "../../utils/onchain-data";
 import { randomIntFromInterval } from "../utils";
-import { ProfileParams, profileSetup } from "../../scripts/profile-setup";
+import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { parseEther } from "ethers/lib/utils";
 import { startOptionDefinitions } from "../config/start-args";
@@ -19,9 +19,10 @@ export class Start implements Command {
     this.web3Interface = web3Interface;
   }
 
-  defaultProfileParams: ProfileParams = {
-    diggingFee: parseEther("10"),
-    rewrapInterval: Number(31536000), // 1 year
+  defaultProfileParams: ProfileCliParams = {
+    diggingFee: parseEther("100"),
+    rewrapInterval: 31536000, // 1 year
+    maxResTime: 2628288 * 24, // 2 years
     freeBond: parseEther("100"),
   };
 
@@ -38,7 +39,7 @@ export class Start implements Command {
     });
   }
 
-  async registerOrUpdateArchaeologist(profileParams: ProfileParams) {
+  async registerOrUpdateArchaeologist(profileParams: ProfileCliParams) {
     const profile = await getOnchainProfile(this.web3Interface);
     await profileSetup(profileParams, profile.exists, false);
   }

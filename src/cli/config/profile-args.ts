@@ -2,16 +2,17 @@ import { parseEther } from "ethers/lib/utils";
 
 export const profileOptionDefinitions = [
   {
-    name: "view",
-    alias: "v",
-    type: Boolean,
-    description: "View your profile.",
-  },
-  {
     name: "guided",
     alias: "g",
     type: Boolean,
-    description: "Run guided walk through to setup profile"
+    description: "Run guided walk through to setup profile",
+  },
+  {
+    name: "domain",
+    alias: "u",
+    type: Boolean,
+    description:
+      "Update the domain associated with your archaeologist. You will need to set the DOMAIN variable in your .env file before using this.",
   },
   {
     name: "digging-fee",
@@ -25,6 +26,13 @@ export const profileOptionDefinitions = [
     type: Number,
     description:
       "Determines how long in the future the resurrection time can be for curses you will accept. The rewrap interval is expressed in seconds. If the resurrection time for a curse is *greater* than the rewrap interval *plus* the time the sarcophagus is created, then you will not be assigned to that curse.",
+  },
+  {
+    name: "max-res-time",
+    alias: "s",
+    type: Number,
+    description:
+      "Determines the maximum time you guarantee to be available for curses and/or rewraps on any Sarcophagi. The maximum resurrection time is expressed in seconds. If the resurrection time for a curse is *greater* than this maximum resurrection time, then you will not be assigned to that curse. Sarcophagi are created with a snapshot of this time, and can be rewrapped until then, after which you will no longer be responsible for it and can receive your rewards for it. Updating this will only affect future Sarcophagus curses.",
   },
   {
     name: "free-bond",
