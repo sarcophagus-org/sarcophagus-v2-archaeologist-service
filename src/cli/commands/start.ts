@@ -20,7 +20,7 @@ export class Start implements Command {
   }
 
   defaultProfileParams: ProfileCliParams = {
-    diggingFee: parseEther("1000"),
+    diggingFee: parseEther("100"),
     rewrapInterval: 31536000, // 1 year
     maxResTime: 2628288 * 24, // 2 years
     freeBond: parseEther("100"),

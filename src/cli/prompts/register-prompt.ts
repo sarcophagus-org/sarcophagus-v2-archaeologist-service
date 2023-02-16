@@ -6,7 +6,7 @@ import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
 
-const DEFAULT_DIGGING_FEES_MONTHLY = "1000";
+const DEFAULT_DIGGING_FEES_MONTHLY = "100";
 const ONE_MONTH_IN_SECONDS = 2628288;
 
 //
@@ -27,7 +27,7 @@ const confirmReviewQuestion = (
       `Digging Fee (monthly): ${diggingFeePerMonth} SARCO\n` +
       `Free Bond: ${freeBond} SARCO\n` +
       `Maximum Rewrap Interval: ${rewrapInterval}\n` +
-      `Maximum Resurrection Time: ${maxResTime}\n` +
+      `Maximum Resurrection Time in: ${maxResTime}\n` +
       `Domain: ${process.env.DOMAIN}\n\n` +
       "Do you want to continue?",
     default: true,
@@ -186,19 +186,24 @@ const parseRewrapIntervalAnswer = (rewrapIntervalAnswer: string | number): numbe
 const parseMaxResTimeAnswer = (maxResTime: string | number): number => {
   let resTimeInterval = 0;
   if (typeof maxResTime === "string") {
-    if (maxResTime === "2 years") {
-      resTimeInterval = 24 * ONE_MONTH_IN_SECONDS;
-    }
+    switch (maxResTime) {
+      case "2 years":
+        resTimeInterval = 24 * ONE_MONTH_IN_SECONDS;
+        break;
 
-    if (maxResTime === "1 year") {
-      resTimeInterval = 12 * ONE_MONTH_IN_SECONDS;
-    }
+      case "1 year":
+        resTimeInterval = 12 * ONE_MONTH_IN_SECONDS;
+        break;
 
-    resTimeInterval = Number(maxResTime.split(" ")[0]) * ONE_MONTH_IN_SECONDS;
+      default:
+        resTimeInterval = Number(maxResTime.split(" ")[0]) * ONE_MONTH_IN_SECONDS;
+        break;
+    }
+  } else {
+    resTimeInterval = maxResTime * ONE_MONTH_IN_SECONDS;
   }
 
-  resTimeInterval = Number(maxResTime) * ONE_MONTH_IN_SECONDS;
-  return Date.now() / 1000 + resTimeInterval;
+  return Math.trunc(Date.now() / 1000) + resTimeInterval;
 };
 
 //
