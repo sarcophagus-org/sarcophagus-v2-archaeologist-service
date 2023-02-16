@@ -2,12 +2,6 @@ import { parseEther } from "ethers/lib/utils";
 
 export const profileOptionDefinitions = [
   {
-    name: "view",
-    alias: "v",
-    type: Boolean,
-    description: "View your profile.",
-  },
-  {
     name: "guided",
     alias: "g",
     type: Boolean,
