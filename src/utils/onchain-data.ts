@@ -1,4 +1,4 @@
-import { BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { Web3Interface } from "scripts/web3-interface";
 import { fetchSarcophagiAndSchedulePublish } from "./blockchain/refresh-data";
 
@@ -35,7 +35,27 @@ export async function fetchProfileAndSchedulePublish(web3Interface: Web3Interfac
 }
 
 export async function getOnchainProfile(web3Interface: Web3Interface): Promise<OnchainProfile> {
-  return web3Interface.viewStateFacet.getArchaeologistProfile(web3Interface.ethWallet.address);
+  try {
+    return {
+      exists: true,
+      ...(await web3Interface.viewStateFacet.getArchaeologistProfile(web3Interface.ethWallet.address))
+    };
+  } catch (e) {
+    console.log(e);
+
+    if (e.toString().includes("ArchaeologistProfileExistsShouldBe(true")) {
+      return {
+        exists: false,
+        cursedBond: ethers.constants.Zero,
+        freeBond: ethers.constants.Zero,
+        maximumRewrapInterval: ethers.constants.Zero,
+        maximumSarcophagusLifeSpan: ethers.constants.Zero,
+        minimumDiggingFeePerSecond: ethers.constants.Zero,
+        peerId: "",
+      };
+    }
+    else throw e;
+  }
 }
 
 export async function getRewards(web3Interface: Web3Interface): Promise<BigNumber> {
