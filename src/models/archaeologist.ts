@@ -11,7 +11,6 @@ import { NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
 import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
 import type { Stream } from "@libp2p/interface-connection";
-import { KeyFinder } from "./key-finder";
 import { signPacked } from "../utils/signature";
 
 export interface ListenAddressesConfig {
@@ -30,7 +29,8 @@ export interface ArchaeologistInit {
 
 interface SarcophagusNegotiationParams {
   maxRewrapInterval: number;
-  diggingFee: string;
+  maximumResurrectionTime: number;
+  diggingFeePerSecond: string;
   timestamp: number;
 }
 
@@ -123,13 +123,15 @@ export class Archaeologist {
             try {
               const {
                 maxRewrapInterval,
-                diggingFee, // this is assumed to, and should, be in wei
+                maximumResurrectionTime,
+                diggingFeePerSecond, // this is assumed to, and should, be in wei
                 timestamp,
               }: SarcophagusNegotiationParams = JSON.parse(
                 new TextDecoder().decode(data.subarray())
               );
 
               const maximumRewrapIntervalBN = BigNumber.from(maxRewrapInterval);
+              const maximumResurrectionTimeBN = BigNumber.from(maximumResurrectionTime);
 
               /**
                * Validate maxRewrapInterval supplied is in line with our maxRewrapInterval
@@ -145,16 +147,32 @@ export class Archaeologist {
               }
 
               /**
-               * Validate supplied digging fee is sufficient
+               * Validate maximumResurrectionTime supplied is within our maximumResurrectionTime
+               */
+
+              if (maximumResurrectionTimeBN.gt(inMemoryStore.profile!.maximumResurrectionTime)) {
+                this.emitError(stream, {
+                  code: SarcophagusValidationError.MAX_RESURRECTION_TIME_TOO_LARGE,
+                  message: `${errorMessagePrefix} \n Maximum resurrection time is too large.  
+                  \n Got: ${maximumResurrectionTimeBN.toString()}
+                  \n Maximum allowed: ${inMemoryStore.profile!.maximumResurrectionTime.toString()}`,
+                });
+                return;
+              }
+
+              /**
+               * Validate supplied digging fee per second is sufficient
                */
               if (
-                ethers.utils.parseEther(diggingFee).lt(inMemoryStore.profile!.minimumDiggingFee)
+                ethers.utils
+                  .parseEther(diggingFeePerSecond)
+                  .lt(inMemoryStore.profile!.minimumDiggingFeePerSecond)
               ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.DIGGING_FEE_TOO_LOW,
-                  message: `${errorMessagePrefix} \n Digging fee sent is too low.  
-                  \n Got: ${diggingFee.toString()}
-                  \n Minimum needed: ${inMemoryStore.profile!.minimumDiggingFee.toString()}`,
+                  message: `${errorMessagePrefix} \n Digging fee per second sent is too low.  
+                  \n Got: ${diggingFeePerSecond.toString()}
+                  \n Minimum needed: ${inMemoryStore.profile!.minimumDiggingFeePerSecond.toString()}`,
                 });
                 return;
               }
@@ -178,11 +196,12 @@ export class Archaeologist {
               // sign sarcophagus parameters to demonstrate agreement
               const signature = await signPacked(
                 this.web3Interface.ethWallet,
-                ["bytes", "uint256", "uint256", "uint256"],
+                ["bytes", "uint256", "uint256", "uint256", "uint256"],
                 [
                   publicKey,
                   maximumRewrapIntervalBN.toString(),
-                  diggingFee,
+                  maximumResurrectionTimeBN.toString(),
+                  diggingFeePerSecond,
                   Math.trunc(timestamp / 1000).toString(),
                 ]
               );

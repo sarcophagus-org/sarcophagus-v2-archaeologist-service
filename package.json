@@ -1,6 +1,6 @@
 {
   "name": "archaeologist-service",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Service used to perform jobs in the Sarcophagus ecosystem",
   "type": "module",
   "bin": {
@@ -29,7 +29,7 @@
     "@libp2p/webrtc-star-signalling-server": "^2.0.5",
     "@libp2p/websockets": "^5.0.1",
     "@mapbox/node-pre-gyp": "^1.0.10",
-    "@sarcophagus-org/sarcophagus-v2-contracts": "^0.10.0",
+    "@sarcophagus-org/sarcophagus-v2-contracts": "^0.14.0",
     "@types/node": "^18.0.0",
     "bip39": "^3.0.4",
     "chalk": "^5.0.1",
@@ -45,13 +45,11 @@
     "libp2p": "^0.40.0",
     "node-schedule": "^2.1.0",
     "peer-id": "^0.16.0",
-    "prompt-sync": "^4.2.0",
     "wrtc": "^0.4.7"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
     "@types/node-schedule": "^2.1.0",
-    "@types/prompt-sync": "^4.1.1",
     "cross-env": "^7.0.3",
     "ecies-geth": "^1.6.5",
     "execa": "^6.1.0",

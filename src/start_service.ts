@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { getWeb3Interface, Web3Interface } from "./scripts/web3-interface";
+import { getWeb3Interface } from "./scripts/web3-interface";
 import { Archaeologist } from "./models/archaeologist";
 import { validateEnvVars } from "./utils/validateEnv";
 import { fetchProfileAndSchedulePublish } from "./utils/onchain-data";
@@ -47,8 +47,9 @@ export async function startService(opts: {
   setInterval(() => arch.restartNode(), 20 * 60 * 1000);
 
   [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
-    process.on(eventType, async () => {
+    process.on(eventType, async e => {
       console.log(`${nodeName} received exit event: ${eventType}`);
+      console.log(e);
       await arch.shutdown();
       process.exit(2);
     });
