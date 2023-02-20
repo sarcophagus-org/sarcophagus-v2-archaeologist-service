@@ -6,16 +6,20 @@ import { BigNumber } from "ethers";
 const MINIMUM_REWRAP_INTERVAL = 15 * 60; // 15 minutes
 const MINIMUM_MAX_RESURRECTION_TIME_INTERVAL = 60 * 60 * 24; // 1 day
 
+// rewrapInterval can be undefined if it isn't included in an update profile call
+// in this case, the interval already on the profile will be used
 export const validateRewrapInterval = (rewrapInterval: number | undefined) => {
-  if ((rewrapInterval ?? 0) < MINIMUM_REWRAP_INTERVAL) {
+  if (rewrapInterval && rewrapInterval < MINIMUM_REWRAP_INTERVAL) {
     logValidationErrorAndExit(
       `The rewrap interval must be at least: ${MINIMUM_REWRAP_INTERVAL} seconds`
     );
   }
 };
 
+// maximumResurrectionTime can be undefined if it isn't included in an update profile call
+// in this case, the interval already on the profile will be used
 export const validateMaxResurrectionTime = (maximumResurrectionTime: number | undefined) => {
-  if ((maximumResurrectionTime ?? 0) < MINIMUM_MAX_RESURRECTION_TIME_INTERVAL) {
+  if (maximumResurrectionTime && maximumResurrectionTime < MINIMUM_MAX_RESURRECTION_TIME_INTERVAL) {
     logValidationErrorAndExit(
       `The maximum resurrection time must be at least: ${MINIMUM_REWRAP_INTERVAL} seconds into the future`
     );
