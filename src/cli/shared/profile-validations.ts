@@ -17,7 +17,7 @@ export const validateRewrapInterval = (rewrapInterval: number | undefined) => {
 };
 
 // maximumResurrectionTime can be undefined if it isn't included in an update profile call
-// in this case, the interval already on the profile will be used
+// in this case, the max res time already on the profile will be used
 export const validateMaxResurrectionTime = (maximumResurrectionTime: number | undefined) => {
   if (maximumResurrectionTime && maximumResurrectionTime < MINIMUM_MAX_RESURRECTION_TIME_INTERVAL) {
     logValidationErrorAndExit(
