@@ -6,7 +6,7 @@ import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
 
-const DEFAULT_DIGGING_FEES_MONTHLY = "100";
+const DEFAULT_DIGGING_FEES_MONTHLY = "5";
 const ONE_MONTH_IN_SECONDS = 2628288;
 
 //
