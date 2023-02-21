@@ -44,15 +44,7 @@ export async function getOnchainProfile(web3Interface: Web3Interface): Promise<O
     };
   } catch (e) {
     if (e.errorName === "ArchaeologistProfileExistsShouldBe" && e.errorArgs.includes(true)) {
-      return {
-        exists: false,
-        cursedBond: ethers.constants.Zero,
-        freeBond: ethers.constants.Zero,
-        maximumRewrapInterval: ethers.constants.Zero,
-        maximumResurrectionTime: ethers.constants.Zero,
-        minimumDiggingFeePerSecond: ethers.constants.Zero,
-        peerId: "",
-      };
+      return { exists: false } as OnchainProfile;
     } else throw e;
   }
 }

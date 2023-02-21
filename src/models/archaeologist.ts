@@ -196,7 +196,7 @@ export class Archaeologist {
               // sign sarcophagus parameters to demonstrate agreement
               const signature = await signPacked(
                 this.web3Interface.ethWallet,
-                ["bytes", "uint256", "uint256", "uint256"],
+                ["bytes", "uint256", "uint256", "uint256", "uint256"],
                 [
                   publicKey,
                   maximumRewrapIntervalBN.toString(),

@@ -6,7 +6,7 @@ import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
 
-const DEFAULT_DIGGING_FEES_MONTHLY = "100";
+const DEFAULT_DIGGING_FEES_MONTHLY = "5";
 const ONE_MONTH_IN_SECONDS = 2628288;
 
 //
@@ -19,20 +19,20 @@ const confirmReviewQuestion = (
   freeBond: string,
   maxResTime: string
 ) => [
-  {
-    type: "confirm",
-    name: "isConfirmed",
-    message:
-      "You will be registering your profile with the values below:\n\n" +
-      `Digging Fee (monthly): ${diggingFeePerMonth} SARCO\n` +
-      `Free Bond: ${freeBond} SARCO\n` +
-      `Maximum Rewrap Interval: ${rewrapInterval}\n` +
-      `Maximum Resurrection Time in: ${maxResTime}\n` +
-      `Domain: ${process.env.DOMAIN}\n\n` +
-      "Do you want to continue?",
-    default: true,
-  },
-];
+    {
+      type: "confirm",
+      name: "isConfirmed",
+      message:
+        "You will be registering your profile with the values below:\n\n" +
+        `Digging Fee (monthly): ${diggingFeePerMonth} SARCO\n` +
+        `Free Bond: ${freeBond} SARCO\n` +
+        `Maximum Rewrap Interval: ${rewrapInterval}\n` +
+        `Maximum Resurrection Time in: ${maxResTime}\n` +
+        `Domain: ${process.env.DOMAIN}\n\n` +
+        "Do you want to continue?",
+      default: true,
+    },
+  ];
 
 const diggingFeeQuestion = [
   {
@@ -75,8 +75,8 @@ const freeBondQuestion = (args: {
         `How much would you like to deposit in your Free Bond (expressed in SARCO)?\n\n` +
         `${logColors.muted(
           `  - You may need a minimum of ${maxFeeOnSingleSarcophagus} in order to be assigned to and maintain one sarcophagus.\n\n` +
-            `  - A portion of your free bond (a function of your monthly digging fees and the time you will be responsible for it) will be locked whenever you are assigned to a sarcophagus. This will be released when either you complete your unwrapping duties or the sarcophagus is buried.\n\n` +
-            `  - You will need to have enough SARCO in your free bond in order to be successfully assigned to a new Sarcophagus.\n\n`
+          `  - A portion of your free bond (a function of your monthly digging fees and the time you will be responsible for it) will be locked whenever you are assigned to a sarcophagus. This will be released when either you complete your unwrapping duties or the sarcophagus is buried.\n\n` +
+          `  - You will need to have enough SARCO in your free bond in order to be successfully assigned to a new Sarcophagus.\n\n`
         )}` +
         `Enter SARCO amount:`,
       validate(value) {
@@ -184,26 +184,34 @@ const parseRewrapIntervalAnswer = (rewrapIntervalAnswer: string | number): numbe
 };
 
 const parseMaxResTimeAnswer = (maxResTime: string | number): number => {
-  let resTimeInterval = 0;
+  let maxResurrectionTimeInterval = 0;
   if (typeof maxResTime === "string") {
     switch (maxResTime) {
       case "2 years":
-        resTimeInterval = 24 * ONE_MONTH_IN_SECONDS;
+        maxResurrectionTimeInterval = 24 * ONE_MONTH_IN_SECONDS;
         break;
 
       case "1 year":
-        resTimeInterval = 12 * ONE_MONTH_IN_SECONDS;
+        maxResurrectionTimeInterval = 12 * ONE_MONTH_IN_SECONDS;
+        break;
+
+      case "6 months":
+        maxResurrectionTimeInterval = 6 * ONE_MONTH_IN_SECONDS;
+        break;
+
+      case "3 months":
+        maxResurrectionTimeInterval = 3 * ONE_MONTH_IN_SECONDS;
         break;
 
       default:
-        resTimeInterval = Number(maxResTime.split(" ")[0]) * ONE_MONTH_IN_SECONDS;
+        maxResurrectionTimeInterval = Number(maxResTime.split(" ")[0]) * ONE_MONTH_IN_SECONDS;
         break;
     }
   } else {
-    resTimeInterval = maxResTime * ONE_MONTH_IN_SECONDS;
+    maxResurrectionTimeInterval = maxResTime * ONE_MONTH_IN_SECONDS;
   }
 
-  return Math.trunc(Date.now() / 1000) + resTimeInterval;
+  return Math.trunc(Date.now() / 1000) + maxResurrectionTimeInterval;
 };
 
 //
