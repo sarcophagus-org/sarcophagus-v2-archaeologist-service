@@ -5,9 +5,9 @@ import { Web3Interface } from "../../scripts/web3-interface";
 import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
+import { ONE_MONTH_IN_SECONDS } from "../../cli/utils";
 
 const DEFAULT_DIGGING_FEES_MONTHLY = "5";
-const ONE_MONTH_IN_SECONDS = 2628288;
 
 //
 // PROMPT QUESTIONS

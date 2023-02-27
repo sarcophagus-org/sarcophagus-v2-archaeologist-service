@@ -1,6 +1,6 @@
 import { Command, CommandOptions } from "./command";
 import { getOnchainProfile } from "../../utils/onchain-data";
-import { randomIntFromInterval } from "../utils";
+import { ONE_MONTH_IN_SECONDS } from "../utils";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { parseEther } from "ethers/lib/utils";
@@ -22,7 +22,7 @@ export class Start implements Command {
   defaultProfileParams: ProfileCliParams = {
     diggingFee: parseEther("100"),
     rewrapInterval: 31536000, // 1 year
-    maxResTime: 2628288 * 24, // 2 years
+    maxResTime: ONE_MONTH_IN_SECONDS * 24, // 2 years
     freeBond: parseEther("100"),
   };
 
