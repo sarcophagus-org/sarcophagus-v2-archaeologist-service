@@ -67,6 +67,16 @@ export const logProfile = (profile: OnchainProfile): void => {
             }
           }
 
+          if (key === "maximumRewrapInterval") {
+            formattedValue = `${Math.trunc(value / 60 / 60 / 24)} days (${value}s)`;
+          }
+
+          if (key === "maximumResurrectionTime") {
+            let dateStr = new Date(value.toNumber() * 1000).toDateString();
+            dateStr = dateStr.split(' ').splice(1).join(' ');
+            formattedValue = `${dateStr} (${value})`;
+          }
+
           formattedProfile[key] = formattedValue;
         }
       }
