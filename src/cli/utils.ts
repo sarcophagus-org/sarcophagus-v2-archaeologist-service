@@ -62,7 +62,9 @@ export const logProfile = (profile: OnchainProfile): void => {
             formattedValue = `${formatEther(value)} SARCO`;
 
             if (key === "minimumDiggingFeePerSecond") {
-              const monthlyDiggingFee = Number.parseFloat(formatEther((value as BigNumber).mul(ONE_MONTH_IN_SECONDS))).toFixed(2);
+              const monthlyDiggingFee = Number.parseFloat(
+                formatEther((value as BigNumber).mul(ONE_MONTH_IN_SECONDS))
+              ).toFixed(2);
               formattedValue = `${formattedValue} (~ ${monthlyDiggingFee}/month)`;
             }
           }
@@ -73,7 +75,7 @@ export const logProfile = (profile: OnchainProfile): void => {
 
           if (key === "maximumResurrectionTime") {
             let dateStr = new Date(value.toNumber() * 1000).toDateString();
-            dateStr = dateStr.split(' ').splice(1).join(' ');
+            dateStr = dateStr.split(" ").splice(1).join(" ");
             formattedValue = `${dateStr} (${value})`;
           }
 
