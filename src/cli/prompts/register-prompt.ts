@@ -19,20 +19,20 @@ const confirmReviewQuestion = (
   freeBond: string,
   maxResTime: string
 ) => [
-    {
-      type: "confirm",
-      name: "isConfirmed",
-      message:
-        "You will be registering your profile with the values below:\n\n" +
-        `Digging Fee (monthly): ${diggingFeePerMonth} SARCO\n` +
-        `Free Bond: ${freeBond} SARCO\n` +
-        `Maximum Rewrap Interval: ${rewrapInterval}\n` +
-        `Maximum Resurrection Time in: ${maxResTime}\n` +
-        `Domain: ${process.env.DOMAIN}\n\n` +
-        "Do you want to continue?",
-      default: true,
-    },
-  ];
+  {
+    type: "confirm",
+    name: "isConfirmed",
+    message:
+      "You will be registering your profile with the values below:\n\n" +
+      `Digging Fee (monthly): ${diggingFeePerMonth} SARCO\n` +
+      `Free Bond: ${freeBond} SARCO\n` +
+      `Maximum Rewrap Interval: ${rewrapInterval}\n` +
+      `Maximum Resurrection Time in: ${maxResTime}\n` +
+      `Domain: ${process.env.DOMAIN}\n\n` +
+      "Do you want to continue?",
+    default: true,
+  },
+];
 
 const diggingFeeQuestion = [
   {
@@ -75,8 +75,8 @@ const freeBondQuestion = (args: {
         `How much would you like to deposit in your Free Bond (expressed in SARCO)?\n\n` +
         `${logColors.muted(
           `  - You may need a minimum of ${maxFeeOnSingleSarcophagus} in order to be assigned to and maintain one sarcophagus.\n\n` +
-          `  - A portion of your free bond (a function of your monthly digging fees and the time you will be responsible for it) will be locked whenever you are assigned to a sarcophagus. This will be released when either you complete your unwrapping duties or the sarcophagus is buried.\n\n` +
-          `  - You will need to have enough SARCO in your free bond in order to be successfully assigned to a new Sarcophagus.\n\n`
+            `  - A portion of your free bond (a function of your monthly digging fees and the time you will be responsible for it) will be locked whenever you are assigned to a sarcophagus. This will be released when either you complete your unwrapping duties or the sarcophagus is buried.\n\n` +
+            `  - You will need to have enough SARCO in your free bond in order to be successfully assigned to a new Sarcophagus.\n\n`
         )}` +
         `Enter SARCO amount:`,
       validate(value) {
