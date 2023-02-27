@@ -10,6 +10,7 @@ import jsonfile from "jsonfile";
 import { FILE_READ_EXCEPTION } from "../utils/exit-codes";
 
 const PEER_ID_DELIMITER = ":";
+export const ONE_MONTH_IN_SECONDS = 2628288;
 
 export const handleCommandArgs = (
   optionDefinitions: any,
@@ -55,11 +56,30 @@ export const logProfile = (profile: OnchainProfile): void => {
       const formattedProfile = {};
       // Remove any entries where keys are numeric
       for (let [key, value] of Object.entries(profile)) {
+        let formattedValue: string = value.toString();
         if (isNaN(Number(key))) {
-          if (["minimumDiggingFee", "freeBond", "cursedBond"].includes(key)) {
-            value = `${formatEther(value)} SARCO`;
+          if (["minimumDiggingFeePerSecond", "freeBond", "cursedBond"].includes(key)) {
+            formattedValue = `${formatEther(value)} SARCO`;
+
+            if (key === "minimumDiggingFeePerSecond") {
+              const monthlyDiggingFee = Number.parseFloat(
+                formatEther((value as BigNumber).mul(ONE_MONTH_IN_SECONDS))
+              ).toFixed(2);
+              formattedValue = `${formattedValue} (~ ${monthlyDiggingFee}/month)`;
+            }
           }
-          formattedProfile[key] = value;
+
+          if (key === "maximumRewrapInterval") {
+            formattedValue = `${Math.trunc(value / 60 / 60 / 24)} days (${value}s)`;
+          }
+
+          if (key === "maximumResurrectionTime") {
+            let dateStr = new Date(value.toNumber() * 1000).toDateString();
+            dateStr = dateStr.split(" ").splice(1).join(" ");
+            formattedValue = `${dateStr} (${value})`;
+          }
+
+          formattedProfile[key] = formattedValue;
         }
       }
 

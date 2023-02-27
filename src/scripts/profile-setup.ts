@@ -9,7 +9,12 @@ import { BigNumber, ethers } from "ethers";
 import { requestApproval } from "./approve_utils";
 
 import { getOnchainProfile, inMemoryStore } from "../utils/onchain-data";
-import { formatFullPeerString, loadPeerIdJsonFromFileOrExit, logProfile } from "../cli/utils";
+import {
+  formatFullPeerString,
+  loadPeerIdJsonFromFileOrExit,
+  logProfile,
+  ONE_MONTH_IN_SECONDS,
+} from "../cli/utils";
 
 validateEnvVars();
 
@@ -36,7 +41,9 @@ export async function profileSetup(
   exitAfterTx: boolean = true,
   skipApproval: boolean = false
 ) {
-  const { diggingFee: diggingFeePerSecond, rewrapInterval, freeBond, peerId, maxResTime } = args;
+  const { diggingFee, rewrapInterval, freeBond, peerId, maxResTime } = args;
+
+  const diggingFeePerSecond = diggingFee!.div(ONE_MONTH_IN_SECONDS);
 
   let freeBondDeposit = ethers.constants.Zero;
 
