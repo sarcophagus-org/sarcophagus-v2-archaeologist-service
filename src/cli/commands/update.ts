@@ -1,7 +1,7 @@
 import { Command, CommandOptions } from "./command";
 import { profileOptionDefinitions } from "../config/profile-args";
 import { getOnchainProfile, OnchainProfile } from "../../utils/onchain-data";
-import { logProfile, logValidationErrorAndExit } from "../utils";
+import { logProfile, logValidationErrorAndExit, ONE_MONTH_IN_SECONDS } from "../utils";
 import { validateEnvVars } from "../../utils/validateEnv";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { archLogger } from "../../logger/chalk-theme";
@@ -44,7 +44,7 @@ export class Update implements Command {
 
     // If update arg doesn't exist on args provided, use existing profile value
     if (!updateArgs.diggingFee) {
-      updateArgs.diggingFee = this.profile!.minimumDiggingFeePerSecond;
+      updateArgs.diggingFee = this.profile!.minimumDiggingFeePerSecond.mul(ONE_MONTH_IN_SECONDS);
     }
 
     if (!updateArgs.rewrapInterval) {
