@@ -29,7 +29,7 @@ export async function publishPrivateKey(web3Interface: Web3Interface, sarcoId: s
     archLogger.notice(`Unwrapped ${sarcoId} successfully!`);
   } catch (e) {
     archLogger.error(`Unwrap failed: ${e}`);
-    handleRpcError(e.reason);
+    handleRpcError(e.reason ?? e.toString());
   } finally {
     inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished =
       inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.filter(id => id !== sarcoId);
