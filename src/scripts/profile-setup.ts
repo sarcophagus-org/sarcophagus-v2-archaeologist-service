@@ -15,6 +15,7 @@ import {
   logProfile,
   ONE_MONTH_IN_SECONDS,
 } from "../cli/utils";
+import { handleRpcError } from "../utils/rpc-error-handler";
 
 validateEnvVars();
 
@@ -69,21 +70,21 @@ export async function profileSetup(
       ? await web3Interface.archaeologistFacet.updateArchaeologist(
           fullPeerString,
           diggingFeePerSecond,
-          rewrapInterval,
+          freeBondDeposit!,
           freeBondDeposit,
-          maxResTime
+          freeBondDeposit!
         )
       : await web3Interface.archaeologistFacet.registerArchaeologist(
           fullPeerString,
           diggingFeePerSecond,
-          rewrapInterval,
+          rewrapInterval!,
           freeBondDeposit,
-          maxResTime
+          maxResTime!
         );
 
     archLogger.notice(`${txType} Archaeologist`);
     archLogger.info("Please wait for TX to confirm");
-    await tx.wait();
+    await tx?.wait();
 
     archLogger.notice(isUpdate ? "PROFILE UPDATED!" : "\nPROFILE REGISTERED!");
 
@@ -95,7 +96,7 @@ export async function profileSetup(
       exit(0);
     }
   } catch (error) {
-    archLogger.error(error);
+    handleRpcError(error);
     exit(RPC_EXCEPTION);
   }
 }

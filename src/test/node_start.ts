@@ -95,7 +95,8 @@ export async function runTests() {
     "peerId",
     ethers.utils.parseEther("100"),
     1000,
-    ethers.utils.parseEther("100")
+    ethers.utils.parseEther("100"),
+    5678987689
   );
   archLogger.warn("done");
 
