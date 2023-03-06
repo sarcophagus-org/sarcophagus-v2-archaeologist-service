@@ -70,9 +70,9 @@ export async function profileSetup(
       ? await web3Interface.archaeologistFacet.updateArchaeologist(
           fullPeerString,
           diggingFeePerSecond,
-          freeBondDeposit!,
+          rewrapInterval!,
           freeBondDeposit,
-          freeBondDeposit!
+          maxResTime!
         )
       : await web3Interface.archaeologistFacet.registerArchaeologist(
           fullPeerString,
