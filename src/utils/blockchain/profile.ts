@@ -5,6 +5,7 @@ import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { RPC_EXCEPTION } from "../../utils/exit-codes";
 import { retryFn } from "./helpers";
+import { handleRpcError } from "../../utils/rpc-error-handler";
 
 export const depositFreeBond = async (web3Interface: Web3Interface, amt: BigNumber) => {
   archLogger.notice("Depositing free bond...");
@@ -20,7 +21,7 @@ export const depositFreeBond = async (web3Interface: Web3Interface, amt: BigNumb
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
-    archLogger.error(`Deposit Failed: ${error.message}`);
+    handleRpcError(error);
     exit(RPC_EXCEPTION);
   }
 };
@@ -34,7 +35,7 @@ export const withdrawFreeBond = async (web3Interface: Web3Interface, amt: BigNum
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
-    archLogger.error(`Withdraw Failed: ${error.message}`);
+    handleRpcError(error);
     exit(RPC_EXCEPTION);
   }
 };
@@ -48,7 +49,7 @@ export const withdrawRewards = async (web3Interface: Web3Interface) => {
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
-    archLogger.error(`Withdraw Failed: ${error.message}`);
+    handleRpcError(error);
     exit(RPC_EXCEPTION);
   }
 };
