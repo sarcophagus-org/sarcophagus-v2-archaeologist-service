@@ -8,8 +8,15 @@ export class ArchaeologistFacetX {
     this.archaeologistFacet = facet;
   }
 
-  public get address(): string {
-    return this.archaeologistFacet.address;
+  public get contract(): ArchaeologistFacet {
+    return this.archaeologistFacet;
+  }
+
+  runMethod(method: string, ...args) {
+    return this._run(
+      () => this.archaeologistFacet[method](...args),
+      () => this.archaeologistFacet.callStatic[method](...args)
+    );
   }
 
   publishPrivateKey(

@@ -17,7 +17,10 @@ export const depositFreeBond = async (web3Interface: Web3Interface, amt: BigNumb
   setInterval(() => process.stdout.write("."), 1000);
 
   try {
-    const tx = await retryFn(() => web3Interface.archaeologistFacet.depositFreeBond(amt));
+    const tx = await retryFn(async () => {
+      await web3Interface.archaeologistFacet.runMethod("depositFreeBond", amt);
+      // await web3Interface.archaeologistFacet.depositFreeBond(amt);
+    });
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
