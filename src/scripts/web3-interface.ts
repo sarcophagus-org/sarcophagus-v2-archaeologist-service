@@ -42,25 +42,24 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
     const ethWallet = isTest
       ? ethers.Wallet.createRandom()
       : new ethers.Wallet(process.env.ETH_PRIVATE_KEY!, rpcProvider);
-    const signer = ethWallet;
 
     const encryptionHdWallet = ethers.utils.HDNode.fromMnemonic(process.env.ENCRYPTION_MNEMONIC!);
 
     const network = await rpcProvider.detectNetwork();
 
-    const sarcoToken = IERC20__factory.connect(networkConfig.sarcoTokenAddress, signer);
+    const sarcoToken = IERC20__factory.connect(networkConfig.sarcoTokenAddress, ethWallet);
 
     const archaeologistFacet = ArchaeologistFacet__factory.connect(
       networkConfig.diamondDeployAddress,
-      signer
+      ethWallet
     );
     const viewStateFacet = ViewStateFacet__factory.connect(
       networkConfig.diamondDeployAddress,
-      signer
+      ethWallet
     );
     const thirdPartyFacet = ThirdPartyFacet__factory.connect(
       networkConfig.diamondDeployAddress,
-      signer
+      ethWallet
     );
 
     const keyFinder = new KeyFinder(encryptionHdWallet, viewStateFacet);
