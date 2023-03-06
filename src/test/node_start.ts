@@ -88,7 +88,7 @@ export async function runTests() {
     .connect(deployerWallet)
     .transfer(web3Interface.ethWallet.address, ethers.utils.parseEther("1000"));
   await web3Interface.sarcoToken.approve(
-    web3Interface.archaeologistFacet.address,
+    web3Interface.archaeologistFacet.contract.address,
     ethers.constants.MaxUint256
   );
   await web3Interface.archaeologistFacet.registerArchaeologist(
