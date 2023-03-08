@@ -1,6 +1,6 @@
 import { ArchaeologistFacet } from "@sarcophagus-org/sarcophagus-v2-contracts";
 import { BytesLike, ethers } from "ethers";
-import { handleRpcError } from "utils/rpc-error-handler";
+import { handleRpcError } from "../../utils/rpc-error-handler";
 
 export class ArchaeologistFacetX {
   archaeologistFacet: ArchaeologistFacet;

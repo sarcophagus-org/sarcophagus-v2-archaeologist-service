@@ -1,6 +1,6 @@
 import { BigNumber, ethers } from "ethers";
 import { exit } from "process";
-import { getWeb3Interface } from "scripts/web3-interface";
+import { getWeb3Interface } from "../scripts/web3-interface";
 import { archLogger } from "../logger/chalk-theme";
 import { NO_ONCHAIN_PROFILE, RPC_EXCEPTION } from "./exit-codes";
 import { logCallout } from "../logger/formatter";
