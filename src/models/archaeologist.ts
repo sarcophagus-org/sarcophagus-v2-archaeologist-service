@@ -6,7 +6,7 @@ import { pipe } from "it-pipe";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../logger/chalk-theme";
 import { BigNumber, ethers } from "ethers";
-import { Web3Interface } from "scripts/web3-interface";
+import { getWeb3Interface } from "scripts/web3-interface";
 import { NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
 import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
@@ -24,7 +24,6 @@ export interface ArchaeologistInit {
   isBootstrap?: boolean;
   listenAddressesConfig?: ListenAddressesConfig;
   bootstrapList?: string[];
-  web3Interface: Web3Interface;
 }
 
 interface SarcophagusNegotiationParams {
@@ -42,7 +41,6 @@ export class Archaeologist {
   private peerId: PeerId;
   private listenAddresses: string[] | undefined;
   private listenAddressesConfig: ListenAddressesConfig | undefined;
-  public web3Interface: Web3Interface;
 
   constructor(options: ArchaeologistInit) {
     if (!options.listenAddresses && !options.listenAddressesConfig) {
@@ -60,7 +58,6 @@ export class Archaeologist {
     this.peerId = options.peerId;
     this.listenAddresses = options.listenAddresses;
     this.listenAddressesConfig = options.listenAddressesConfig;
-    this.web3Interface = options.web3Interface;
   }
 
   async initLibp2pNode(): Promise<Libp2p> {
@@ -191,11 +188,13 @@ export class Archaeologist {
                 return;
               }
 
-              const publicKey = await this.web3Interface.keyFinder.getNextPublicKey();
+              const web3Interface = await getWeb3Interface();
+
+              const publicKey = await web3Interface.keyFinder.getNextPublicKey();
 
               // sign sarcophagus parameters to demonstrate agreement
               const signature = await signPacked(
-                this.web3Interface.ethWallet,
+                web3Interface.ethWallet,
                 ["bytes", "uint256", "uint256", "uint256", "uint256"],
                 [
                   publicKey,

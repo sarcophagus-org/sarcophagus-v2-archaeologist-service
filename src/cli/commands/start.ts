@@ -13,11 +13,6 @@ export class Start implements Command {
   aliases = [];
   description = "Starts the archaeologist service";
   args = startOptionDefinitions;
-  web3Interface: Web3Interface;
-
-  constructor(web3Interface: Web3Interface) {
-    this.web3Interface = web3Interface;
-  }
 
   defaultProfileParams: ProfileCliParams = {
     diggingFee: parseEther("100"),
@@ -40,7 +35,7 @@ export class Start implements Command {
   }
 
   async registerOrUpdateArchaeologist(profileParams: ProfileCliParams) {
-    const profile = await getOnchainProfile(this.web3Interface);
+    const profile = await getOnchainProfile();
     await profileSetup(profileParams, profile.exists, false);
   }
 

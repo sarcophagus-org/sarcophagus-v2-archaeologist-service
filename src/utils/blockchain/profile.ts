@@ -2,24 +2,25 @@ import { BigNumber } from "ethers";
 import { archLogger } from "../../logger/chalk-theme";
 import { exit } from "process";
 import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
-import { Web3Interface } from "../../scripts/web3-interface";
+import { getWeb3Interface, Web3Interface } from "../../scripts/web3-interface";
 import { RPC_EXCEPTION } from "../../utils/exit-codes";
 import { retryFn } from "./helpers";
 import { handleRpcError } from "../../utils/rpc-error-handler";
 
-export const depositFreeBond = async (web3Interface: Web3Interface, amt: BigNumber) => {
+export const depositFreeBond = async (amt: BigNumber) => {
+  const web3Interface = await getWeb3Interface();
+
   archLogger.notice("Depositing free bond...");
 
-  if (!(await hasAllowance(web3Interface, amt))) {
-    await requestApproval(web3Interface);
+  if (!(await hasAllowance(amt))) {
+    await requestApproval();
   }
 
   setInterval(() => process.stdout.write("."), 1000);
 
   try {
     const tx = await retryFn(async () => {
-      await web3Interface.archaeologistFacet.runMethod("depositFreeBond", amt);
-      // await web3Interface.archaeologistFacet.depositFreeBond(amt);
+      await web3Interface.archaeologistFacet.depositFreeBond(amt);
     });
     await tx.wait();
     archLogger.notice("Success!");
@@ -29,7 +30,9 @@ export const depositFreeBond = async (web3Interface: Web3Interface, amt: BigNumb
   }
 };
 
-export const withdrawFreeBond = async (web3Interface: Web3Interface, amt: BigNumber) => {
+export const withdrawFreeBond = async (amt: BigNumber) => {
+  const web3Interface = await getWeb3Interface();
+
   archLogger.notice("Withdrawing free bond...");
   setInterval(() => process.stdout.write("."), 1000);
 
@@ -43,7 +46,8 @@ export const withdrawFreeBond = async (web3Interface: Web3Interface, amt: BigNum
   }
 };
 
-export const withdrawRewards = async (web3Interface: Web3Interface) => {
+export const withdrawRewards = async () => {
+  const web3Interface = await getWeb3Interface();
   archLogger.notice("Withdrawing your rewards...");
   setInterval(() => process.stdout.write("."), 1000);
 

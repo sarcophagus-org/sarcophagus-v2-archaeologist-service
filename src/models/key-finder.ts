@@ -1,19 +1,15 @@
 import { ethers } from "ethers";
-import { ViewStateFacet } from "@sarcophagus-org/sarcophagus-v2-contracts";
+import { getWeb3Interface } from "../scripts/web3-interface";
+import { getSarcophagiIds } from "../utils/onchain-data";
 
 // TODO -- update to more appropriate derivation path that isn't BIP44
 const PATH_WITHOUT_INDEX = "m/44'/60'/0'/0/";
 
 export class KeyFinder {
   public wallet: ethers.utils.HDNode;
-  private viewStateFacet: ViewStateFacet;
 
-  constructor(encryptionHdWallet: ethers.utils.HDNode, viewStateFacet?: ViewStateFacet) {
+  constructor(encryptionHdWallet: ethers.utils.HDNode) {
     this.wallet = encryptionHdWallet;
-
-    if (viewStateFacet) {
-      this.viewStateFacet = viewStateFacet;
-    }
   }
 
   deriveHdWalletFromPublicKey(publicKey: string, index: number = 0): ethers.utils.HDNode {
@@ -40,10 +36,7 @@ export class KeyFinder {
 
   // runs during sarcophagus negotiation to determine current public key
   async getNextPublicKey() {
-    const mySarcoIds = await this.viewStateFacet.getArchaeologistSarcophagi(
-      this.viewStateFacet.signer.address
-    );
-
+    const mySarcoIds = await getSarcophagiIds();
     const privateKey = this.getHdNodeAtIndex(mySarcoIds.length + 1).privateKey;
 
     return ethers.utils.computePublicKey(privateKey);

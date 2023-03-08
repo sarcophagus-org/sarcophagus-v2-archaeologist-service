@@ -128,6 +128,14 @@ export const logBalances = (
   console.log(columnify(balances, { minWidth: 30 }));
 };
 
+export function logNotRegistered() {
+  archLogger.warn("\n\nARCHAEOLOGIST NOT REGISTERED:\n");
+  archLogger.warn(
+    `\nYou can use a guided walk through to register a profile by running the command:`
+  );
+  archLogger.info(`\ncli register --guided`);
+}
+
 export const randomIntFromInterval = (min, max) => {
   // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min);

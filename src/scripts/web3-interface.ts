@@ -28,8 +28,14 @@ export interface Web3Interface {
   networkConfig: NetworkConfig;
 }
 
+let web3Interface: Web3Interface | undefined;
+
 // TODO -- consider instantiating this once per session, or memo-izing with cache timeout
 export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface> => {
+  if (!!web3Interface) {
+    return web3Interface;
+  }
+
   try {
     const networkConfig = getNetworkConfigByChainId(process.env.CHAIN_ID || localChainId);
 
@@ -62,12 +68,12 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       ethWallet
     );
 
-    const keyFinder = new KeyFinder(encryptionHdWallet, viewStateFacet);
+    const keyFinder = new KeyFinder(encryptionHdWallet);
 
     // Cannot confirm rpcProvider is valid until an actual network call is attempted
     sarcoToken.balanceOf(ethWallet.address);
 
-    return {
+    web3Interface = {
       networkName: network.name,
       encryptionHdWallet,
       keyFinder,
@@ -78,6 +84,8 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       thirdPartyFacet,
       networkConfig,
     } as Web3Interface;
+
+    return web3Interface;
   } catch (e) {
     archLogger.error(e);
     archLogger.error("Confirm PROVIDER_URL in .env is a valid RPC Provider URL");

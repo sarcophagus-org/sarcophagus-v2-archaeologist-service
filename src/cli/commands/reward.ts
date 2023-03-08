@@ -8,17 +8,15 @@ export class Reward implements Command {
   name = "claim";
   aliases = ["c"];
   description = "Claim all rewards you have earned";
-  web3Interface: Web3Interface;
   shouldBeRegistered: boolean;
   args = [];
 
-  constructor(web3Interface: Web3Interface) {
-    this.web3Interface = web3Interface;
+  constructor() {
     this.shouldBeRegistered = true;
   }
 
   async run(options: CommandOptions): Promise<void> {
-    await withdrawRewards(this.web3Interface);
+    await withdrawRewards();
     exit(SUCCESS);
   }
 }

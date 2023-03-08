@@ -3,7 +3,6 @@ import { Command } from "./commands/command";
 import { Register } from "./commands/register";
 import { Start } from "./commands/start";
 import { handleCommandArgs } from "./utils";
-import { getWeb3Interface } from "../scripts/web3-interface";
 import { Help } from "./commands/help";
 import { Update } from "./commands/update";
 import { archLogger } from "../logger/chalk-theme";
@@ -13,20 +12,18 @@ import { getOnchainProfile } from "../utils/onchain-data";
 import { exit } from "process";
 import { Reward } from "./commands/reward";
 
-const web3Interface = await getWeb3Interface();
-
 export class ArchaeologistCli {
   commands: Map<string, Command> = new Map();
   args: string[];
 
   constructor(args: string[]) {
     this.args = args;
-    this.addCommand(new Register(web3Interface));
-    this.addCommand(new Update(web3Interface));
-    this.addCommand(new Start(web3Interface));
-    this.addCommand(new View(web3Interface));
-    this.addCommand(new FreeBond(web3Interface));
-    this.addCommand(new Reward(web3Interface));
+    this.addCommand(new Register());
+    this.addCommand(new Update());
+    this.addCommand(new Start());
+    this.addCommand(new View());
+    this.addCommand(new FreeBond());
+    this.addCommand(new Reward());
     this.addCommand(new Help(this.commands));
   }
 
@@ -71,7 +68,7 @@ export class ArchaeologistCli {
     }
 
     if (command.shouldBeRegistered === true) {
-      const profile = await getOnchainProfile(command.web3Interface!);
+      const profile = await getOnchainProfile();
 
       if (!profile.exists) {
         archLogger.error("Archaeologist is not registered yet! Please run\n");

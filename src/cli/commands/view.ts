@@ -6,7 +6,7 @@ import {
   getSarcoBalance,
   getSarcophagiIds,
 } from "../../utils/onchain-data";
-import { Web3Interface } from "../../scripts/web3-interface";
+import { getWeb3Interface, Web3Interface } from "../../scripts/web3-interface";
 import { viewOptionDefinitions } from "../config/view-args";
 import { logBalances, logProfile } from "../utils";
 import { logCallout } from "../../logger/formatter";
@@ -18,11 +18,6 @@ export class View implements Command {
   aliases = [];
   description = "View archaeologist data";
   args = viewOptionDefinitions;
-  web3Interface: Web3Interface;
-
-  constructor(web3Interface: Web3Interface) {
-    this.web3Interface = web3Interface;
-  }
 
   async run(options: CommandOptions): Promise<void> {
     if (Object.keys(options).length === 0) {
@@ -31,7 +26,7 @@ export class View implements Command {
     }
 
     if (options.sarcophagi) {
-      const sarcoIds = await getSarcophagiIds(this.web3Interface);
+      const sarcoIds = await getSarcophagiIds();
       logCallout(() => {
         archLogger.info("Your Sarcophagi:\n\n");
         sarcoIds.map(sarcoId => archLogger.info(`${sarcoId}\n`));
@@ -39,20 +34,21 @@ export class View implements Command {
     }
 
     if (options.profile) {
-      const profile = await getOnchainProfile(this.web3Interface);
+      const profile = await getOnchainProfile();
       logProfile(profile);
     }
 
     if (options.balance) {
-      const sarcoBalance = await getSarcoBalance(this.web3Interface);
-      const ethBalance = await getEthBalance(this.web3Interface);
+      const sarcoBalance = await getSarcoBalance();
+      const ethBalance = await getEthBalance();
+      const web3Interface = await getWeb3Interface();
       logCallout(() => {
-        logBalances(sarcoBalance, ethBalance, this.web3Interface.ethWallet.address);
+        logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address);
       });
     }
 
     if (options.freeBond) {
-      const profile = await getOnchainProfile(this.web3Interface);
+      const profile = await getOnchainProfile();
       logCallout(() => {
         archLogger.info("Your free bond:");
         archLogger.notice(ethers.utils.formatEther(profile.freeBond) + " SARCO");
@@ -60,7 +56,7 @@ export class View implements Command {
     }
 
     if (options.rewards) {
-      const rewards = await getRewards(this.web3Interface);
+      const rewards = await getRewards();
       logCallout(() => {
         archLogger.info("Rewards available:");
         archLogger.notice(ethers.utils.formatEther(rewards) + " SARCO");

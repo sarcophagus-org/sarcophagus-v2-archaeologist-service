@@ -1,10 +1,11 @@
-import { Web3Interface } from "../../scripts/web3-interface";
+import { getWeb3Interface } from "../../scripts/web3-interface";
 import { archLogger } from "../../logger/chalk-theme";
 import { handleRpcError } from "../rpc-error-handler";
 import { inMemoryStore } from "../onchain-data";
 import { retryFn } from "./helpers";
 
-export async function publishPrivateKey(web3Interface: Web3Interface, sarcoId: string) {
+export async function publishPrivateKey(sarcoId: string) {
+  const web3Interface = await getWeb3Interface();
   archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`);
   inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
 
