@@ -5,7 +5,7 @@ const alreadyUnwrapped = (e: string) => e.includes("ArchaeologistAlreadyUnwrappe
 const notEnoughFreeBond = (e: string) => e.includes("NotEnoughFreeBond");
 const notEnoughReward = (e: string) => e.includes("NotEnoughReward");
 const insufficientAllowance = (e: string) => e.includes("insufficient allowance");
-const profileShouldExist = (e: string) => e.includes("ArchaeologistProfileExistsShouldBe(true");
+const profileShouldExistOrNot = (e: string) => e.includes("ArchaeologistProfileExistsShouldBe");
 const lowSarcoBalance = (e: string) => e.includes("transfer amount exceeds balance");
 const badlyFormattedHash = (e: string) => e.includes("invalid arrayify value");
 const sarcoDoesNotExist = (e: string) => e.includes("SarcophagusDoesNotExist");
@@ -17,88 +17,90 @@ const incorrectProof = (e: string) => e.includes("AccuseIncorrectProof");
 /**
  * Parses the text in RPC errors' `.reason` field and outputs more readable error messages
  * */
-export function handleRpcError(e: string) {
-  if (alreadyUnwrapped(e)) {
+export function handleRpcError(e: any) {
+  const { reason, errorArgs, errorName } = e;
+
+  const errorString = reason || errorName;
+
+  if (alreadyUnwrapped(errorString)) {
     archLogger.error(`\nAlready unwrapped this Sarcophagus`);
     return;
   }
 
-  if (profileShouldExist(e)) {
+  if (profileShouldExistOrNot(errorString) && errorArgs.includes(true)) {
+    // This error is handled in `getOnchainProfile`, which should be called first before calling
+    // any contract functions that need a profile to exist. Only methods that fail to do this
+    // will end up here.
     archLogger.error(`\nProfile not registered`);
-    archLogger.error(
-      `Use \`npm run register\` to register your Archaeologist profile. See readme for details on usage\n`
-    );
     return;
   }
 
-  if (notEnoughFreeBond(e)) {
-    const a = e.indexOf("(") + 1;
-    const b = e.indexOf(",");
+  if (profileShouldExistOrNot(errorString) && errorArgs.includes(false)) {
+    archLogger.error(`\nProfile already exists`);
+    return;
+  }
 
-    const available = e.substring(a, b);
+  if (notEnoughFreeBond(errorString)) {
+    const available = errorArgs[0];
     archLogger.error(
       `\nNot enough free bond. Available: ${ethers.utils.formatEther(available)} SARCO`
     );
     return;
   }
 
-  if (notEnoughReward(e)) {
-    const a = e.indexOf("(") + 1;
-    const b = e.indexOf(",");
-
-    const available = e.substring(a, b);
+  if (notEnoughReward(errorString)) {
+    const available = errorArgs[0];
     archLogger.error(
       `\nNot enough reward. Available: ${ethers.utils.formatEther(available)} SARCO`
     );
     return;
   }
 
-  if (insufficientAllowance(e)) {
-    archLogger.error(`\nTransaction reverted: Insufficient allowance`);
+  if (insufficientAllowance(errorString)) {
     archLogger.error(
-      `Run \`npm run approve\` to grant Sarcophagus contracts permission to transfer your SARCO tokens.`
+      `\nInsufficient allowance: You will need to approve Sarcophagus contracts to spend SARCO on your behalf`
     );
     return;
   }
 
-  if (lowSarcoBalance(e)) {
+  if (lowSarcoBalance(errorString)) {
     archLogger.error(`\nInsufficient balance`);
     archLogger.error(`Add some SARCO to your account to continue`);
     return;
   }
 
-  if (sarcoDoesNotExist(e)) {
+  if (sarcoDoesNotExist(errorString)) {
     archLogger.error(`\nNo Sarcophagus found matching provided ID`);
     return;
   }
 
-  if (badlyFormattedHash(e)) {
+  if (badlyFormattedHash(errorString)) {
     archLogger.error(
       `\nInvalid data format. Please check to make sure your input is a valid keccak256 hash.`
     );
     return;
   }
 
-  if (sarcoNotCleanable(e)) {
+  if (sarcoNotCleanable(errorString)) {
     archLogger.error(`\nThis Sarcophagus cannot be cleaned at this time`);
     return;
   }
 
-  if (sarcoIsActuallyUnwrappable(e)) {
+  if (sarcoIsActuallyUnwrappable(errorString)) {
     archLogger.error(
       `\nThis Sarcophagus is ready to be unwrapped, so archaeologists cannot be accused of leaking`
     );
     return;
   }
 
-  if (notEnoughProof(e)) {
+  if (notEnoughProof(errorString)) {
     archLogger.error(
       `\nYou have not provided enough unencrypted shard hashes to fully raise an accusal`
     );
     return;
   }
 
-  if (incorrectProof(e)) {
+  if (incorrectProof(errorString)) {
     archLogger.error(`\nOne or more of the proofs provided is incorrect`);
     return;
   }

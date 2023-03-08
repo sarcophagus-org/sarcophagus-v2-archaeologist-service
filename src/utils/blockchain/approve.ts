@@ -5,6 +5,7 @@ import { hasAllowance } from "../../scripts/approve_utils";
 import { Web3Interface } from "../../scripts/web3-interface";
 import { RPC_EXCEPTION } from "../../utils/exit-codes";
 import { retryFn } from "./helpers";
+import { handleRpcError } from "../../utils/rpc-error-handler";
 
 /**
  * Approves Sarcophagus contracts' spending SARCO on the connected account's behalf up to `MaxUint256` tokens.
@@ -30,7 +31,7 @@ export const runApprove = async (web3Interface: Web3Interface) => {
     await tx.wait();
     archLogger.notice("Approval succeeded!");
   } catch (error) {
-    archLogger.error(`Approval failed: ${error.message}`);
+    handleRpcError(error);
     exit(RPC_EXCEPTION);
   } finally {
     clearInterval(interval);

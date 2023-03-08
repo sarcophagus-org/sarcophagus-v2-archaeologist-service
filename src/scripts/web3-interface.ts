@@ -4,10 +4,7 @@ import { archLogger } from "../logger/chalk-theme";
 import {
   IERC20,
   ArchaeologistFacet__factory,
-  EmbalmerFacet__factory,
   ViewStateFacet__factory,
-  ArchaeologistFacet,
-  EmbalmerFacet,
   ViewStateFacet,
   IERC20__factory,
   ThirdPartyFacet,
@@ -17,6 +14,7 @@ import { BAD_ENV } from "../utils/exit-codes";
 import { getNetworkConfigByChainId, localChainId } from "../lib/config";
 import { NetworkConfig } from "../lib/types/network-config";
 import { KeyFinder } from "../models/key-finder";
+import { ArchaeologistFacetX } from "./web3-interface/archaeologist-facet-x";
 
 export interface Web3Interface {
   networkName: string;
@@ -24,8 +22,7 @@ export interface Web3Interface {
   encryptionHdWallet: ethers.utils.HDNode;
   keyFinder: KeyFinder;
   sarcoToken: IERC20;
-  archaeologistFacet: ArchaeologistFacet;
-  embalmerFacet: EmbalmerFacet;
+  archaeologistFacet: ArchaeologistFacetX;
   thirdPartyFacet: ThirdPartyFacet;
   viewStateFacet: ViewStateFacet;
   networkConfig: NetworkConfig;
@@ -45,29 +42,24 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
     const ethWallet = isTest
       ? ethers.Wallet.createRandom()
       : new ethers.Wallet(process.env.ETH_PRIVATE_KEY!, rpcProvider);
-    const signer = ethWallet;
 
     const encryptionHdWallet = ethers.utils.HDNode.fromMnemonic(process.env.ENCRYPTION_MNEMONIC!);
 
     const network = await rpcProvider.detectNetwork();
 
-    const sarcoToken = IERC20__factory.connect(networkConfig.sarcoTokenAddress, signer);
+    const sarcoToken = IERC20__factory.connect(networkConfig.sarcoTokenAddress, ethWallet);
 
-    const embalmerFacet = EmbalmerFacet__factory.connect(
-      networkConfig.diamondDeployAddress,
-      signer
-    );
     const archaeologistFacet = ArchaeologistFacet__factory.connect(
       networkConfig.diamondDeployAddress,
-      signer
+      ethWallet
     );
     const viewStateFacet = ViewStateFacet__factory.connect(
       networkConfig.diamondDeployAddress,
-      signer
+      ethWallet
     );
     const thirdPartyFacet = ThirdPartyFacet__factory.connect(
       networkConfig.diamondDeployAddress,
-      signer
+      ethWallet
     );
 
     const keyFinder = new KeyFinder(encryptionHdWallet, viewStateFacet);
@@ -81,8 +73,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       keyFinder,
       ethWallet,
       sarcoToken,
-      archaeologistFacet,
-      embalmerFacet,
+      archaeologistFacet: new ArchaeologistFacetX(archaeologistFacet),
       viewStateFacet,
       thirdPartyFacet,
       networkConfig,
