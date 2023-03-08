@@ -38,7 +38,7 @@ export async function runTests() {
    * SETUP FOR "LOW FUNDS" WARNINGS
    *
    **/
-  const web3Interface = await getWeb3Interface();
+  const web3Interface = await getWeb3Interface(true);
 
   // Remove ETH from account
   const bal = await web3Interface.ethWallet.getBalance();

@@ -1,4 +1,4 @@
-import { Web3Interface } from "../../scripts/web3-interface";
+import { getWeb3Interface } from "../../scripts/web3-interface";
 import { schedulePublishPrivateKey } from "../scheduler";
 import { getGracePeriod, getSarcophagiIds, inMemoryStore, SarcophagusData } from "../onchain-data";
 import { BigNumber, ethers } from "ethers";
@@ -18,13 +18,12 @@ const endOfGracePeriod = (sarcophagus: any, gracePeriod: BigNumber): number => {
   return sarcophagus.resurrectionTime.toNumber() + gracePeriod.toNumber();
 };
 
-export async function fetchSarcophagiAndSchedulePublish(
-  web3Interface: Web3Interface
-): Promise<SarcophagusData[]> {
-  inMemoryStore.gracePeriod = inMemoryStore.gracePeriod || (await getGracePeriod(web3Interface));
+export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusData[]> {
+  const web3Interface = await getWeb3Interface();
+  inMemoryStore.gracePeriod = inMemoryStore.gracePeriod || (await getGracePeriod());
 
   const sarcophagi: SarcophagusData[] = [];
-  const sarcoIds = await getSarcophagiIds(web3Interface);
+  const sarcoIds = await getSarcophagiIds();
 
   sarcoIds.map(async sarcoId => {
     try {
@@ -51,7 +50,7 @@ export async function fetchSarcophagiAndSchedulePublish(
             ? new Date(Date.now() + 5000)
             : new Date(sarcophagus.resurrectionTime.toNumber() * 1000);
 
-        schedulePublishPrivateKey(web3Interface, sarcoId, resurrectionTimeMs);
+        schedulePublishPrivateKey(sarcoId, resurrectionTimeMs);
 
         sarcophagi.push({
           id: sarcoId,

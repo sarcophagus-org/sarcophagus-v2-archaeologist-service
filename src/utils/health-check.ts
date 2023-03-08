@@ -1,6 +1,6 @@
 import { BigNumber, ethers } from "ethers";
 import { exit } from "process";
-import { Web3Interface } from "scripts/web3-interface";
+import { getWeb3Interface } from "scripts/web3-interface";
 import { archLogger } from "../logger/chalk-theme";
 import { NO_ONCHAIN_PROFILE, RPC_EXCEPTION } from "./exit-codes";
 import { logCallout } from "../logger/formatter";
@@ -15,18 +15,19 @@ import { formatFullPeerString, logBalances, logNotRegistered, logProfile } from 
 
 /**
  * Runs on service startup
- * @param web3Interface
  * @param peerId -- libp2p peer ID that will be validated with arch profile if provided
  */
-export async function healthCheck(web3Interface: Web3Interface, peerId?: string) {
+export async function healthCheck(peerId?: string) {
+  const web3Interface = await getWeb3Interface();
+
   try {
-    const sarcoBalance = await getSarcoBalance(web3Interface);
+    const sarcoBalance = await getSarcoBalance();
     warnIfSarcoBalanceIsLow(sarcoBalance);
 
-    const ethBalance = await getEthBalance(web3Interface);
+    const ethBalance = await getEthBalance();
     warnIfEthBalanceIsLow(ethBalance);
 
-    const profile = await fetchProfileOrExit(web3Interface, () =>
+    const profile = await fetchProfileOrExit(() =>
       logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address)
     );
 
@@ -51,7 +52,7 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
       }
     }
 
-    const freeBondBalance = await getFreeBondBalance(web3Interface);
+    const freeBondBalance = await getFreeBondBalance();
     logProfile(profile);
 
     logCallout(async () => {
@@ -66,11 +67,8 @@ export async function healthCheck(web3Interface: Web3Interface, peerId?: string)
   }
 }
 
-const fetchProfileOrExit = async (
-  web3Interface: Web3Interface,
-  logBalances: Function
-): Promise<OnchainProfile> => {
-  const profile = await getOnchainProfile(web3Interface);
+const fetchProfileOrExit = async (logBalances: Function): Promise<OnchainProfile> => {
+  const profile = await getOnchainProfile();
   if (!profile.exists) {
     logCallout(() => {
       logBalances();

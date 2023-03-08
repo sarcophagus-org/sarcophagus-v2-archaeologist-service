@@ -10,7 +10,7 @@ import {
 import { validateEnvVars } from "../../utils/validateEnv";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { archLogger } from "../../logger/chalk-theme";
-import { Web3Interface } from "../../scripts/web3-interface";
+import { getWeb3Interface, Web3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
 import {
   isFreeBondProvidedAndZero,
@@ -24,15 +24,10 @@ export class Update implements Command {
   aliases = ["u"];
   description = "Updates your archaeologist profile on-chain.";
   args = profileOptionDefinitions;
-  web3Interface: Web3Interface;
   profile: OnchainProfile | undefined;
 
-  constructor(web3Interface: Web3Interface) {
-    this.web3Interface = web3Interface;
-  }
-
   async setProfileOrExit() {
-    const profile = await getOnchainProfile(this.web3Interface);
+    const profile = await getOnchainProfile();
 
     if (!profile.exists) {
       logNotRegistered();
@@ -84,7 +79,7 @@ export class Update implements Command {
   async run(options: CommandOptions): Promise<void> {
     if (options.view) {
       // output profile
-      const profile = await getOnchainProfile(this.web3Interface);
+      const profile = await getOnchainProfile();
       logProfile(profile);
     } else if (options.domain) {
       await this.updateArchaeologist({});

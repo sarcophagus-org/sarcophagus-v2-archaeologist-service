@@ -16,8 +16,7 @@ export async function startService(opts: {
 }) {
   validateEnvVars();
 
-  let { nodeName, bootstrapList, listenAddresses, peerId, isTest } = opts;
-  const web3Interface = await getWeb3Interface(isTest);
+  let { nodeName, bootstrapList, listenAddresses, peerId } = opts;
   peerId = peerId ?? (await loadPeerIdFromFile());
 
   const arch = new Archaeologist({
@@ -28,15 +27,14 @@ export async function startService(opts: {
     listenAddressesConfig:
       listenAddresses === undefined
         ? {
-            signalServerList: SIGNAL_SERVER_LIST,
-          }
+          signalServerList: SIGNAL_SERVER_LIST,
+        }
         : undefined,
-    web3Interface,
   });
 
-  await healthCheck(web3Interface, peerId.toString());
-  fetchProfileAndSchedulePublish(web3Interface);
-  setInterval(() => fetchProfileAndSchedulePublish(web3Interface), 300_000); // refetch every 5mins
+  await healthCheck(peerId.toString());
+  fetchProfileAndSchedulePublish();
+  setInterval(() => fetchProfileAndSchedulePublish(), 300_000); // refetch every 5mins
 
   // TODO -- delay starting the node until the creation window has passed
   // Consider only doing this if arch as at least one sarcophagus

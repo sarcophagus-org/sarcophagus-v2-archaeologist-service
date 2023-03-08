@@ -19,20 +19,20 @@ const confirmReviewQuestion = (
   freeBond: string,
   maxResTime: string
 ) => [
-  {
-    type: "confirm",
-    name: "isConfirmed",
-    message:
-      "You will be registering your profile with the values below:\n\n" +
-      `Digging Fee (monthly): ${diggingFeePerMonth} SARCO\n` +
-      `Free Bond: ${freeBond} SARCO\n` +
-      `Maximum Rewrap Interval: ${rewrapInterval}\n` +
-      `Maximum Resurrection Time in: ${maxResTime}\n` +
-      `Domain: ${process.env.DOMAIN}\n\n` +
-      "Do you want to continue?",
-    default: true,
-  },
-];
+    {
+      type: "confirm",
+      name: "isConfirmed",
+      message:
+        "You will be registering your profile with the values below:\n\n" +
+        `Digging Fee (monthly): ${diggingFeePerMonth} SARCO\n` +
+        `Free Bond: ${freeBond} SARCO\n` +
+        `Maximum Rewrap Interval: ${rewrapInterval}\n` +
+        `Maximum Resurrection Time in: ${maxResTime}\n` +
+        `Domain: ${process.env.DOMAIN}\n\n` +
+        "Do you want to continue?",
+      default: true,
+    },
+  ];
 
 const diggingFeeQuestion = [
   {
@@ -75,8 +75,8 @@ const freeBondQuestion = (args: {
         `How much would you like to deposit in your Free Bond (expressed in SARCO)?\n\n` +
         `${logColors.muted(
           `  - You may need a minimum of ${maxFeeOnSingleSarcophagus} in order to be assigned to and maintain one sarcophagus.\n\n` +
-            `  - A portion of your free bond (a function of your monthly digging fees and the time you will be responsible for it) will be locked whenever you are assigned to a sarcophagus. This will be released when either you complete your unwrapping duties or the sarcophagus is buried.\n\n` +
-            `  - You will need to have enough SARCO in your free bond in order to be successfully assigned to a new Sarcophagus.\n\n`
+          `  - A portion of your free bond (a function of your monthly digging fees and the time you will be responsible for it) will be locked whenever you are assigned to a sarcophagus. This will be released when either you complete your unwrapping duties or the sarcophagus is buried.\n\n` +
+          `  - You will need to have enough SARCO in your free bond in order to be successfully assigned to a new Sarcophagus.\n\n`
         )}` +
         `Enter SARCO amount:`,
       validate(value) {
@@ -153,15 +153,12 @@ const maxResTimeMonthsQuestion = [
 //////////////////////////////////////////////////////////////
 const separator = () => console.log("\n\n");
 
-const approveAndRegister = async (
-  web3Interface: Web3Interface,
-  profileParams: ProfileCliParams
-) => {
+const approveAndRegister = async (profileParams: ProfileCliParams) => {
   // Execute approval if necessary
-  const alreadyHasAllowance = await hasAllowance(web3Interface, profileParams.freeBond!);
+  const alreadyHasAllowance = await hasAllowance(profileParams.freeBond!);
 
   if (!alreadyHasAllowance) {
-    await runApprove(web3Interface);
+    await runApprove();
   }
 
   separator();
@@ -217,14 +214,14 @@ const parseMaxResTimeAnswer = (maxResTime: string | number): number => {
 //
 // REGISTER PROMPT
 // ////////////////////
-export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?: boolean) => {
+export const registerPrompt = async (skipApproval?: boolean) => {
   let diggingFeePerMonth: string, rewrapInterval: string, maxResTime: string, freeBond: string;
 
   /**
    * Ask for approval
    */
   if (!skipApproval) {
-    await requestApproval(web3Interface);
+    await requestApproval();
     separator();
   }
 
@@ -287,7 +284,7 @@ export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?
   // If user doesn't confirm, then walk through the prompt again
   if (!confirmReviewAnswer.isConfirmed) {
     separator();
-    await registerPrompt(web3Interface, true);
+    await registerPrompt(true);
   } else {
     const profileParams: ProfileCliParams = {
       // ie, Digging Fees Per Second
@@ -298,6 +295,6 @@ export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?
       maxResTime: parseMaxResTimeAnswer(maxResTime),
       freeBond: parseEther(freeBond),
     };
-    await approveAndRegister(web3Interface, profileParams);
+    await approveAndRegister(profileParams);
   }
 };

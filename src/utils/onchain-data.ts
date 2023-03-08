@@ -1,5 +1,5 @@
 import { BigNumber, ethers } from "ethers";
-import { Web3Interface } from "scripts/web3-interface";
+import { getWeb3Interface, Web3Interface } from "scripts/web3-interface";
 import { fetchSarcophagiAndSchedulePublish } from "./blockchain/refresh-data";
 
 export interface OnchainProfile {
@@ -29,12 +29,14 @@ export const inMemoryStore: InMemoryStore = {
   sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
 };
 
-export async function fetchProfileAndSchedulePublish(web3Interface: Web3Interface) {
-  inMemoryStore.profile = await getOnchainProfile(web3Interface);
-  inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublish(web3Interface);
+
+export async function fetchProfileAndSchedulePublish() {
+  inMemoryStore.profile = await getOnchainProfile();
+  inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublish();
 }
 
-export async function getOnchainProfile(web3Interface: Web3Interface): Promise<OnchainProfile> {
+export async function getOnchainProfile(): Promise<OnchainProfile> {
+  const web3Interface = await getWeb3Interface();
   try {
     return {
       exists: true,
@@ -49,27 +51,33 @@ export async function getOnchainProfile(web3Interface: Web3Interface): Promise<O
   }
 }
 
-export async function getRewards(web3Interface: Web3Interface): Promise<BigNumber> {
+export async function getRewards(): Promise<BigNumber> {
+  const web3Interface = await getWeb3Interface();
   return web3Interface.viewStateFacet.getRewards(web3Interface.ethWallet.address);
 }
 
-export async function getSarcoBalance(web3Interface: Web3Interface): Promise<BigNumber> {
+export async function getSarcoBalance(): Promise<BigNumber> {
+  const web3Interface = await getWeb3Interface();
   return web3Interface.sarcoToken.balanceOf(web3Interface.ethWallet.address);
 }
 
-export async function getGracePeriod(web3Interface: Web3Interface): Promise<BigNumber> {
+export async function getGracePeriod(): Promise<BigNumber> {
+  const web3Interface = await getWeb3Interface();
   return web3Interface.viewStateFacet.getGracePeriod();
 }
 
-export async function getEthBalance(web3Interface: Web3Interface): Promise<BigNumber> {
+export async function getEthBalance(): Promise<BigNumber> {
+  const web3Interface = await getWeb3Interface();
   return web3Interface.ethWallet.getBalance();
 }
 
-export async function getFreeBondBalance(web3Interface: Web3Interface): Promise<BigNumber> {
+export async function getFreeBondBalance(): Promise<BigNumber> {
+  const web3Interface = await getWeb3Interface();
   return web3Interface.viewStateFacet.getFreeBond(web3Interface.ethWallet.address);
 }
 
-export async function getSarcophagiIds(web3Interface: Web3Interface): Promise<string[]> {
+export async function getSarcophagiIds(): Promise<string[]> {
+  const web3Interface = await getWeb3Interface();
   return web3Interface.viewStateFacet.getArchaeologistSarcophagi(web3Interface.ethWallet.address);
 }
 
