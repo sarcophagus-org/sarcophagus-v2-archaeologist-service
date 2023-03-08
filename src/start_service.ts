@@ -36,7 +36,7 @@ export async function startService(opts: {
 
   await healthCheck(web3Interface, peerId.toString());
   fetchProfileAndSchedulePublish(web3Interface);
-  setInterval(() => fetchProfileAndSchedulePublish(web3Interface), 300000); // refetch every 5mins
+  setInterval(() => fetchProfileAndSchedulePublish(web3Interface), 300_000); // refetch every 5mins
 
   // TODO -- delay starting the node until the creation window has passed
   // Consider only doing this if arch as at least one sarcophagus

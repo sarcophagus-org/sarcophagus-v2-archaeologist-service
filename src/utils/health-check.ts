@@ -11,7 +11,7 @@ import {
   getSarcoBalance,
   OnchainProfile,
 } from "./onchain-data";
-import { formatFullPeerString, logBalances, logProfile } from "../cli/utils";
+import { formatFullPeerString, logBalances, logNotRegistered, logProfile } from "../cli/utils";
 
 /**
  * Runs on service startup
@@ -74,12 +74,7 @@ const fetchProfileOrExit = async (
   if (!profile.exists) {
     logCallout(() => {
       logBalances();
-      archLogger.warn("\n\nARCHAEOLOGIST NOT REGISTERED:\n");
-      archLogger.warn(`\nYour archaeologist is not yet registered.`);
-      archLogger.warn(
-        `\nYou can use a guided walk through to register a profile by running the command:`
-      );
-      archLogger.info(`\ncli register --guided`);
+      logNotRegistered();
     });
 
     exit(NO_ONCHAIN_PROFILE);

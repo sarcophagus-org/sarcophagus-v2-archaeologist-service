@@ -1,7 +1,12 @@
 import { Command, CommandOptions } from "./command";
 import { profileOptionDefinitions } from "../config/profile-args";
 import { getOnchainProfile, OnchainProfile } from "../../utils/onchain-data";
-import { logProfile, logValidationErrorAndExit, ONE_MONTH_IN_SECONDS } from "../utils";
+import {
+  logNotRegistered,
+  logProfile,
+  logValidationErrorAndExit,
+  ONE_MONTH_IN_SECONDS,
+} from "../utils";
 import { validateEnvVars } from "../../utils/validateEnv";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { archLogger } from "../../logger/chalk-theme";
@@ -12,6 +17,7 @@ import {
   validateMaxResurrectionTime,
   validateRewrapInterval,
 } from "../shared/profile-validations";
+import { NO_ONCHAIN_PROFILE } from "../../utils/exit-codes";
 
 export class Update implements Command {
   name = "update";
@@ -29,8 +35,8 @@ export class Update implements Command {
     const profile = await getOnchainProfile(this.web3Interface);
 
     if (!profile.exists) {
-      archLogger.notice("Archaeologist is not registered yet!");
-      exit(0);
+      logNotRegistered();
+      exit(NO_ONCHAIN_PROFILE);
     }
 
     this.profile = profile;
