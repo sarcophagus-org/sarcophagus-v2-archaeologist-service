@@ -31,7 +31,6 @@ export const inMemoryStore: InMemoryStore = {
   sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
 };
 
-
 export async function fetchProfileAndSchedulePublish() {
   inMemoryStore.profile = await getOnchainProfile();
   inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublish();

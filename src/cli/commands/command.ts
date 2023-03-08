@@ -16,5 +16,5 @@ export interface Command {
  * A command may return a CommandResult to indicate an exit code.
  */
 export class CommandResult {
-  constructor(public exitCode: number) { }
+  constructor(public exitCode: number) {}
 }

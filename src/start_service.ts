@@ -27,8 +27,8 @@ export async function startService(opts: {
     listenAddressesConfig:
       listenAddresses === undefined
         ? {
-          signalServerList: SIGNAL_SERVER_LIST,
-        }
+            signalServerList: SIGNAL_SERVER_LIST,
+          }
         : undefined,
   });
 
@@ -36,7 +36,9 @@ export async function startService(opts: {
   fetchProfileAndSchedulePublish();
 
   // refetch every so often (default is 10 mins)
-  const refreshInterval = process.env.REFETCH_INTERVAL ? Number(process.env.REFETCH_INTERVAL) : 600_000;
+  const refreshInterval = process.env.REFETCH_INTERVAL
+    ? Number(process.env.REFETCH_INTERVAL)
+    : 600_000;
   setInterval(() => fetchProfileAndSchedulePublish(), refreshInterval);
 
   // TODO -- delay starting the node until the creation window has passed

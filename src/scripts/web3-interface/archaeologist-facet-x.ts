@@ -107,9 +107,9 @@ export class ArchaeologistFacetX {
     }
 
     // `contractCall` will fail if `callStatic` above failed. Should be handled externally.
-    // 
+    //
     // Even though the transaction will not revert with meaningful error output, `handleRpcError`
-    // above will have processed and logged the correct error from `callStatic`, and these logs 
+    // above will have processed and logged the correct error from `callStatic`, and these logs
     // should be checked for debugging purposes.
     return await contractCall();
   }

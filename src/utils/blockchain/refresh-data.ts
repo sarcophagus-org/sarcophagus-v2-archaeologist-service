@@ -11,7 +11,8 @@ const curseIsActive = (sarcoId: string, sarcophagus: any, archaeologist: any): b
 
   return (
     archaeologist.privateKey === ethers.constants.HashZero &&
-    !sarcophagus.isCompromised && !sarcophagus.isCleaned &&
+    !sarcophagus.isCompromised &&
+    !sarcophagus.isCleaned &&
     !sarcophagus.resurrectionTime.eq(ethers.constants.MaxUint256)
   );
 };
@@ -27,42 +28,44 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
   const sarcophagi: SarcophagusData[] = [];
   const sarcoIds = await getSarcophagiIds();
 
-  sarcoIds.filter((id) => !inMemoryStore.deadSarcophagusIds.includes(id)).map(async sarcoId => {
-    try {
-      const sarcophagus = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
+  sarcoIds
+    .filter(id => !inMemoryStore.deadSarcophagusIds.includes(id))
+    .map(async sarcoId => {
+      try {
+        const sarcophagus = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
 
-      const archaeologist = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(
-        sarcoId,
-        web3Interface.ethWallet.address
-      );
+        const archaeologist = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(
+          sarcoId,
+          web3Interface.ethWallet.address
+        );
 
-      if (curseIsActive(sarcoId, sarcophagus, archaeologist)) {
-        const nowSeconds = new Date().getTime() / 1000;
+        if (curseIsActive(sarcoId, sarcophagus, archaeologist)) {
+          const nowSeconds = new Date().getTime() / 1000;
 
-        const tooLateToUnwrap =
-          nowSeconds > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
-        if (tooLateToUnwrap) {
-          return;
+          const tooLateToUnwrap =
+            nowSeconds > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
+          if (tooLateToUnwrap) {
+            return;
+          }
+
+          // NOTE: If we are past the resurrection time (but still in the grace period)
+          // Then schedule the unwrap for 5 seconds from now. Else schedule for resurrection time.
+          const resurrectionTimeMs =
+            nowSeconds > sarcophagus.resurrectionTime.toNumber()
+              ? new Date(Date.now() + 5000)
+              : new Date(sarcophagus.resurrectionTime.toNumber() * 1000);
+
+          schedulePublishPrivateKey(sarcoId, resurrectionTimeMs);
+
+          sarcophagi.push({
+            id: sarcoId,
+            resurrectionTime: resurrectionTimeMs,
+          });
         }
-
-        // NOTE: If we are past the resurrection time (but still in the grace period)
-        // Then schedule the unwrap for 5 seconds from now. Else schedule for resurrection time.
-        const resurrectionTimeMs =
-          nowSeconds > sarcophagus.resurrectionTime.toNumber()
-            ? new Date(Date.now() + 5000)
-            : new Date(sarcophagus.resurrectionTime.toNumber() * 1000);
-
-        schedulePublishPrivateKey(sarcoId, resurrectionTimeMs);
-
-        sarcophagi.push({
-          id: sarcoId,
-          resurrectionTime: resurrectionTimeMs,
-        });
+      } catch (e) {
+        handleRpcError(e);
       }
-    } catch (e) {
-      handleRpcError(e);
-    }
-  });
+    });
 
   return sarcophagi;
 }

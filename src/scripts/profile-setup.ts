@@ -68,19 +68,19 @@ export async function profileSetup(
     const txType = isUpdate ? "Updating" : "Registering";
     const tx = isUpdate
       ? await web3Interface.archaeologistFacet.updateArchaeologist(
-        fullPeerString,
-        diggingFeePerSecond,
-        rewrapInterval!,
-        freeBondDeposit,
-        maxResTime!
-      )
+          fullPeerString,
+          diggingFeePerSecond,
+          rewrapInterval!,
+          freeBondDeposit,
+          maxResTime!
+        )
       : await web3Interface.archaeologistFacet.registerArchaeologist(
-        fullPeerString,
-        diggingFeePerSecond,
-        rewrapInterval!,
-        freeBondDeposit,
-        maxResTime!
-      );
+          fullPeerString,
+          diggingFeePerSecond,
+          rewrapInterval!,
+          freeBondDeposit,
+          maxResTime!
+        );
 
     archLogger.notice(`${txType} Archaeologist`);
     archLogger.info("Please wait for TX to confirm");
