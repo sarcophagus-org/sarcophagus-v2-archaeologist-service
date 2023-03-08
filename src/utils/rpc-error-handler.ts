@@ -20,7 +20,7 @@ const incorrectProof = (e: string) => e.includes("AccuseIncorrectProof");
 export function handleRpcError(e: any) {
   const { reason, errorArgs, errorName } = e;
 
-  const errorString = reason || errorName;
+  const errorString: string = reason || errorName || "";
 
   if (alreadyUnwrapped(errorString)) {
     archLogger.error(`\nAlready unwrapped this Sarcophagus`);
