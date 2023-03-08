@@ -37,7 +37,7 @@ export const withdrawFreeBond = async (amt: BigNumber) => {
   setInterval(() => process.stdout.write("."), 1000);
 
   try {
-    const tx = await retryFn(() => web3Interface.archaeologistFacet.withdrawFreeBond(amt));
+    const tx = await retryFn(async () => await web3Interface.archaeologistFacet.withdrawFreeBond(amt));
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
@@ -52,7 +52,7 @@ export const withdrawRewards = async () => {
   setInterval(() => process.stdout.write("."), 1000);
 
   try {
-    const tx = await retryFn(() => web3Interface.archaeologistFacet.withdrawReward());
+    const tx = await retryFn(async () => await web3Interface.archaeologistFacet.withdrawReward());
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {

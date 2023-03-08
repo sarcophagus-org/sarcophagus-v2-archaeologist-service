@@ -29,7 +29,7 @@ export const runApprove = async () => {
     );
 
   try {
-    const tx = await retryFn(approveFn);
+    const tx = await retryFn(async () => await approveFn());
     await tx.wait();
     archLogger.notice("Approval succeeded!");
   } catch (error) {

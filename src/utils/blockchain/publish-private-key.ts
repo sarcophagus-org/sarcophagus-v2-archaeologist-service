@@ -23,7 +23,7 @@ export async function publishPrivateKey(sarcoId: string) {
       return web3Interface.archaeologistFacet.publishPrivateKey(sarcoId, privateKey);
     };
 
-    const tx = await retryFn(callPublishPrivateKeyOnArchFacet);
+    const tx = await retryFn(async () => await callPublishPrivateKeyOnArchFacet());
     await tx.wait();
 
     inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
