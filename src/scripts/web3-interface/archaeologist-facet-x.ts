@@ -12,13 +12,6 @@ export class ArchaeologistFacetX {
     return this.archaeologistFacet;
   }
 
-  runMethod(method: string, ...args) {
-    return this._run(
-      () => this.archaeologistFacet[method](...args),
-      () => this.archaeologistFacet.callStatic[method](...args)
-    );
-  }
-
   publishPrivateKey(
     sarcoId: BytesLike,
     privateKey: BytesLike
