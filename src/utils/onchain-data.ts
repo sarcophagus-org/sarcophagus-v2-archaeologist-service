@@ -19,6 +19,7 @@ export interface SarcophagusData {
 
 interface InMemoryStore {
   sarcophagi: SarcophagusData[];
+  deadSarcophagusIds: string[];
   sarcoIdsInProcessOfHavingPrivateKeyPublished: string[];
   profile?: OnchainProfile;
   gracePeriod?: BigNumber;
@@ -26,6 +27,7 @@ interface InMemoryStore {
 
 export const inMemoryStore: InMemoryStore = {
   sarcophagi: [],
+  deadSarcophagusIds: [],
   sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
 };
 

@@ -34,7 +34,10 @@ export async function startService(opts: {
 
   await healthCheck(peerId.toString());
   fetchProfileAndSchedulePublish();
-  setInterval(() => fetchProfileAndSchedulePublish(), 300_000); // refetch every 5mins
+
+  // refetch every so often (default is 10 mins)
+  const refreshInterval = process.env.REFETCH_INTERVAL ? Number(process.env.REFETCH_INTERVAL) : 600_000;
+  setInterval(() => fetchProfileAndSchedulePublish(), refreshInterval);
 
   // TODO -- delay starting the node until the creation window has passed
   // Consider only doing this if arch as at least one sarcophagus

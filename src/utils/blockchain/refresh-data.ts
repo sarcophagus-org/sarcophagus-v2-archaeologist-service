@@ -6,10 +6,12 @@ import { handleRpcError } from "../../utils/rpc-error-handler";
 
 // TODO -- once typechain defs are in the sarcophagus-org package,
 // the types in this file and onchain-data can get updated
-const curseIsActive = (sarcophagus: any, archaeologist: any): boolean => {
+const curseIsActive = (sarcoId: string, sarcophagus: any, archaeologist: any): boolean => {
+  inMemoryStore.deadSarcophagusIds.push(sarcoId);
+
   return (
     archaeologist.privateKey === ethers.constants.HashZero &&
-    !sarcophagus.isCompromised &&
+    !sarcophagus.isCompromised && !sarcophagus.isCleaned &&
     !sarcophagus.resurrectionTime.eq(ethers.constants.MaxUint256)
   );
 };
@@ -25,7 +27,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
   const sarcophagi: SarcophagusData[] = [];
   const sarcoIds = await getSarcophagiIds();
 
-  sarcoIds.map(async sarcoId => {
+  sarcoIds.filter((id) => !inMemoryStore.deadSarcophagusIds.includes(id)).map(async sarcoId => {
     try {
       const sarcophagus = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
 
@@ -34,7 +36,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
         web3Interface.ethWallet.address
       );
 
-      if (curseIsActive(sarcophagus, archaeologist)) {
+      if (curseIsActive(sarcoId, sarcophagus, archaeologist)) {
         const nowSeconds = new Date().getTime() / 1000;
 
         const tooLateToUnwrap =
