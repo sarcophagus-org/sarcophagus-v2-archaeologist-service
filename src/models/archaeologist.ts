@@ -6,7 +6,7 @@ import { pipe } from "it-pipe";
 import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../logger/chalk-theme";
 import { BigNumber, ethers } from "ethers";
-import { getWeb3Interface } from "scripts/web3-interface";
+import { getWeb3Interface } from "../scripts/web3-interface";
 import { NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
 import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";

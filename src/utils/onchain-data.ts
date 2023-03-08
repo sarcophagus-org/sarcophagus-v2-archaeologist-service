@@ -1,5 +1,5 @@
-import { BigNumber, ethers } from "ethers";
-import { getWeb3Interface, Web3Interface } from "scripts/web3-interface";
+import { BigNumber } from "ethers";
+import { getWeb3Interface } from "../scripts/web3-interface";
 import { fetchSarcophagiAndSchedulePublish } from "./blockchain/refresh-data";
 
 export interface OnchainProfile {
