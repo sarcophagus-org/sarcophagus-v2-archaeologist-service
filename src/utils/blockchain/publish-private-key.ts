@@ -24,10 +24,15 @@ export async function publishPrivateKey(sarcoId: string) {
     };
 
     const tx = await retryFn(callPublishPrivateKeyOnArchFacet);
-    await tx.wait();
+    const receipt = await tx.wait();
+
+    const gasUsed = receipt.getTransactionReceipt().gasUsed;
 
     inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
+    inMemoryStore.deadSarcophagusIds.push(sarcoId);
+
     archLogger.notice(`Unwrapped ${sarcoId} successfully!`);
+    archLogger.debug(`Gas used: ${gasUsed.toString()}`);
   } catch (e) {
     archLogger.error(`Unwrap failed: ${e}`);
     handleRpcError(e);

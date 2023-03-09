@@ -1,11 +1,11 @@
 import "dotenv/config";
-import { getWeb3Interface } from "./scripts/web3-interface";
 import { Archaeologist } from "./models/archaeologist";
 import { validateEnvVars } from "./utils/validateEnv";
-import { fetchProfileAndSchedulePublish } from "./utils/onchain-data";
-import { healthCheck } from "./utils/health-check";
+import { fetchProfileAndSchedulePublish, getEthBalance } from "./utils/onchain-data";
+import { healthCheck, warnIfEthBalanceIsLow } from "./utils/health-check";
 import { loadPeerIdFromFile } from "./utils";
 import { SIGNAL_SERVER_LIST } from "./models/node-config";
+import { BigNumber } from "ethers";
 
 export async function startService(opts: {
   nodeName: string;
@@ -47,7 +47,11 @@ export async function startService(opts: {
   arch.setupSarcophagusNegotiationStream();
 
   // Restart node on 20 min interval in attempt to avoid websocket / wrtc issues
-  setInterval(() => arch.restartNode(), 20 * 60 * 1000);
+  setInterval(async () => {
+    arch.restartNode();
+    const ethBalance = await getEthBalance();
+    warnIfEthBalanceIsLow(ethBalance);
+  }, 20 * 60 * 1000);
 
   [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, async e => {

@@ -93,18 +93,18 @@ const warnIfFreeBondIsLessThanMinDiggingFee = (
   }
 };
 
-const warnIfEthBalanceIsLow = (ethBalance: BigNumber): void => {
-  if (ethBalance.lte(ethers.utils.parseEther("0.0005"))) {
+export const warnIfEthBalanceIsLow = (ethBalance: BigNumber): void => {
+  if (ethBalance.lte(ethers.utils.parseEther("0.05"))) {
     archLogger.error(
       `\nYou have very little ETH in your account: ${ethers.utils.formatEther(
         ethBalance
-      )} ETH.\nYou may not be able to sign any transactions (or do unwrappings)!\n`
+      )} ETH.\nYou may not have enough gas for any transactions!\n`
     );
   }
 };
 
 const warnIfSarcoBalanceIsLow = (sarcoBalance: BigNumber): void => {
-  if (sarcoBalance.lte(ethers.utils.parseEther("0.0005"))) {
+  if (sarcoBalance.lte(ethers.utils.parseEther("1"))) {
     archLogger.warn(
       `\nYou have very little SARCO in your account: ${ethers.utils.formatEther(
         sarcoBalance
