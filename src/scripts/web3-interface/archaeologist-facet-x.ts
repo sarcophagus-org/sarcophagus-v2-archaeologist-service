@@ -1,5 +1,6 @@
 import { ArchaeologistFacet } from "@sarcophagus-org/sarcophagus-v2-contracts";
 import { BytesLike, ethers } from "ethers";
+import { handleRpcError } from "../../utils/rpc-error-handler";
 
 export class ArchaeologistFacetX {
   archaeologistFacet: ArchaeologistFacet;
@@ -99,9 +100,17 @@ export class ArchaeologistFacetX {
 
   async _run(contractCall: Function, callStatic: Function) {
     try {
-      return await contractCall();
-    } catch (_) {
       await callStatic();
+    } catch (e) {
+      // Only processes error, does not terminate process
+      handleRpcError(e);
     }
+
+    // `contractCall` will fail if `callStatic` above failed. Should be handled externally.
+    //
+    // Even though the transaction will not revert with meaningful error output, `handleRpcError`
+    // above will have processed and logged the correct error from `callStatic`, and these logs
+    // should be checked for debugging purposes.
+    return await contractCall();
   }
 }

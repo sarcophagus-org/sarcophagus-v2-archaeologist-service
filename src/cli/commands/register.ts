@@ -20,14 +20,9 @@ export class Register implements Command {
   description =
     "Registers your archaeologist on-chain. You cannot accept curses without first being registered.";
   args = profileOptionDefinitions;
-  web3Interface: Web3Interface;
-
-  constructor(web3Interface: Web3Interface) {
-    this.web3Interface = web3Interface;
-  }
 
   async exitIfArchaeologistProfileExists() {
-    const profile = await getOnchainProfile(this.web3Interface);
+    const profile = await getOnchainProfile();
 
     if (profile.exists) {
       archLogger.notice("Already registered!");
@@ -71,11 +66,11 @@ export class Register implements Command {
   async run(options: CommandOptions): Promise<void> {
     if (options.view) {
       // output profile
-      const profile = await getOnchainProfile(this.web3Interface);
+      const profile = await getOnchainProfile();
       logProfile(profile);
     } else if (options.guided) {
       // Begin guided flow for registering archaeologist
-      await registerPrompt(this.web3Interface);
+      await registerPrompt();
     } else {
       await this.registerArchaeologist(options as ProfileCliParams);
     }

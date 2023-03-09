@@ -1,5 +1,3 @@
-import { Web3Interface } from "../../scripts/web3-interface";
-
 export type CommandOptions = {
   [name: string]: any;
 };
@@ -9,9 +7,8 @@ export interface Command {
   aliases: string[];
   description: string;
   args: any[];
-  run(options: CommandOptions, web3Interface?: Web3Interface): Promise<CommandResult | void>;
+  run(options: CommandOptions): Promise<CommandResult | void>;
   validateArgs?(options: CommandOptions);
-  web3Interface?: Web3Interface;
   shouldBeRegistered?: boolean;
 }
 

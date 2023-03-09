@@ -153,15 +153,12 @@ const maxResTimeMonthsQuestion = [
 //////////////////////////////////////////////////////////////
 const separator = () => console.log("\n\n");
 
-const approveAndRegister = async (
-  web3Interface: Web3Interface,
-  profileParams: ProfileCliParams
-) => {
+const approveAndRegister = async (profileParams: ProfileCliParams) => {
   // Execute approval if necessary
-  const alreadyHasAllowance = await hasAllowance(web3Interface, profileParams.freeBond!);
+  const alreadyHasAllowance = await hasAllowance(profileParams.freeBond!);
 
   if (!alreadyHasAllowance) {
-    await runApprove(web3Interface);
+    await runApprove();
   }
 
   separator();
@@ -217,14 +214,14 @@ const parseMaxResTimeAnswer = (maxResTime: string | number): number => {
 //
 // REGISTER PROMPT
 // ////////////////////
-export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?: boolean) => {
+export const registerPrompt = async (skipApproval?: boolean) => {
   let diggingFeePerMonth: string, rewrapInterval: string, maxResTime: string, freeBond: string;
 
   /**
    * Ask for approval
    */
   if (!skipApproval) {
-    await requestApproval(web3Interface);
+    await requestApproval();
     separator();
   }
 
@@ -287,7 +284,7 @@ export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?
   // If user doesn't confirm, then walk through the prompt again
   if (!confirmReviewAnswer.isConfirmed) {
     separator();
-    await registerPrompt(web3Interface, true);
+    await registerPrompt(true);
   } else {
     const profileParams: ProfileCliParams = {
       // ie, Digging Fees Per Second
@@ -298,6 +295,6 @@ export const registerPrompt = async (web3Interface: Web3Interface, skipApproval?
       maxResTime: parseMaxResTimeAnswer(maxResTime),
       freeBond: parseEther(freeBond),
     };
-    await approveAndRegister(web3Interface, profileParams);
+    await approveAndRegister(profileParams);
   }
 };

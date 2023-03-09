@@ -50,7 +50,7 @@ export async function profileSetup(
 
   if (freeBond && freeBond.gt(ethers.constants.Zero)) {
     if (!skipApproval) {
-      await requestApproval(web3Interface);
+      await requestApproval();
     }
 
     freeBondDeposit = freeBond;
@@ -88,7 +88,7 @@ export async function profileSetup(
 
     archLogger.notice(isUpdate ? "PROFILE UPDATED!" : "\nPROFILE REGISTERED!");
 
-    const profile = await getOnchainProfile(web3Interface);
+    const profile = await getOnchainProfile();
     inMemoryStore.profile = profile;
     logProfile(profile);
 

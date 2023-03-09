@@ -1,6 +1,5 @@
 import { Command, CommandOptions } from "./command";
 import { archLogger } from "../../logger/chalk-theme";
-import { Web3Interface } from "../../scripts/web3-interface";
 import { isFreeBondProvidedAndZero } from "../shared/profile-validations";
 import { freeBondDefinitions } from "../config/free-bond-args";
 import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
@@ -13,11 +12,9 @@ export class FreeBond implements Command {
   aliases = ["fb"];
   description = "Manage your archaeologist on-chain free bond.";
   args = freeBondDefinitions;
-  web3Interface: Web3Interface;
   shouldBeRegistered: boolean;
 
-  constructor(web3Interface: Web3Interface) {
-    this.web3Interface = web3Interface;
+  constructor() {
     this.shouldBeRegistered = true;
   }
 
@@ -37,14 +34,14 @@ export class FreeBond implements Command {
 
   async run(options: CommandOptions): Promise<void> {
     if (options.withdraw) {
-      await withdrawFreeBond(this.web3Interface, options.withdraw);
+      await withdrawFreeBond(options.withdraw);
       exit(SUCCESS);
     } else if (options.deposit) {
-      if (!(await hasAllowance(this.web3Interface, options.deposit))) {
-        await requestApproval(this.web3Interface);
+      if (!(await hasAllowance(options.deposit))) {
+        await requestApproval();
       }
 
-      await depositFreeBond(this.web3Interface, options.deposit);
+      await depositFreeBond(options.deposit);
       exit(SUCCESS);
     } else {
       archLogger.warn("Use:\n");
