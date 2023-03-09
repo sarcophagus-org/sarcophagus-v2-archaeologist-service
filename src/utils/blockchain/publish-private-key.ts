@@ -37,8 +37,8 @@ export async function publishPrivateKey(sarcoId: string) {
     inMemoryStore.deadSarcophagusIds.push(sarcoId);
 
     archLogger.notice(`Unwrapped ${sarcoId} successfully!`);
-    archLogger.debug(`Gas used: ${gasUsed.toString()}`);
-    archLogger.debug(`Cummulative Gas used: ${cummulativeGasUsed.toString()}`);
+    archLogger.debug(`Gas used: ${gasUsed.toString()} ETH`);
+    archLogger.debug(`Cummulative Gas used: ${cummulativeGasUsed.toString()} ETH`);
   } catch (e) {
     archLogger.error(`Unwrap failed: ${e}`);
     await warnIfEthBalanceIsLow();

@@ -49,11 +49,12 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
           }
 
           // NOTE: If we are past the resurrection time (but still in the grace period)
-          // Then schedule the unwrap for 5 seconds from now. Else schedule for resurrection time.
+          // Then schedule the unwrap for 5 seconds from now. Otherwise schedule for resurrection time
+          // (plus 15 seconds to allow block.timestamp to advance past resurrection time).
           const resurrectionTimeMs =
             nowSeconds > sarcophagus.resurrectionTime.toNumber()
               ? new Date(Date.now() + 5000)
-              : new Date(sarcophagus.resurrectionTime.toNumber() * 1000);
+              : new Date(sarcophagus.resurrectionTime.toNumber() * 1000 + 15_000);
 
           schedulePublishPrivateKey(sarcoId, resurrectionTimeMs);
 
