@@ -1,8 +1,9 @@
 import { getWeb3Interface } from "../../scripts/web3-interface";
 import { archLogger } from "../../logger/chalk-theme";
 import { handleRpcError } from "../rpc-error-handler";
-import { inMemoryStore } from "../onchain-data";
+import { getEthBalance, inMemoryStore } from "../onchain-data";
 import { retryFn } from "./helpers";
+import { warnIfEthBalanceIsLow } from "../../utils/health-check";
 
 export async function publishPrivateKey(sarcoId: string) {
   const web3Interface = await getWeb3Interface();
@@ -35,6 +36,7 @@ export async function publishPrivateKey(sarcoId: string) {
     archLogger.debug(`Gas used: ${gasUsed.toString()}`);
   } catch (e) {
     archLogger.error(`Unwrap failed: ${e}`);
+    await warnIfEthBalanceIsLow();
     handleRpcError(e);
   } finally {
     inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished =

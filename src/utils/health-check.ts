@@ -25,7 +25,7 @@ export async function healthCheck(peerId?: string) {
     warnIfSarcoBalanceIsLow(sarcoBalance);
 
     const ethBalance = await getEthBalance();
-    warnIfEthBalanceIsLow(ethBalance);
+    await warnIfEthBalanceIsLow(ethBalance);
 
     const profile = await fetchProfileOrExit(() =>
       logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address)
@@ -93,7 +93,8 @@ const warnIfFreeBondIsLessThanMinDiggingFee = (
   }
 };
 
-export const warnIfEthBalanceIsLow = (ethBalance: BigNumber): void => {
+export const warnIfEthBalanceIsLow = async (ethBalanceArg?: BigNumber): Promise<void> => {
+  const ethBalance = ethBalanceArg ?? (await getEthBalance());
   if (ethBalance.lte(ethers.utils.parseEther("0.05"))) {
     archLogger.error(
       `\nYou have very little ETH in your account: ${ethers.utils.formatEther(
