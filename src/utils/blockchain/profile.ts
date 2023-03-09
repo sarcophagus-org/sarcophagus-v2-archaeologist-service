@@ -2,7 +2,7 @@ import { BigNumber } from "ethers";
 import { archLogger } from "../../logger/chalk-theme";
 import { exit } from "process";
 import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
-import { getWeb3Interface, Web3Interface } from "../../scripts/web3-interface";
+import { getWeb3Interface } from "../../scripts/web3-interface";
 import { RPC_EXCEPTION } from "../../utils/exit-codes";
 import { retryFn } from "./helpers";
 import { handleRpcError } from "../../utils/rpc-error-handler";
@@ -19,9 +19,7 @@ export const depositFreeBond = async (amt: BigNumber) => {
   setInterval(() => process.stdout.write("."), 1000);
 
   try {
-    const tx = await retryFn(async () => {
-      await web3Interface.archaeologistFacet.depositFreeBond(amt);
-    });
+    const tx = await retryFn(() => web3Interface.archaeologistFacet.depositFreeBond(amt));
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
