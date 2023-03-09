@@ -30,7 +30,6 @@ export interface Web3Interface {
 
 let web3Interface: Web3Interface | undefined;
 
-// TODO -- consider instantiating this once per session, or memo-izing with cache timeout
 export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface> => {
   if (!!web3Interface) {
     return web3Interface;
