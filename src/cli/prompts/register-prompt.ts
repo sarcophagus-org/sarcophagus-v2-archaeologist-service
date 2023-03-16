@@ -5,7 +5,7 @@ import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
 import { ONE_MONTH_IN_SECONDS } from "../utils";
-import { getBlockTimestampMs } from "utils/blockchain/helpers";
+import { getBlockTimestampMs } from "../../utils/blockchain/helpers";
 
 const DEFAULT_DIGGING_FEES_MONTHLY = "5";
 
