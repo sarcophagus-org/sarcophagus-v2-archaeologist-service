@@ -41,21 +41,26 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
         );
 
         if (curseIsActive(sarcoId, sarcophagus, archaeologist)) {
-          const nowSeconds = new Date().getTime() / 1000;
+          const currentBlockTimestampSec =  await getBlockTimestampMs() / 1000;
 
           const tooLateToUnwrap =
-            nowSeconds > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
+            currentBlockTimestampSec > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
           if (tooLateToUnwrap) {
             return;
           }
+
+          // Account for out of sync system clocks
+          // Scheduler will use the system clock which may not be in sync with
+          // block.timestamp
+          const systemClockDifference = (Date.now() / 1000) - currentBlockTimestampSec;
 
           // NOTE: If we are past the resurrection time (but still in the grace period)
           // Then schedule the unwrap for 5 seconds from now. Otherwise schedule for resurrection time
           // (plus 15 seconds to allow block.timestamp to advance past resurrection time).
           const resurrectionTimeMs =
-            nowSeconds > sarcophagus.resurrectionTime.toNumber()
-              ? new Date((await getBlockTimestampMs()) + 5000)
-              : new Date(sarcophagus.resurrectionTime.toNumber() * 1000 + 15_000);
+            currentBlockTimestampSec > sarcophagus.resurrectionTime.toNumber()
+              ? new Date(Date.now() + 5000)
+              : new Date((sarcophagus.resurrectionTime.toNumber() + systemClockDifference) * 1000 + 15_000);
 
           schedulePublishPrivateKey(sarcoId, resurrectionTimeMs);
 

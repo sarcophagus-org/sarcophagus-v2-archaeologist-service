@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { getNetworkConfigByChainId, localChainId } from "lib/config";
 import { archLogger } from "../../logger/chalk-theme";
+import { getWeb3Interface } from "../../scripts/web3-interface";
 
 const MAX_RETRIES = 5;
 const INTERVAL_BETWEEN_RETRIES = 5000;
@@ -22,10 +23,8 @@ export const retryFn = async (fn: Function, depth = 0) => {
 };
 
 export const getBlockTimestampMs = async () => {
-  const networkConfig = getNetworkConfigByChainId(process.env.CHAIN_ID || localChainId);
-  const provider = new ethers.providers.JsonRpcProvider(
-    networkConfig.providerUrl || process.env.PROVIDER_URL
-  );
+  const web3Interface = await getWeb3Interface();
+  const provider = web3Interface.ethWallet.provider;
   const blockNumber = await provider.getBlockNumber();
   const block = await provider.getBlock(blockNumber);
 
