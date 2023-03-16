@@ -30,12 +30,18 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export const getBlockTimestampMs = async () => {
-  const web3Interface = await getWeb3Interface();
-  const provider = web3Interface.ethWallet.provider;
-  const blockNumber = await provider.getBlockNumber();
-  const block = await provider.getBlock(blockNumber);
+export const getBlockTimestampMs = async (): Promise<number> => {
+  try {
+    const web3Interface = await getWeb3Interface();
+    const provider = web3Interface.ethWallet.provider;
+    const blockNumber = await provider.getBlockNumber();
+    const block = await provider.getBlock(blockNumber);
 
-  // Converting the time to milliseconds as per javascript standard
-  return block.timestamp * 1000;
+    // Converting the time to milliseconds as per javascript standard
+    return block.timestamp * 1000;
+  } catch (error) {
+    // Not a good fallback, may want to institute a retry or failure (or notification)
+    archLogger.warn(`Error retrieving block time: ${error}`);
+    return Date.now();
+  }
 };
