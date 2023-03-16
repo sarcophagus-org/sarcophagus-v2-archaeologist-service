@@ -25,7 +25,7 @@ export async function publishPrivateKey(sarcoId: string) {
       return web3Interface.archaeologistFacet.publishPrivateKey(sarcoId, privateKey);
     };
 
-    const tx = await retryFn(callPublishPrivateKeyOnArchFacet);
+    const tx = await retryFn(callPublishPrivateKeyOnArchFacet, 0, true, `$unwrap ${sarcoId}`);
     const receipt = await tx.wait();
 
     const gasUsed = ethers.utils.formatEther(receipt.effectiveGasPrice.mul(receipt.gasUsed));
