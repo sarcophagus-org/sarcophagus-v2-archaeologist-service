@@ -12,7 +12,7 @@ import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
 import type { Stream } from "@libp2p/interface-connection";
 import { signPacked } from "../utils/signature";
-import { getBlockTimestampMs } from "utils/blockchain/helpers";
+import { getBlockTimestampMs } from "../utils/blockchain/helpers";
 
 // If current block timestamp is further than the creation time passed to the arch
 // by this amount, then the arch will throw an error
