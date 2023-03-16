@@ -1,9 +1,9 @@
 import { getWeb3Interface } from "../../scripts/web3-interface";
 import { archLogger } from "../../logger/chalk-theme";
 import { handleRpcError } from "../rpc-error-handler";
-import { getEthBalance, inMemoryStore } from "../onchain-data";
+import { inMemoryStore } from "../onchain-data";
 import { retryFn } from "./helpers";
-import { warnIfEthBalanceIsLow } from "../../utils/health-check";
+import { warnIfEthBalanceIsLow } from "../health-check";
 import { ethers } from "ethers";
 
 export async function publishPrivateKey(sarcoId: string) {
@@ -25,7 +25,7 @@ export async function publishPrivateKey(sarcoId: string) {
       return web3Interface.archaeologistFacet.publishPrivateKey(sarcoId, privateKey);
     };
 
-    const tx = await retryFn(callPublishPrivateKeyOnArchFacet);
+    const tx = await retryFn(callPublishPrivateKeyOnArchFacet, 0, true, `$unwrap ${sarcoId}`);
     const receipt = await tx.wait();
 
     const gasUsed = ethers.utils.formatEther(receipt.effectiveGasPrice.mul(receipt.gasUsed));
@@ -38,7 +38,7 @@ export async function publishPrivateKey(sarcoId: string) {
 
     archLogger.notice(`Unwrapped ${sarcoId} successfully!`);
     archLogger.debug(`Gas used: ${gasUsed.toString()} ETH`);
-    archLogger.debug(`Cummulative Gas used: ${cummulativeGasUsed.toString()} ETH`);
+    archLogger.debug(`Cumulative Gas used: ${cummulativeGasUsed.toString()} ETH`);
   } catch (e) {
     archLogger.error(`Unwrap failed: ${e}`);
     await warnIfEthBalanceIsLow();
