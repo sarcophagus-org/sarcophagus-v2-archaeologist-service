@@ -50,8 +50,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
           }
 
           // Account for out of sync system clocks
-          // Scheduler will use the system clock which may not be in sync with
-          // block.timestamp
+          // Scheduler will use the system clock which may not be in sync with block.timestamp
           const systemClockDifference = (Date.now() / 1000) - currentBlockTimestampSec;
 
           // NOTE: If we are past the resurrection time (but still in the grace period)

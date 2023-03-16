@@ -11,7 +11,7 @@ export const retryFn = async (fn: Function, depth = 0) => {
   try {
     return await fn();
   } catch (e) {
-    archLogger.debug(`attempt ${depth + 1} failed, retrying....`);
+    archLogger.warn(`unwrap attempt ${depth + 1} failed, retrying....`);
     if (depth > MAX_RETRIES) {
       throw e;
     }
