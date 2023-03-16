@@ -12,6 +12,7 @@ import {
   OnchainProfile,
 } from "./onchain-data";
 import { formatFullPeerString, logBalances, logNotRegistered, logProfile } from "../cli/utils";
+import { getBlockTimestampMs } from "./blockchain/helpers";
 
 /**
  * Runs on service startup
@@ -50,6 +51,11 @@ export async function healthCheck(peerId?: string) {
       } else {
         archLogger.debug("local PeerID and domain matches profile value");
       }
+    }
+
+    const syncDifferenceSec = Math.abs(await getBlockTimestampMs() - Date.now() / 1000);
+    if (syncDifferenceSec >= 1800) {
+      archLogger.warn(`Warning: your system clock is out of sync with universal UTC time by roughly: ${syncDifferenceSec} seconds`);
     }
 
     const freeBondBalance = await getFreeBondBalance();

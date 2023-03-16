@@ -2,7 +2,7 @@ import { getWeb3Interface } from "../../scripts/web3-interface";
 import { schedulePublishPrivateKey } from "../scheduler";
 import { getGracePeriod, getSarcophagiIds, inMemoryStore, SarcophagusData } from "../onchain-data";
 import { BigNumber, ethers } from "ethers";
-import { handleRpcError } from "../../utils/rpc-error-handler";
+import { handleRpcError } from "../rpc-error-handler";
 import { getBlockTimestampMs } from "./helpers";
 
 // TODO -- once typechain defs are in the sarcophagus-org package,
