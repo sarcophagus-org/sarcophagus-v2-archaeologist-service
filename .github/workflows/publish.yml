@@ -2,7 +2,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      main
+      testtesttest
 
 env:
   REGISTRY: ghcr.io
@@ -28,5 +28,5 @@ jobs:
 
       - name: Build and push docker image
         run: |
-          docker build . --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker build . --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev
