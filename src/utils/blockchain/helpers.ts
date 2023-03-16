@@ -1,5 +1,3 @@
-import { ethers } from "ethers";
-import { getNetworkConfigByChainId, localChainId } from "lib/config";
 import { archLogger } from "../../logger/chalk-theme";
 import { getWeb3Interface } from "../../scripts/web3-interface";
 
@@ -22,7 +20,7 @@ export const retryFn = async (fn: Function, depth = 0, randomize = false, logOut
       await wait(INTERVAL_BETWEEN_RETRIES);
     }
 
-    return retryFn(fn, depth + 1);
+    return retryFn(fn, depth + 1, randomize, logOutput);
   }
 };
 
