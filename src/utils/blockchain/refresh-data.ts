@@ -3,6 +3,7 @@ import { schedulePublishPrivateKey } from "../scheduler";
 import { getGracePeriod, getSarcophagiIds, inMemoryStore, SarcophagusData } from "../onchain-data";
 import { BigNumber, ethers } from "ethers";
 import { handleRpcError } from "../../utils/rpc-error-handler";
+import { getBlockTimestampMs } from "./helpers";
 
 // TODO -- once typechain defs are in the sarcophagus-org package,
 // the types in this file and onchain-data can get updated
@@ -53,7 +54,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
           // (plus 15 seconds to allow block.timestamp to advance past resurrection time).
           const resurrectionTimeMs =
             nowSeconds > sarcophagus.resurrectionTime.toNumber()
-              ? new Date(Date.now() + 5000)
+              ? new Date((await getBlockTimestampMs()) + 5000)
               : new Date(sarcophagus.resurrectionTime.toNumber() * 1000 + 15_000);
 
           schedulePublishPrivateKey(sarcoId, resurrectionTimeMs);

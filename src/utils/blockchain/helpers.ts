@@ -1,3 +1,5 @@
+import { ethers } from "ethers";
+import { getNetworkConfigByChainId, localChainId } from "lib/config";
 import { archLogger } from "../../logger/chalk-theme";
 
 const MAX_RETRIES = 5;
@@ -17,4 +19,16 @@ export const retryFn = async (fn: Function, depth = 0) => {
 
     return retryFn(fn, depth + 1);
   }
+};
+
+export const getBlockTimestampMs = async () => {
+  const networkConfig = getNetworkConfigByChainId(process.env.CHAIN_ID || localChainId);
+  const provider = new ethers.providers.JsonRpcProvider(
+    networkConfig.providerUrl || process.env.PROVIDER_URL
+  );
+  const blockNumber = await provider.getBlockNumber();
+  const block = await provider.getBlock(blockNumber);
+
+  // Converting the time to milliseconds as per javascript standard
+  return block.timestamp * 1000;
 };

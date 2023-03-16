@@ -12,6 +12,7 @@ import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
 import type { Stream } from "@libp2p/interface-connection";
 import { signPacked } from "../utils/signature";
+import { getBlockTimestampMs } from "utils/blockchain/helpers";
 
 export interface ListenAddressesConfig {
   signalServerList: string[];
@@ -177,13 +178,13 @@ export class Archaeologist {
               /**
                * Validate negotiation timestamp is within 1 minute of when we received this request
                */
-              if (timestamp > Date.now() + 1000 * 60) {
+              if (timestamp > (await getBlockTimestampMs()) + 1000 * 60) {
                 // add 60 second buffer to account for differences in system times
                 this.emitError(stream, {
                   code: SarcophagusValidationError.INVALID_TIMESTAMP,
                   message: `${errorMessagePrefix} \n Timestamp received is in the future.  
                   \n Got: ${timestamp}
-                  \n Date.now value: ${Date.now()}`,
+                  \n Latest block timestamp value: ${await getBlockTimestampMs()}`,
                 });
                 return;
               }
