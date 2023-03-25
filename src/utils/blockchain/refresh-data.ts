@@ -4,6 +4,7 @@ import { getGracePeriod, getSarcophagiIds, inMemoryStore, SarcophagusData } from
 import { BigNumber, ethers } from "ethers";
 import { handleRpcError } from "../rpc-error-handler";
 import { getBlockTimestampMs } from "./helpers";
+import { archLogger } from "../../logger/chalk-theme";
 
 // TODO -- once typechain defs are in the sarcophagus-org package,
 // the types in this file and onchain-data can get updated
@@ -46,12 +47,14 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
           const tooLateToUnwrap =
             currentBlockTimestampSec > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
           if (tooLateToUnwrap) {
+            archLogger.warn(`Too late to unwrap: ${sarcoId} with resurrection time: ${sarcophagus.resurrectionTime.toNumber()} -- current time is ${Date.now() / 1000}`);
             return;
           }
 
           // Account for out of sync system clocks
           // Scheduler will use the system clock which may not be in sync with block.timestamp
           const systemClockDifference = (Date.now() / 1000) - currentBlockTimestampSec;
+          archLogger.notice(`systemClockDifference is ${systemClockDifference}`);
 
           // NOTE: If we are past the resurrection time (but still in the grace period)
           // Then schedule the unwrap for 5 seconds from now. Otherwise schedule for resurrection time
