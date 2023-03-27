@@ -32,8 +32,8 @@ export async function startService(opts: {
     listenAddressesConfig:
       listenAddresses === undefined
         ? {
-          signalServerList: SIGNAL_SERVER_LIST,
-        }
+            signalServerList: SIGNAL_SERVER_LIST,
+          }
         : undefined,
   });
 

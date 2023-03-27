@@ -5,7 +5,7 @@ const MAX_RETRIES = 2;
 const INTERVAL_BETWEEN_RETRIES = 5000;
 export const wait = ms => new Promise(res => setTimeout(res, ms));
 
-export const retryFn = async (fn: Function, depth = 0, randomize = false, logOutput = '') => {
+export const retryFn = async (fn: Function, depth = 0, randomize = false, logOutput = "") => {
   try {
     return await fn();
   } catch (e) {

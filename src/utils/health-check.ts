@@ -53,9 +53,11 @@ export async function healthCheck(peerId?: string) {
       }
     }
 
-    const syncDifferenceSec = Math.abs(await getBlockTimestampMs() - Date.now()) / 1000;
+    const syncDifferenceSec = Math.abs((await getBlockTimestampMs()) - Date.now()) / 1000;
     if (syncDifferenceSec >= 1800) {
-      archLogger.warn(`Warning: your system clock is out of sync with universal UTC time by roughly: ${syncDifferenceSec} seconds`);
+      archLogger.warn(
+        `Warning: your system clock is out of sync with universal UTC time by roughly: ${syncDifferenceSec} seconds`
+      );
     }
 
     const freeBondBalance = await getFreeBondBalance();

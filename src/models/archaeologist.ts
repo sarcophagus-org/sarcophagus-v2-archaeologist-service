@@ -182,7 +182,7 @@ export class Archaeologist {
               /**
                * Validate negotiation timestamp is within allowed drift of when we received this request
                */
-              if (timestamp > ((await getBlockTimestampMs()) + CREATION_TIMESTAMP_DRIFT_ALLOWED_MS)) {
+              if (timestamp > (await getBlockTimestampMs()) + CREATION_TIMESTAMP_DRIFT_ALLOWED_MS) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.INVALID_TIMESTAMP,
                   message: `${errorMessagePrefix} \n Timestamp received is in the future.  
