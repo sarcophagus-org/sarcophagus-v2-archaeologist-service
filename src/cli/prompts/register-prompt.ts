@@ -1,11 +1,11 @@
 import inquirer from "inquirer";
 import { parseEther } from "ethers/lib/utils";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
-import { Web3Interface } from "../../scripts/web3-interface";
 import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
-import { ONE_MONTH_IN_SECONDS } from "../../cli/utils";
+import { ONE_MONTH_IN_SECONDS } from "../utils";
+import { getBlockTimestampMs } from "../../utils/blockchain/helpers";
 
 const DEFAULT_DIGGING_FEES_MONTHLY = "5";
 
@@ -180,7 +180,7 @@ const parseRewrapIntervalAnswer = (rewrapIntervalAnswer: string | number): numbe
   return rewrapIntervalAnswer * oneDayInSeconds;
 };
 
-const parseMaxResTimeAnswer = (maxResTime: string | number): number => {
+const parseMaxResTimeAnswer = async (maxResTime: string | number): Promise<number> => {
   let maxResurrectionTimeInterval = 0;
   if (typeof maxResTime === "string") {
     switch (maxResTime) {
@@ -208,7 +208,7 @@ const parseMaxResTimeAnswer = (maxResTime: string | number): number => {
     maxResurrectionTimeInterval = maxResTime * ONE_MONTH_IN_SECONDS;
   }
 
-  return Math.trunc(Date.now() / 1000) + maxResurrectionTimeInterval;
+  return Math.trunc((await getBlockTimestampMs()) / 1000) + maxResurrectionTimeInterval;
 };
 
 //
@@ -292,7 +292,7 @@ export const registerPrompt = async (skipApproval?: boolean) => {
         (Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS).toFixed(18)
       ),
       rewrapInterval: parseRewrapIntervalAnswer(rewrapInterval),
-      maxResTime: parseMaxResTimeAnswer(maxResTime),
+      maxResTime: await parseMaxResTimeAnswer(maxResTime),
       freeBond: parseEther(freeBond),
     };
     await approveAndRegister(profileParams);
