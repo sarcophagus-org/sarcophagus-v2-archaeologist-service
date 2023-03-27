@@ -7,15 +7,17 @@ export const logColors = {
   green: chalk.green,
 };
 
+const currentTimePrefix = () => logColors.muted(`${new Date().toISOString()}  `);
+
 export const archLogger = {
   debug: msg => {
     if (process.env.DEBUG) {
-      const debugLog = logColors.muted(`debug-${process.env.npm_package_version}::${msg}`);
+      const debugLog = logColors.muted(`${currentTimePrefix()}debug-${process.env.npm_package_version}::${msg}`);
       console.log(debugLog);
     }
   },
-  info: msg => console.log(logColors.muted(msg)),
-  notice: msg => console.log(logColors.green(msg)),
-  warn: msg => console.log(logColors.warning(msg)),
-  error: msg => console.log(logColors.error(msg)),
+  info: msg => console.log(`${currentTimePrefix()}${logColors.muted(msg)}`),
+  notice: msg => console.log(`${currentTimePrefix()}${logColors.green(msg)}`),
+  warn: msg => console.log(`${currentTimePrefix()}${logColors.warning(msg)}`),
+  error: msg => console.log(`${currentTimePrefix()}${logColors.error(msg)}`),
 };
