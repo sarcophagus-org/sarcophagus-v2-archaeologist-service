@@ -24,6 +24,12 @@ export const viewOptionDefinitions = [
     description: "Shows your available free bond",
   },
   {
+    name: "cursed-bond",
+    alias: "c",
+    type: Boolean,
+    description: "Shows your total cursed bond",
+  },
+  {
     name: "rewards",
     alias: "r",
     type: Boolean,
