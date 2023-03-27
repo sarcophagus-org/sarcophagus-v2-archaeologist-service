@@ -5,6 +5,12 @@ import { fetchProfileAndSchedulePublish } from "./utils/onchain-data";
 import { healthCheck, warnIfEthBalanceIsLow } from "./utils/health-check";
 import { loadPeerIdFromFile } from "./utils";
 import { SIGNAL_SERVER_LIST } from "./models/node-config";
+import { archLogger } from "./logger/chalk-theme";
+
+const RESTART_INTERVAL = 1_200_000; // 2O Minutes
+const CONTRACT_DATA_REFETCH_INTERVAL = process.env.REFETCH_INTERVAL
+  ? Number(process.env.REFETCH_INTERVAL)
+  : 600_000; // (default is 10 mins)
 
 export async function startService(opts: {
   nodeName: string;
@@ -26,19 +32,16 @@ export async function startService(opts: {
     listenAddressesConfig:
       listenAddresses === undefined
         ? {
-            signalServerList: SIGNAL_SERVER_LIST,
-          }
+          signalServerList: SIGNAL_SERVER_LIST,
+        }
         : undefined,
   });
 
   await healthCheck(peerId.toString());
   fetchProfileAndSchedulePublish();
 
-  // refetch every so often (default is 10 mins)
-  const refreshInterval = process.env.REFETCH_INTERVAL
-    ? Number(process.env.REFETCH_INTERVAL)
-    : 600_000;
-  setInterval(() => fetchProfileAndSchedulePublish(), refreshInterval);
+  // refetch every so often
+  setInterval(() => fetchProfileAndSchedulePublish(), CONTRACT_DATA_REFETCH_INTERVAL);
 
   // TODO -- delay starting the node until the creation window has passed
   // Consider only doing this if arch as at least one sarcophagus
@@ -49,12 +52,12 @@ export async function startService(opts: {
   setInterval(async () => {
     arch.restartNode();
     warnIfEthBalanceIsLow();
-  }, 20 * 60 * 1000);
+  }, RESTART_INTERVAL);
 
   [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, async e => {
-      console.log(`${nodeName} received exit event: ${eventType}`);
-      console.log(e);
+      archLogger.info(`${nodeName} received exit event: ${eventType}`);
+      archLogger.info(e);
       await arch.shutdown();
       process.exit(2);
     });
