@@ -3,7 +3,7 @@ import { schedulePublishPrivateKey } from "../scheduler";
 import { getGracePeriod, getSarcophagiIds, inMemoryStore, SarcophagusData } from "../onchain-data";
 import { BigNumber, ethers } from "ethers";
 import { handleRpcError } from "../rpc-error-handler";
-import { getBlockTimestampMs } from "./helpers";
+import { getBlockTimestamp } from "./helpers";
 import { archLogger } from "../../logger/chalk-theme";
 
 // TODO -- once typechain defs are in the sarcophagus-org package,
@@ -42,7 +42,9 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
         );
 
         if (curseIsActive(sarcoId, sarcophagus, archaeologist)) {
-          const currentBlockTimestampSec =  await getBlockTimestampMs() / 1000;
+          const currentBlockTimestampSec =  await getBlockTimestamp();
+
+          archLogger.notice(`currentBlockTimestampSec is ${currentBlockTimestampSec}`);
 
           const tooLateToUnwrap =
             currentBlockTimestampSec > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
@@ -53,22 +55,33 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
 
           // Account for out of sync system clocks
           // Scheduler will use the system clock which may not be in sync with block.timestamp
-          const systemClockDifference = (Date.now() / 1000) - currentBlockTimestampSec;
-          archLogger.notice(`systemClockDifference is ${systemClockDifference}`);
+          const systemClockDifferenceSecs = Math.round((Date.now() / 1000) - currentBlockTimestampSec);
+          archLogger.notice(`systemClockDifference is ${systemClockDifferenceSecs}`);
 
           // NOTE: If we are past the resurrection time (but still in the grace period)
           // Then schedule the unwrap for 5 seconds from now. Otherwise schedule for resurrection time
           // (plus 15 seconds to allow block.timestamp to advance past resurrection time).
-          const resurrectionTimeMs =
-            currentBlockTimestampSec > sarcophagus.resurrectionTime.toNumber()
-              ? new Date(Date.now() + 5000)
-              : new Date((sarcophagus.resurrectionTime.toNumber() + systemClockDifference) * 1000 + 15_000);
+          archLogger.notice(`resurrectionTime bignumber: ${sarcophagus.resurrectionTime.toString()}`);
+          archLogger.notice(`resurrectionTime number: ${sarcophagus.resurrectionTime.toNumber()}`);
 
-          schedulePublishPrivateKey(sarcoId, resurrectionTimeMs);
+          const isResurrectionTimeInPast = currentBlockTimestampSec > sarcophagus.resurrectionTime.toNumber();
+          let scheduledResurrectionTime;
+
+          if (isResurrectionTimeInPast) {
+            archLogger.notice(`resurrection time is in the past, scheduling for 5 seconds from now`);
+            scheduledResurrectionTime = new Date(Date.now() + 5000);
+          } else {
+            // schedule resurrection time, taking into account system clock differential + buffer
+            scheduledResurrectionTime = new Date(((sarcophagus.resurrectionTime.toNumber() + systemClockDifferenceSecs) * 1000) + 15_000);
+          }
+
+          archLogger.notice(`resurrection time with buffer: ${scheduledResurrectionTime}`);
+
+          schedulePublishPrivateKey(sarcoId, scheduledResurrectionTime);
 
           sarcophagi.push({
             id: sarcoId,
-            resurrectionTime: resurrectionTimeMs,
+            resurrectionTime: scheduledResurrectionTime,
           });
         }
       } catch (e) {

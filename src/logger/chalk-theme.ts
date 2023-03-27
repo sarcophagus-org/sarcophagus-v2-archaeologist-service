@@ -8,7 +8,7 @@ export const logColors = {
 };
 
 const log = (msg: string) => {
-  console.log(`${Date.now() / 1000}: ${msg}`);
+  console.log(`${new Date(Date.now()).toDateString()}: ${msg}`);
 }
 
 export const archLogger = {
