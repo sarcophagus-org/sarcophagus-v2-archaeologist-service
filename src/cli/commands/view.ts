@@ -6,7 +6,7 @@ import {
   getSarcoBalance,
   getSarcophagiIds,
 } from "../../utils/onchain-data";
-import { getWeb3Interface, Web3Interface } from "../../scripts/web3-interface";
+import { getWeb3Interface } from "../../scripts/web3-interface";
 import { viewOptionDefinitions } from "../config/view-args";
 import { logBalances, logProfile } from "../utils";
 import { logCallout } from "../../logger/formatter";
@@ -52,6 +52,14 @@ export class View implements Command {
       logCallout(() => {
         archLogger.info("Your free bond:");
         archLogger.notice(ethers.utils.formatEther(profile.freeBond) + " SARCO");
+      });
+    }
+
+    if (options.cursedBond) {
+      const profile = await getOnchainProfile();
+      logCallout(() => {
+        archLogger.info("Your cursed bond:");
+        archLogger.notice(ethers.utils.formatEther(profile.cursedBond) + " SARCO");
       });
     }
 
