@@ -6,14 +6,15 @@ import { handleRpcError } from "../rpc-error-handler";
 import { getBlockTimestamp } from "./helpers";
 import { archLogger } from "../../logger/chalk-theme";
 
-// TODO -- once typechain defs are in the sarcophagus-org package,
-// the types in this file and onchain-data can get updated
-const curseIsActive = (sarcoId: string, sarcophagus: any, archaeologist: any): boolean => {
+const archStillNeedsToPublishPrivateKey = (archaeologist: any): boolean => {
+  return archaeologist.privateKey === ethers.constants.HashZero;
+}
+
+const isSarcoInactive = (sarcophagus: any): boolean => {
   return (
-    archaeologist.privateKey === ethers.constants.HashZero &&
-    !sarcophagus.isCompromised &&
-    !sarcophagus.isCleaned &&
-    !sarcophagus.resurrectionTime.eq(ethers.constants.MaxUint256)
+    sarcophagus.resurrectionTime.eq(ethers.constants.MaxUint256) ||
+    sarcophagus.isCompromised ||
+    sarcophagus.isCleaned
   );
 };
 
@@ -36,14 +37,17 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
       try {
         const sarcophagus = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
 
-        // If this current time is past the grace period, don't schedule an unwrap
-        const tooLateToUnwrap =
-          currentBlockTimestampSec > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
+        // If sarcophagus is buried, cleaned or compromised, don't scheduled an unwrap
+        if (isSarcoInactive(sarcophagus)) {
+          inMemoryStore.deadSarcophagusIds.push(sarcoId);
+          return;
+        }
+
+        // If the current time is past the grace period, don't schedule an unwrap
+        const tooLateToUnwrap = (currentBlockTimestampSec > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!));
 
         if (tooLateToUnwrap) {
           archLogger.debug(`Too late to unwrap: ${sarcoId} with resurrection time: ${sarcophagus.resurrectionTime.toNumber()} -- current time is ${Date.now() / 1000}`);
-
-          // Dont attempt to unwrap this sarcophagus on next sync
           inMemoryStore.deadSarcophagusIds.push(sarcoId);
           return;
         }
@@ -53,7 +57,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
           web3Interface.ethWallet.address
         );
 
-        if (curseIsActive(sarcoId, sarcophagus, archaeologist)) {
+        if (archStillNeedsToPublishPrivateKey(archaeologist)) {
           // Account for out of sync system clocks
           // Scheduler will use the system clock which may not be in sync with block.timestamp
           const systemClockDifferenceSecs = Math.round((Date.now() / 1000) - currentBlockTimestampSec);
