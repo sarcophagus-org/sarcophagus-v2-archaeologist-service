@@ -87,7 +87,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
 
           archLogger.debug(`resurrection time with buffer: ${scheduledResurrectionTime}`);
 
-          schedulePublishPrivateKey(sarcoId, scheduledResurrectionTime);
+          schedulePublishPrivateKey(sarcoId, scheduledResurrectionTime, sarcophagus.resurrectionTime.toNumber());
 
           sarcophagi.push({
             id: sarcoId,
