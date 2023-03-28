@@ -45,7 +45,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
           const tooLateToUnwrap =
             currentBlockTimestampSec > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
           if (tooLateToUnwrap) {
-            archLogger.warn(`Too late to unwrap: ${sarcoId} with resurrection time: ${sarcophagus.resurrectionTime.toNumber()} -- current time is ${Date.now() / 1000}`);
+            archLogger.debug(`Too late to unwrap: ${sarcoId} with resurrection time: ${sarcophagus.resurrectionTime.toNumber()} -- current time is ${Date.now() / 1000}`);
             return;
           }
 
