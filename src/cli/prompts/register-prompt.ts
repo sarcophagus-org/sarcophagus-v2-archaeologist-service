@@ -5,7 +5,7 @@ import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
 import { ONE_MONTH_IN_SECONDS } from "../utils";
-import { getBlockTimestampMs } from "../../utils/blockchain/helpers";
+import { getBlockTimestamp } from "../../utils/blockchain/helpers";
 
 const DEFAULT_DIGGING_FEES_MONTHLY = "5";
 
@@ -208,7 +208,7 @@ const parseMaxResTimeAnswer = async (maxResTime: string | number): Promise<numbe
     maxResurrectionTimeInterval = maxResTime * ONE_MONTH_IN_SECONDS;
   }
 
-  return Math.trunc((await getBlockTimestampMs()) / 1000) + maxResurrectionTimeInterval;
+  return Math.trunc(await getBlockTimestamp()) + maxResurrectionTimeInterval;
 };
 
 //
