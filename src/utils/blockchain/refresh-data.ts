@@ -9,8 +9,6 @@ import { archLogger } from "../../logger/chalk-theme";
 // TODO -- once typechain defs are in the sarcophagus-org package,
 // the types in this file and onchain-data can get updated
 const curseIsActive = (sarcoId: string, sarcophagus: any, archaeologist: any): boolean => {
-  inMemoryStore.deadSarcophagusIds.push(sarcoId);
-
   return (
     archaeologist.privateKey === ethers.constants.HashZero &&
     !sarcophagus.isCompromised &&
@@ -44,8 +42,6 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
         if (curseIsActive(sarcoId, sarcophagus, archaeologist)) {
           const currentBlockTimestampSec =  await getBlockTimestamp();
 
-          archLogger.notice(`currentBlockTimestampSec is ${currentBlockTimestampSec}`);
-
           const tooLateToUnwrap =
             currentBlockTimestampSec > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
           if (tooLateToUnwrap) {
@@ -56,26 +52,26 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
           // Account for out of sync system clocks
           // Scheduler will use the system clock which may not be in sync with block.timestamp
           const systemClockDifferenceSecs = Math.round((Date.now() / 1000) - currentBlockTimestampSec);
-          archLogger.notice(`systemClockDifference is ${systemClockDifferenceSecs}`);
+          archLogger.debug(`currentBlockTimestampSec is ${currentBlockTimestampSec}`);
+          archLogger.debug(`systemClockDifference is ${systemClockDifferenceSecs}`);
 
           // NOTE: If we are past the resurrection time (but still in the grace period)
           // Then schedule the unwrap for 5 seconds from now. Otherwise schedule for resurrection time
           // (plus 15 seconds to allow block.timestamp to advance past resurrection time).
-          archLogger.notice(`resurrectionTime bignumber: ${sarcophagus.resurrectionTime.toString()}`);
-          archLogger.notice(`resurrectionTime number: ${sarcophagus.resurrectionTime.toNumber()}`);
+          archLogger.debug(`resurrectionTime raw: ${sarcophagus.resurrectionTime.toNumber()}`);
 
           const isResurrectionTimeInPast = currentBlockTimestampSec > sarcophagus.resurrectionTime.toNumber();
           let scheduledResurrectionTime;
 
           if (isResurrectionTimeInPast) {
-            archLogger.notice(`resurrection time is in the past, scheduling for 5 seconds from now`);
+            archLogger.debug(`resurrection time is in the past, scheduling for 5 seconds from now`);
             scheduledResurrectionTime = new Date(Date.now() + 5000);
           } else {
             // schedule resurrection time, taking into account system clock differential + buffer
             scheduledResurrectionTime = new Date(((sarcophagus.resurrectionTime.toNumber() + systemClockDifferenceSecs) * 1000) + 15_000);
           }
 
-          archLogger.notice(`resurrection time with buffer: ${scheduledResurrectionTime}`);
+          archLogger.debug(`resurrection time with buffer: ${scheduledResurrectionTime}`);
 
           schedulePublishPrivateKey(sarcoId, scheduledResurrectionTime);
 
@@ -83,6 +79,8 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
             id: sarcoId,
             resurrectionTime: scheduledResurrectionTime,
           });
+        } else {
+          inMemoryStore.deadSarcophagusIds.push(sarcoId);
         }
       } catch (e) {
         handleRpcError(e);
