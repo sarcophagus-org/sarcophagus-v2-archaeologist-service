@@ -108,7 +108,7 @@ export const logBalances = (
   ethBalance: BigNumber,
   address: string
 ): void => {
-  console.log(`YOUR BALANCES (${address}):\n`);
+  archLogger.info(`YOUR BALANCES (${address}):\n`);
 
   const balances = [
     {
@@ -125,7 +125,7 @@ export const logBalances = (
     },
   ];
 
-  console.log(columnify(balances, { minWidth: 30 }));
+  archLogger.notice(columnify(balances, { minWidth: 30 }));
 };
 
 export function logNotRegistered() {
@@ -151,7 +151,7 @@ export async function loadPeerIdJsonFromFileOrExit(): Promise<Record<string, str
   try {
     return jsonfile.readFile(peerIdFile);
   } catch (e) {
-    archLogger.error(`Error reading file: ${e}`);
+    archLogger.error(`Error reading file: ${e}`, true);
     exit(FILE_READ_EXCEPTION);
   }
 }

@@ -17,7 +17,8 @@ export function schedulePublishPrivateKey(sarcoId: string, date: Date) {
 
   if (!scheduledPublishPrivateKey[sarcoId]) {
     archLogger.notice(
-      `Scheduling unwrap for ${sarcoId} at: ${date.getTime() / 1000} (${date.toString()})`
+      `Scheduling unwrap for ${sarcoId} at: ${date.getTime() / 1000} (${date.toString()})`,
+      true
     );
   }
 

@@ -9,7 +9,7 @@ export const retryFn = async (fn: Function, depth = 0, randomize = false, logOut
   try {
     return await fn();
   } catch (e) {
-    archLogger.warn(`${logOutput} attempt ${depth + 1} failed, retrying....`);
+    archLogger.warn(`${logOutput} attempt ${depth + 1} failed, retrying....`, true);
     if (depth > MAX_RETRIES) {
       throw e;
     }
@@ -40,7 +40,7 @@ export const getBlockTimestamp = async (): Promise<number> => {
     return block.timestamp;
   } catch (error) {
     // Not a good fallback, may want to institute a retry or failure (or notification)
-    archLogger.warn(`Error retrieving block time: ${error}`);
+    archLogger.warn(`Error retrieving block time: ${error}`, true);
     return Date.now();
   }
 };

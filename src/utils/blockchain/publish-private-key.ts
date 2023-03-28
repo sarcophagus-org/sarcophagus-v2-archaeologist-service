@@ -8,7 +8,7 @@ import { ethers } from "ethers";
 
 export async function publishPrivateKey(sarcoId: string) {
   const web3Interface = await getWeb3Interface();
-  archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`);
+  archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`, true);
   inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
 
   try {
@@ -36,11 +36,11 @@ export async function publishPrivateKey(sarcoId: string) {
     inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
     inMemoryStore.deadSarcophagusIds.push(sarcoId);
 
-    archLogger.notice(`Unwrapped ${sarcoId} successfully!`);
+    archLogger.notice(`Unwrapped ${sarcoId} successfully!`, true);
     archLogger.debug(`Gas used: ${gasUsed.toString()} ETH`);
     archLogger.debug(`Cumulative Gas used: ${cummulativeGasUsed.toString()} ETH`);
   } catch (e) {
-    archLogger.error(`Unwrap failed: ${e}`);
+    archLogger.error(`Unwrap failed: ${e}`, true);
     await warnIfEthBalanceIsLow();
     handleRpcError(e);
   } finally {

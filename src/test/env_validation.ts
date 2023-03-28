@@ -5,7 +5,7 @@ import "dotenv/config";
 export async function runTests() {
   const spawnTestSuite = setupTestSuite();
 
-  archLogger.warn("\n\nVerify service outputs errors for invalid environment variables");
+  archLogger.warn("\n\nVerify service outputs errors for invalid environment variables", true);
 
   const opts = { sourceFile: "../index.js", timeout: 1000 };
   let testSuite: TestSuite;
@@ -13,7 +13,7 @@ export async function runTests() {
   const envVars = ["ETH_PRIVATE_KEY", "PROVIDER_URL"];
 
   for (const envVar of envVars) {
-    archLogger.warn(`\n\n ${envVar}`);
+    archLogger.warn(`\n\n ${envVar}`, true);
     testSuite = spawnTestSuite();
 
     process.env[envVar] = "";

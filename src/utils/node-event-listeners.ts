@@ -24,14 +24,16 @@ export function setupNodeEventListeners(node: Libp2p, name: string) {
   node.connectionManager.addEventListener("peer:connect", async evt => {
     const peerId = evt.detail.remotePeer.toString();
     archLogger.info(
-      `${name}: Connection established to ${peerId.slice(peerId.length - idTruncateLimit)}`
+      `${name}: Connection established to ${peerId.slice(peerId.length - idTruncateLimit)}`,
+      true
     );
   });
 
   node.connectionManager.addEventListener("peer:disconnect", evt => {
     const peerId = evt.detail.remotePeer.toString();
     archLogger.info(
-      `${name}: Connection dropped from ${peerId.slice(peerId.length - idTruncateLimit)}`
+      `${name}: Connection dropped from ${peerId.slice(peerId.length - idTruncateLimit)}`,
+      true
     );
   });
 }

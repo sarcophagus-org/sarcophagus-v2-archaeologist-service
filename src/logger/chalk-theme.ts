@@ -18,8 +18,12 @@ export const archLogger = {
       console.log(debugLog);
     }
   },
-  info: msg => console.log(`${currentTimePrefix()}${logColors.muted(msg)}`),
-  notice: msg => console.log(`${currentTimePrefix()}${logColors.green(msg)}`),
-  warn: msg => console.log(`${currentTimePrefix()}${logColors.warning(msg)}`),
-  error: msg => console.log(`${currentTimePrefix()}${logColors.error(msg)}`),
+  info: (msg, logTimestamp = false) =>
+    console.log(`${logTimestamp ? currentTimePrefix() : ""}${logColors.muted(msg)}`),
+  notice: (msg, logTimestamp = false) =>
+    console.log(`${logTimestamp ? currentTimePrefix() : ""}${logColors.green(msg)}`),
+  warn: (msg, logTimestamp = false) =>
+    console.log(`${logTimestamp ? currentTimePrefix() : ""}${logColors.warning(msg)}`),
+  error: (msg, logTimestamp = false) =>
+    console.log(`${logTimestamp ? currentTimePrefix() : ""}${logColors.error(msg)}`),
 };
