@@ -17,12 +17,10 @@ export function schedulePublishPrivateKey(sarcoId: string, resurrectionTime: Dat
   }
 
   if (!scheduledPublishPrivateKey[sarcoId]) {
-    archLogger.notice(`Scheduling unwrap for ${sarcoId} at: ${resurrectionTime.getTime() / 1000} (${resurrectionTime.toString()})`);
-  } else {
-    // If time is different than one in memory, a rewrap has occurred
-    if (sarcoIdToResurrectionTime[sarcoId] !== exactResurrectionTime) {
-      archLogger.notice(`Scheduling rewrap for ${sarcoId} at: ${resurrectionTime.getTime() / 1000} (${resurrectionTime.toString()})`);
-    }
+    archLogger.notice(
+      `Scheduling unwrap for ${sarcoId} at: ${date.getTime() / 1000} (${date.toString()})`,
+      true
+    );
   }
 
   // Stored just for purposes of logging

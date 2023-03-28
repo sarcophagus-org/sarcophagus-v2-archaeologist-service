@@ -86,8 +86,8 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
 
     return web3Interface;
   } catch (e) {
-    archLogger.error(e);
-    archLogger.error("Confirm PROVIDER_URL in .env is a valid RPC Provider URL");
+    archLogger.error(e, true);
+    archLogger.error("Confirm PROVIDER_URL in .env is a valid RPC Provider URL", true);
     exit(BAD_ENV);
   }
 };

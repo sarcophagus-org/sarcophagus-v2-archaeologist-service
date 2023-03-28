@@ -17,7 +17,7 @@ export async function createAndStartNode(
   const peerId = node.peerId.toString();
   await node.start();
 
-  archLogger.notice(`\n⚡️ ${name} started with id: ${peerId.slice(peerId.length - 5)}\n`);
+  archLogger.notice(`\n⚡️ ${name} started with id: ${peerId.slice(peerId.length - 5)}\n`, true);
 
   return node;
 }

@@ -39,11 +39,11 @@ export async function healthCheck(peerId?: string) {
         profile.peerId !== formatFullPeerString(peerId, process.env.DOMAIN)
       ) {
         logCallout(async () => {
-          archLogger.error("Peer ID on profile does not match local Peer Id!\n");
-          archLogger.error("Please update your profile \n");
-          archLogger.error("Your archaeologist will not appear in the embalmer webapp\n");
-          archLogger.warn(`Local Peer ID: ${process.env.DOMAIN}:${peerId}`);
-          archLogger.warn(`Profile Peer ID: ${profile.peerId}`);
+          archLogger.error("Peer ID on profile does not match local Peer Id!\n", true);
+          archLogger.error("Please update your profile \n", true);
+          archLogger.error("Your archaeologist will not appear in the embalmer webapp\n", true);
+          archLogger.warn(`Local Peer ID: ${process.env.DOMAIN}:${peerId}`, true);
+          archLogger.warn(`Profile Peer ID: ${profile.peerId}`, true);
         });
 
         // TODO -- add notification once notifications are setup
@@ -56,7 +56,8 @@ export async function healthCheck(peerId?: string) {
     const syncDifferenceSec = Math.abs((await getBlockTimestamp()) * 1000 - Date.now()) / 1000;
     if (syncDifferenceSec >= 1800) {
       archLogger.warn(
-        `Warning: your system clock is out of sync with universal UTC time by roughly: ${syncDifferenceSec} seconds`
+        `Warning: your system clock is out of sync with universal UTC time by roughly: ${syncDifferenceSec} seconds`,
+        true
       );
     }
 
@@ -70,7 +71,7 @@ export async function healthCheck(peerId?: string) {
       warnIfFreeBondIsLessThanMinDiggingFee(freeBondBalance, profile.minimumDiggingFeePerSecond);
     });
   } catch (e) {
-    archLogger.error(e);
+    archLogger.error(e, true);
     exit(RPC_EXCEPTION);
   }
 }
@@ -95,9 +96,10 @@ const warnIfFreeBondIsLessThanMinDiggingFee = (
 ): void => {
   if (freeBondBal.lt(minDiggingFee)) {
     archLogger.warn(
-      `\n   Your free bond is less than your minimum digging fee. You will not be able to accept new jobs!`
+      `\n   Your free bond is less than your minimum digging fee. You will not be able to accept new jobs!`,
+      true
     );
-    archLogger.error(`   Run: \`cli update -f <amount>\` to deposit some SARCO\n`);
+    archLogger.error(`   Run: \`cli update -f <amount>\` to deposit some SARCO\n`, true);
   }
 };
 
@@ -107,7 +109,8 @@ export const warnIfEthBalanceIsLow = async (ethBalanceArg?: BigNumber): Promise<
     archLogger.error(
       `\nYou have very little ETH in your account: ${ethers.utils.formatEther(
         ethBalance
-      )} ETH.\nYou may not have enough gas for any transactions!\n`
+      )} ETH.\nYou may not have enough gas for any transactions!\n`,
+      true
     );
   }
 };
@@ -117,7 +120,8 @@ const warnIfSarcoBalanceIsLow = (sarcoBalance: BigNumber): void => {
     archLogger.warn(
       `\nYou have very little SARCO in your account: ${ethers.utils.formatEther(
         sarcoBalance
-      )} SARCO\n`
+      )} SARCO\n`,
+      true
     );
   }
 };

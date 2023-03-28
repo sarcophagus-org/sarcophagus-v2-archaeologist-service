@@ -56,8 +56,8 @@ export async function startService(opts: {
 
   [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, async e => {
-      archLogger.info(`${nodeName} received exit event: ${eventType}`);
-      archLogger.info(e);
+      archLogger.info(`${nodeName} received exit event: ${eventType}`, true);
+      archLogger.info(e, true);
       await arch.shutdown();
       process.exit(2);
     });

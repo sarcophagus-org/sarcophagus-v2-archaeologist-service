@@ -16,7 +16,7 @@ const _tryReadEnv = (
 ) => {
   const isRequired = config && config.required;
   if (isRequired && !envVar) {
-    archLogger.error(`${envName} is required and not set in .env`);
+    archLogger.error(`${envName} is required and not set in .env`, true);
     exit(BAD_ENV);
   } else if (!envVar) {
     return;
@@ -28,7 +28,7 @@ const _tryReadEnv = (
     config.callback(envVar);
   } catch (e) {
     archLogger.debug(e);
-    archLogger.error(`${envName} is invalid: ${envVar}`);
+    archLogger.error(`${envName} is invalid: ${envVar}`, true);
     exit(BAD_ENV);
   }
 };
