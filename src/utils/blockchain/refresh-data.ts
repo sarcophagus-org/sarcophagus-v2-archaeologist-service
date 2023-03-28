@@ -80,6 +80,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
             resurrectionTime: scheduledResurrectionTime,
           });
         } else {
+          // Save inactive ones in memory to save RPC calls on next re-sync
           inMemoryStore.deadSarcophagusIds.push(sarcoId);
         }
       } catch (e) {
