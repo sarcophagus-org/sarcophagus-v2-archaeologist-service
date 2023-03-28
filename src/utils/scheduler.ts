@@ -16,7 +16,9 @@ export function schedulePublishPrivateKey(sarcoId: string, date: Date) {
   }
 
   if (!scheduledPublishPrivateKey[sarcoId]) {
-    archLogger.notice(`Scheduling unwrap for ${sarcoId} at: ${date.getTime() / 1000} (${date.toString()})`);
+    archLogger.notice(
+      `Scheduling unwrap for ${sarcoId} at: ${date.getTime() / 1000} (${date.toString()})`
+    );
   }
 
   // Cancel existing schedules, so no duplicate jobs will be created.

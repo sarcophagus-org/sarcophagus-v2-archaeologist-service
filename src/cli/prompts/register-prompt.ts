@@ -208,7 +208,7 @@ const parseMaxResTimeAnswer = async (maxResTime: string | number): Promise<numbe
     maxResurrectionTimeInterval = maxResTime * ONE_MONTH_IN_SECONDS;
   }
 
-  return Math.trunc((await getBlockTimestamp())) + maxResurrectionTimeInterval;
+  return Math.trunc(await getBlockTimestamp()) + maxResurrectionTimeInterval;
 };
 
 //

@@ -12,7 +12,9 @@ const currentTimePrefix = () => logColors.muted(`${new Date().toISOString()}  `)
 export const archLogger = {
   debug: msg => {
     if (process.env.DEBUG) {
-      const debugLog = logColors.muted(`${currentTimePrefix()}debug-${process.env.npm_package_version}::${msg}`);
+      const debugLog = logColors.muted(
+        `${currentTimePrefix()}debug-${process.env.npm_package_version}::${msg}`
+      );
       console.log(debugLog);
     }
   },
