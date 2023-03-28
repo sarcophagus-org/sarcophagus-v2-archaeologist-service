@@ -28,11 +28,25 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
   const sarcophagi: SarcophagusData[] = [];
   const sarcoIds = await getSarcophagiIds();
 
+  const currentBlockTimestampSec =  await getBlockTimestamp();
+
   sarcoIds
     .filter(id => !inMemoryStore.deadSarcophagusIds.includes(id))
     .map(async sarcoId => {
       try {
         const sarcophagus = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
+
+        // If this current time is past the grace period, don't schedule an unwrap
+        const tooLateToUnwrap =
+          currentBlockTimestampSec > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
+
+        if (tooLateToUnwrap) {
+          archLogger.debug(`Too late to unwrap: ${sarcoId} with resurrection time: ${sarcophagus.resurrectionTime.toNumber()} -- current time is ${Date.now() / 1000}`);
+
+          // Dont attempt to unwrap this sarcophagus on next sync
+          inMemoryStore.deadSarcophagusIds.push(sarcoId);
+          return;
+        }
 
         const archaeologist = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(
           sarcoId,
@@ -40,18 +54,6 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
         );
 
         if (curseIsActive(sarcoId, sarcophagus, archaeologist)) {
-          const currentBlockTimestampSec =  await getBlockTimestamp();
-
-          const tooLateToUnwrap =
-            currentBlockTimestampSec > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
-          if (tooLateToUnwrap) {
-            archLogger.debug(`Too late to unwrap: ${sarcoId} with resurrection time: ${sarcophagus.resurrectionTime.toNumber()} -- current time is ${Date.now() / 1000}`);
-
-            // Dont attempt to unwrap this sarcophagus on next sync
-            inMemoryStore.deadSarcophagusIds.push(sarcoId);
-            return;
-          }
-
           // Account for out of sync system clocks
           // Scheduler will use the system clock which may not be in sync with block.timestamp
           const systemClockDifferenceSecs = Math.round((Date.now() / 1000) - currentBlockTimestampSec);
