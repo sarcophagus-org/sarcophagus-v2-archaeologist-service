@@ -7,6 +7,10 @@ export const logColors = {
   green: chalk.green,
 };
 
+const log = (msg: string) => {
+  console.log(`${new Date(Date.now()).toDateString()}: ${msg}`);
+}
+
 export const archLogger = {
   debug: msg => {
     if (process.env.DEBUG) {
@@ -14,8 +18,8 @@ export const archLogger = {
       console.log(debugLog);
     }
   },
-  info: msg => console.log(logColors.muted(msg)),
-  notice: msg => console.log(logColors.green(msg)),
-  warn: msg => console.log(logColors.warning(msg)),
-  error: msg => console.log(logColors.error(msg)),
+  info: msg => log(logColors.muted(msg)),
+  notice: msg => log(logColors.green(msg)),
+  warn: msg => log(logColors.warning(msg)),
+  error: msg => log(logColors.error(msg)),
 };

@@ -12,7 +12,7 @@ import {
   OnchainProfile,
 } from "./onchain-data";
 import { formatFullPeerString, logBalances, logNotRegistered, logProfile } from "../cli/utils";
-import { getBlockTimestampMs } from "./blockchain/helpers";
+import { getBlockTimestamp } from "./blockchain/helpers";
 
 /**
  * Runs on service startup
@@ -53,7 +53,7 @@ export async function healthCheck(peerId?: string) {
       }
     }
 
-    const syncDifferenceSec = Math.abs(await getBlockTimestampMs() - Date.now()) / 1000;
+    const syncDifferenceSec = Math.abs((await getBlockTimestamp() * 1000) - Date.now()) / 1000;
     if (syncDifferenceSec >= 1800) {
       archLogger.warn(`Warning: your system clock is out of sync with universal UTC time by roughly: ${syncDifferenceSec} seconds`);
     }
