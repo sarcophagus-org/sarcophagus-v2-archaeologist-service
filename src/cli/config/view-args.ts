@@ -35,4 +35,10 @@ export const viewOptionDefinitions = [
     type: Boolean,
     description: "Shows your available rewards",
   },
+  {
+    name: "export",
+    alias: "e",
+    type: Boolean,
+    description: "Also exports the view data into a csv file",
+  },
 ];

@@ -45,7 +45,9 @@ export const handleCommandArgs = (
  * Logs archaeologist on-chain profile
  * @param profile
  */
-export const logProfile = (profile: OnchainProfile): void => {
+export const logProfile = (profile: OnchainProfile): {} => {
+  const formattedProfile = {};
+
   logCallout(() => {
     if (!profile.exists) {
       archLogger.error("This archaeologist is not yet registered, please run: \n");
@@ -53,7 +55,6 @@ export const logProfile = (profile: OnchainProfile): void => {
     } else {
       console.log("ARCHAEOLOGIST PROFILE: \n");
 
-      const formattedProfile = {};
       // Remove any entries where keys are numeric
       for (let [key, value] of Object.entries(profile)) {
         let formattedValue: string = value.toString();
@@ -92,6 +93,8 @@ export const logProfile = (profile: OnchainProfile): void => {
       console.log(columnify(formattedProfile, { columns: ["FIELD", "VALUE"] }));
     }
   });
+
+  return formattedProfile;
 };
 
 export const logValidationErrorAndExit = (message: string): void => {
