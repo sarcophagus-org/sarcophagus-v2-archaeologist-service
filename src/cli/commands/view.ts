@@ -13,11 +13,24 @@ import { logCallout } from "../../logger/formatter";
 import { archLogger } from "../../logger/chalk-theme";
 import { ethers } from "ethers";
 
+import fs from "fs/promises";
+
 export class View implements Command {
   name = "view";
   aliases = [];
   description = "View archaeologist data";
   args = viewOptionDefinitions;
+
+  async exportToCsv(name: string, content: any) {
+    try {
+      const filename = `${name}.csv`;
+      await fs.writeFile(filename, content, { flag: "w+" });
+      archLogger.info(`Exported output to file: ${filename}`);
+    } catch (err) {
+      archLogger.error("Failed to export csv", true);
+      archLogger.error(err, true);
+    }
+  }
 
   async run(options: CommandOptions): Promise<void> {
     if (Object.keys(options).length === 0) {
@@ -31,11 +44,24 @@ export class View implements Command {
         archLogger.info("Your Sarcophagi:\n\n");
         sarcoIds.map(sarcoId => archLogger.info(`${sarcoId}\n`));
       });
+
+      if (options.export) {
+        this.exportToCsv("sarcophagi", sarcoIds.join(","));
+      }
     }
 
     if (options.profile) {
       const profile = await getOnchainProfile();
-      logProfile(profile);
+      const formattedProfile = logProfile(profile);
+
+      if (options.export) {
+        this.exportToCsv(
+          "profile",
+          Object.entries(formattedProfile)
+            .map(([key, value]) => `${key}:"${value}"`)
+            .join(",")
+        );
+      }
     }
 
     if (options.balance) {
@@ -45,6 +71,13 @@ export class View implements Command {
       logCallout(() => {
         logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address);
       });
+
+      if (options.export) {
+        this.exportToCsv(
+          "balances",
+          `SARCO:${sarcoBalance.toString()},ETH:${ethBalance.toString()}`
+        );
+      }
     }
 
     if (options.freeBond) {
@@ -69,6 +102,10 @@ export class View implements Command {
         archLogger.info("Rewards available:");
         archLogger.notice(ethers.utils.formatEther(rewards) + " SARCO");
       });
+
+      if (options.export) {
+        this.exportToCsv("rewards", `${rewards.toString()}`);
+      }
     }
   }
 }

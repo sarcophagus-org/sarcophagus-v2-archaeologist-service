@@ -2,7 +2,6 @@ import { Command, CommandOptions } from "./command";
 import { getOnchainProfile } from "../../utils/onchain-data";
 import { ONE_MONTH_IN_SECONDS } from "../utils";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
-import { Web3Interface } from "../../scripts/web3-interface";
 import { parseEther } from "ethers/lib/utils";
 import { startOptionDefinitions } from "../config/start-args";
 import { randomTestArchVals } from "../../utils/random-arch-gen";

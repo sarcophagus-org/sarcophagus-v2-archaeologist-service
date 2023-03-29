@@ -7,7 +7,7 @@ export const logColors = {
   green: chalk.green,
 };
 
-const currentTimePrefix = () => logColors.muted(`${new Date().toISOString()}  `);
+const currentTimePrefix = () => logColors.muted(`${new Date(Date.now()).toISOString()}  `);
 
 export const archLogger = {
   debug: msg => {
