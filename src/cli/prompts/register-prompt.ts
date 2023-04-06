@@ -8,6 +8,8 @@ import { ONE_MONTH_IN_SECONDS } from "../utils";
 import { getBlockTimestamp } from "../../utils/blockchain/helpers";
 
 const DEFAULT_DIGGING_FEES_MONTHLY = "5";
+// TODO: May need to come up with a better default curse fee
+const DEFAULT_CURSE_FEE = "5";
 
 //
 // PROMPT QUESTIONS
@@ -56,6 +58,31 @@ const diggingFeeQuestion = [
       return true;
     },
     default: DEFAULT_DIGGING_FEES_MONTHLY,
+  },
+];
+
+const curseFeeQuestion = [
+  {
+    type: "input",
+    name: "curseFee",
+    message:
+      `How much would you like to be reimbursed for making the transaction to publish your private key in the future? \n\n` +
+      `${logColors.muted(
+        `The curse fee will be provided by the embalmer and be paid to you on your first rewrap or when you publish your private key if there is no rewrap to cover your transaction costs. Gas prices may vary. Default is ${DEFAULT_CURSE_FEE} SARCO.`
+      )}\n\n` +
+      `Enter SARCO Amount:`,
+    validate(value) {
+      if (value) {
+        console.log("validating with", value);
+        try {
+          parseEther(value.toString());
+        } catch (error) {
+          return "Please enter a valid SARCO amount";
+        }
+      }
+      return true;
+    },
+    default: DEFAULT_CURSE_FEE,
   },
 ];
 
@@ -208,14 +235,18 @@ const parseMaxResTimeAnswer = async (maxResTime: string | number): Promise<numbe
     maxResurrectionTimeInterval = maxResTime * ONE_MONTH_IN_SECONDS;
   }
 
-  return Math.trunc((await getBlockTimestamp())) + maxResurrectionTimeInterval;
+  return Math.trunc(await getBlockTimestamp()) + maxResurrectionTimeInterval;
 };
 
 //
 // REGISTER PROMPT
 // ////////////////////
 export const registerPrompt = async (skipApproval?: boolean) => {
-  let diggingFeePerMonth: string, rewrapInterval: string, maxResTime: string, freeBond: string;
+  let diggingFeePerMonth: string,
+    rewrapInterval: string,
+    maxResTime: string,
+    freeBond: string,
+    curseFee: string;
 
   /**
    * Ask for approval
@@ -275,6 +306,14 @@ export const registerPrompt = async (skipApproval?: boolean) => {
   separator();
 
   /**
+   * Curse Fee
+   */
+  const curseFeeAnswer = await inquirer.prompt(curseFeeQuestion);
+  curseFee = curseFeeAnswer.curseFee;
+
+  separator();
+
+  /**
    * Confirm answers
    */
   const confirmReviewAnswer = await inquirer.prompt(
@@ -294,6 +333,7 @@ export const registerPrompt = async (skipApproval?: boolean) => {
       rewrapInterval: parseRewrapIntervalAnswer(rewrapInterval),
       maxResTime: await parseMaxResTimeAnswer(maxResTime),
       freeBond: parseEther(freeBond),
+      curseFee: parseEther(curseFee),
     };
     await approveAndRegister(profileParams);
   }

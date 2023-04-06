@@ -19,6 +19,7 @@ export class Start implements Command {
     rewrapInterval: 31536000, // 1 year
     maxResTime: ONE_MONTH_IN_SECONDS * 24, // 2 years
     freeBond: parseEther("100"),
+    curseFee: parseEther("10"),
   };
 
   async registerAndStartRandomArch() {

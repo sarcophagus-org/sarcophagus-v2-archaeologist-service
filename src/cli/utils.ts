@@ -79,6 +79,10 @@ export const logProfile = (profile: OnchainProfile): void => {
             formattedValue = `${dateStr} (${value})`;
           }
 
+          if (key === "curseFee") {
+            formattedValue = `${formatEther(value)} SARCO`;
+          }
+
           formattedProfile[key] = formattedValue;
         }
       }

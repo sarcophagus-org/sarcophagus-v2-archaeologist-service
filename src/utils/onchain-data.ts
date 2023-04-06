@@ -10,6 +10,7 @@ export interface OnchainProfile {
   freeBond: BigNumber;
   cursedBond: BigNumber;
   peerId: string;
+  curseFee: BigNumber;
 }
 
 export interface SarcophagusData {
