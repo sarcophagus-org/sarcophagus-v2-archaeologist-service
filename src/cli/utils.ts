@@ -58,7 +58,7 @@ export const logProfile = (profile: OnchainProfile): void => {
       for (let [key, value] of Object.entries(profile)) {
         let formattedValue: string = value.toString();
         if (isNaN(Number(key))) {
-          if (["minimumDiggingFeePerSecond", "freeBond", "cursedBond"].includes(key)) {
+          if (["minimumDiggingFeePerSecond", "freeBond", "cursedBond", "curseFee"].includes(key)) {
             formattedValue = `${formatEther(value)} SARCO`;
 
             if (key === "minimumDiggingFeePerSecond") {
@@ -83,7 +83,6 @@ export const logProfile = (profile: OnchainProfile): void => {
         }
       }
 
-      // TODO: update this to use menmonic if private key changes to that
       const privKey = process.env.ETH_PRIVATE_KEY!;
       formattedProfile["address"] = privKey.startsWith("0x")
         ? ethers.utils.computeAddress(process.env.ETH_PRIVATE_KEY!)

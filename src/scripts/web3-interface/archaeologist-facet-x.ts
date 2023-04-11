@@ -49,7 +49,8 @@ export class ArchaeologistFacetX {
     minimumDiggingFeePerSecond: ethers.BigNumberish,
     maximumRewrapInterval: ethers.BigNumberish,
     freeBond: ethers.BigNumberish,
-    maximumResurrectionTime: ethers.BigNumberish
+    maximumResurrectionTime: ethers.BigNumberish,
+    curseFee: ethers.BigNumberish
   ): Promise<ethers.ContractTransaction | undefined> {
     return this._run(
       () =>
@@ -58,7 +59,8 @@ export class ArchaeologistFacetX {
           minimumDiggingFeePerSecond,
           maximumRewrapInterval,
           freeBond,
-          maximumResurrectionTime
+          maximumResurrectionTime,
+          curseFee
         ),
       () =>
         this.archaeologistFacet.callStatic.updateArchaeologist(
@@ -66,7 +68,8 @@ export class ArchaeologistFacetX {
           minimumDiggingFeePerSecond,
           maximumRewrapInterval,
           freeBond,
-          maximumResurrectionTime
+          maximumResurrectionTime,
+          curseFee
         )
     );
   }
@@ -76,7 +79,8 @@ export class ArchaeologistFacetX {
     minimumDiggingFeePerSecond: ethers.BigNumberish,
     maximumRewrapInterval: ethers.BigNumberish,
     freeBond: ethers.BigNumberish,
-    maximumResurrectionTime: ethers.BigNumberish
+    maximumResurrectionTime: ethers.BigNumberish,
+    curseFee: ethers.BigNumberish
   ): Promise<ethers.ContractTransaction | undefined> {
     return this._run(
       () =>
@@ -85,7 +89,8 @@ export class ArchaeologistFacetX {
           minimumDiggingFeePerSecond,
           maximumRewrapInterval,
           freeBond,
-          maximumResurrectionTime
+          maximumResurrectionTime,
+          curseFee
         ),
       () =>
         this.archaeologistFacet.callStatic.registerArchaeologist(
@@ -93,7 +98,8 @@ export class ArchaeologistFacetX {
           minimumDiggingFeePerSecond,
           maximumRewrapInterval,
           freeBond,
-          maximumResurrectionTime
+          maximumResurrectionTime,
+          curseFee
         )
     );
   }

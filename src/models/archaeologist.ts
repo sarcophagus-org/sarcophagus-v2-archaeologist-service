@@ -36,6 +36,7 @@ interface SarcophagusNegotiationParams {
   maximumResurrectionTime: number;
   diggingFeePerSecond: string;
   timestamp: number;
+  curseFee: string;
 }
 
 export class Archaeologist {
@@ -128,6 +129,7 @@ export class Archaeologist {
                 maximumResurrectionTime,
                 diggingFeePerSecond, // this is assumed to, and should, be in wei
                 timestamp,
+                curseFee,
               }: SarcophagusNegotiationParams = JSON.parse(
                 new TextDecoder().decode(data.subarray())
               );
@@ -180,9 +182,25 @@ export class Archaeologist {
               }
 
               /**
+               * Validate supplied curse fee matches archaeologist's required curse fee
+               */
+              if (ethers.utils.parseEther(curseFee).lt(inMemoryStore.profile!.curseFee)) {
+                this.emitError(stream, {
+                  code: SarcophagusValidationError.CURSE_FEE_TOO_LOW,
+                  message: `${errorMessagePrefix} \n Curse fee sent is too low.  
+                  \n Got: ${curseFee.toString()}
+                  \n Minimum needed: ${inMemoryStore.profile!.curseFee.toString()}`,
+                });
+                return;
+              }
+
+              /**
                * Validate negotiation timestamp is within allowed drift of when we received this request
                */
-              if (timestamp > ((await getBlockTimestamp() * 1000) + CREATION_TIMESTAMP_DRIFT_ALLOWED_MS)) {
+              if (
+                timestamp >
+                (await getBlockTimestamp()) * 1000 + CREATION_TIMESTAMP_DRIFT_ALLOWED_MS
+              ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.INVALID_TIMESTAMP,
                   message: `${errorMessagePrefix} \n Timestamp received is in the future.  
@@ -199,13 +217,14 @@ export class Archaeologist {
               // sign sarcophagus parameters to demonstrate agreement
               const signature = await signPacked(
                 web3Interface.ethWallet,
-                ["bytes", "uint256", "uint256", "uint256", "uint256"],
+                ["bytes", "uint256", "uint256", "uint256", "uint256", "uint256"],
                 [
                   publicKey,
                   maximumRewrapIntervalBN.toString(),
                   maximumResurrectionTimeBN.toString(),
                   diggingFeePerSecond,
                   Math.trunc(timestamp / 1000).toString(),
+                  curseFee,
                 ]
               );
               this.streamToBrowser(stream, JSON.stringify({ signature, publicKey }));

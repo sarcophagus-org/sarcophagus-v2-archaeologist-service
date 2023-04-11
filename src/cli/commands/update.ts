@@ -56,6 +56,10 @@ export class Update implements Command {
       updateArgs.maxResTime = Number(this.profile!.maximumResurrectionTime);
     }
 
+    if (!updateArgs.curseFee) {
+      updateArgs.curseFee = this.profile!.curseFee;
+    }
+
     await profileSetup(updateArgs, true);
   }
 
