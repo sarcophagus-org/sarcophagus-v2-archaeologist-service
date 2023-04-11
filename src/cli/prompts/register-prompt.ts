@@ -68,7 +68,7 @@ const curseFeeQuestion = [
     message:
       `How much would you like to be reimbursed for making the transaction to publish your private key in the future? \n\n` +
       `${logColors.muted(
-        `The curse fee will be provided by the embalmer and be paid to you on your first rewrap or when you publish your private key if there is no rewrap to cover your transaction costs. Gas prices may vary. Default is ${DEFAULT_CURSE_FEE} SARCO.`
+        `The curse fee will be provided by the embalmer and be paid to you on your first rewrap or when you publish your private key. Gas prices may vary. Default is ${DEFAULT_CURSE_FEE} SARCO.`
       )}\n\n` +
       `Enter SARCO Amount:`,
     validate(value) {

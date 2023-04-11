@@ -29,7 +29,7 @@
     "@libp2p/webrtc-star-signalling-server": "^2.0.5",
     "@libp2p/websockets": "^5.0.1",
     "@mapbox/node-pre-gyp": "^1.0.10",
-    "@sarcophagus-org/sarcophagus-v2-contracts": "^0.14.5",
+    "@sarcophagus-org/sarcophagus-v2-contracts": "^0.15.1",
     "@types/node": "^18.0.0",
     "bip39": "^3.0.4",
     "chalk": "^5.0.1",
