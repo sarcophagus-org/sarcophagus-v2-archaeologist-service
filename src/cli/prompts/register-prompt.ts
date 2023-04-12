@@ -105,7 +105,7 @@ const freeBondQuestion = (args: {
       message:
         `How much would you like to deposit in your Free Bond (expressed in SARCO)? Your current SARCO balance is: ${args.sarcoBalance} \n\n` +
         `${logColors.muted(
-          `  - You may need a minimum of ${maxFeeOnSingleSarcophagus} in order to be assigned to and maintain one sarcophagus.\n\n` +
+          `  - You would need a minimum of ${maxFeeOnSingleSarcophagus} in order to be assigned to and maintain one sarcophagus using your selected maximum rewrap interval.\n\n` +
             `  - A portion of your free bond (a function of your monthly digging fees and the time you will be responsible for it) will be locked whenever you are assigned to a sarcophagus. This will be released when either you complete your unwrapping duties or the sarcophagus is buried.\n\n` +
             `  - You will need to have enough SARCO in your free bond in order to be successfully assigned to a new Sarcophagus.\n\n`
         )}` +
