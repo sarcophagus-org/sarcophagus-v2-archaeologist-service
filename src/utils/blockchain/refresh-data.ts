@@ -1,19 +1,22 @@
 import { getWeb3Interface } from "../../scripts/web3-interface";
 import { schedulePublishPrivateKey } from "../scheduler";
-import { getGracePeriod, getSarcophagiIds, inMemoryStore, SarcophagusData } from "../onchain-data";
+import { getGracePeriod, inMemoryStore, SarcophagusData } from "../onchain-data";
 import { BigNumber, ethers } from "ethers";
 import { handleRpcError } from "../rpc-error-handler";
-import { getBlockTimestamp } from "./helpers";
+import { getBlockTimestamp, getDateFromTimestamp } from "./helpers";
 import { archLogger } from "../../logger/chalk-theme";
+import { SubgraphData } from "utils/graphql";
 
-// TODO -- once typechain defs are in the sarcophagus-org package,
-// the types in this file and onchain-data can get updated
-const curseIsActive = (sarcoId: string, sarcophagus: any, archaeologist: any): boolean => {
+
+const archStillNeedsToPublishPrivateKey = (archaeologist: any): boolean => {
+  return archaeologist.privateKey === ethers.constants.HashZero;
+};
+
+const isSarcoInactive = (sarcophagus: any): boolean => {
   return (
-    archaeologist.privateKey === ethers.constants.HashZero &&
-    !sarcophagus.isCompromised &&
-    !sarcophagus.isCleaned &&
-    !sarcophagus.resurrectionTime.eq(ethers.constants.MaxUint256)
+    sarcophagus.resurrectionTime.eq(ethers.constants.MaxUint256) ||
+    sarcophagus.isCompromised ||
+    sarcophagus.isCleaned
   );
 };
 
@@ -26,24 +29,33 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
   inMemoryStore.gracePeriod = inMemoryStore.gracePeriod || (await getGracePeriod());
 
   const sarcophagi: SarcophagusData[] = [];
-  const sarcoIds = await getSarcophagiIds();
+  const sarcosSubgraph = await SubgraphData.getSarcophagi();
 
   const currentBlockTimestampSec = await getBlockTimestamp();
 
-  sarcoIds
-    .filter(id => !inMemoryStore.deadSarcophagusIds.includes(id))
-    .map(async sarcoId => {
-      try {
-        const sarcophagus = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
+  sarcosSubgraph
+    .filter(sarco => !inMemoryStore.deadSarcophagusIds.includes(sarco.sarcoId))
+    .map(async sarco => {
+      const { sarcoId, blockTimestamp } = sarco;
+      const creationDate = getDateFromTimestamp(Number.parseInt(blockTimestamp));
 
-        // If this current time is past the grace period, don't schedule an unwrap
+      try {
+        const sarcoFromContract = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
+
+        // If sarcophagus is buried, cleaned or compromised, don't scheduled an unwrap
+        if (isSarcoInactive(sarcoFromContract)) {
+          inMemoryStore.deadSarcophagusIds.push(sarcoId);
+          return;
+        }
+
+        // If the current time is past the grace period, don't schedule an unwrap
         const tooLateToUnwrap =
-          currentBlockTimestampSec > endOfGracePeriod(sarcophagus, inMemoryStore.gracePeriod!);
+          currentBlockTimestampSec >
+          endOfGracePeriod(sarcoFromContract, inMemoryStore.gracePeriod!);
 
         if (tooLateToUnwrap) {
           archLogger.debug(
-            `Too late to unwrap: ${sarcoId} with resurrection time: ${sarcophagus.resurrectionTime.toNumber()} -- current time is ${
-              Date.now() / 1000
+            `Too late to unwrap: ${sarcoId} with resurrection time: ${sarcoFromContract.resurrectionTime.toNumber()} -- current time is ${Date.now() / 1000
             }`
           );
 
@@ -57,7 +69,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
           web3Interface.ethWallet.address
         );
 
-        if (curseIsActive(sarcoId, sarcophagus, archaeologist)) {
+        if (archStillNeedsToPublishPrivateKey(archaeologist)) {
           // Account for out of sync system clocks
           // Scheduler will use the system clock which may not be in sync with block.timestamp
           const systemClockDifferenceSecs = Math.round(
@@ -69,10 +81,12 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
           // NOTE: If we are past the resurrection time (but still in the grace period)
           // Then schedule the unwrap for 5 seconds from now. Otherwise schedule for resurrection time
           // (plus 15 seconds to allow block.timestamp to advance past resurrection time).
-          archLogger.debug(`resurrectionTime raw: ${sarcophagus.resurrectionTime.toNumber()}`);
+          archLogger.debug(
+            `resurrectionTime raw: ${sarcoFromContract.resurrectionTime.toNumber()}`
+          );
 
           const isResurrectionTimeInPast =
-            currentBlockTimestampSec > sarcophagus.resurrectionTime.toNumber();
+            currentBlockTimestampSec > sarcoFromContract.resurrectionTime.toNumber();
           let scheduledResurrectionTime;
 
           if (isResurrectionTimeInPast) {
@@ -81,17 +95,25 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
           } else {
             // schedule resurrection time, taking into account system clock differential + buffer
             scheduledResurrectionTime = new Date(
-              (sarcophagus.resurrectionTime.toNumber() + systemClockDifferenceSecs) * 1000 + 15_000
+              (sarcoFromContract.resurrectionTime.toNumber() + systemClockDifferenceSecs) * 1000 +
+              15_000
             );
           }
 
           archLogger.debug(`resurrection time with buffer: ${scheduledResurrectionTime}`);
 
-          schedulePublishPrivateKey(sarcoId, scheduledResurrectionTime, sarcophagus.resurrectionTime.toNumber());
+          schedulePublishPrivateKey(
+            sarcoId,
+            scheduledResurrectionTime,
+            sarcoFromContract.resurrectionTime.toNumber()
+          );
 
           sarcophagi.push({
             id: sarcoId,
             resurrectionTime: scheduledResurrectionTime,
+            perSecondFee: archaeologist.diggingFeePerSecond,
+            cursedAmount: archaeologist.curseFee,
+            creationDate,
           });
         } else {
           // Save inactive ones in memory to save RPC calls on next re-sync
