@@ -44,3 +44,5 @@ export const getBlockTimestamp = async (): Promise<number> => {
     return Date.now();
   }
 };
+
+export const getDateFromTimestamp = (timestamp: number) => new Date(timestamp * 1000);

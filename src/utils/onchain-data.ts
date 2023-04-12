@@ -20,6 +20,12 @@ export interface SarcophagusData {
   cursedAmount: BigNumber;
 }
 
+export interface SarcophagusDataSimple {
+  id: string;
+  creationDate: Date;
+  resurrectionTime: Date;
+}
+
 interface InMemoryStore {
   sarcophagi: SarcophagusData[];
   deadSarcophagusIds: string[];

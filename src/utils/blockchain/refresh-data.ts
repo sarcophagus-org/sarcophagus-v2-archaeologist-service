@@ -1,14 +1,16 @@
 import { getWeb3Interface } from "../../scripts/web3-interface";
 import { schedulePublishPrivateKey } from "../scheduler";
-import { getGracePeriod, getSarcophagiIds, inMemoryStore, SarcophagusData } from "../onchain-data";
+import { getGracePeriod, inMemoryStore, SarcophagusData } from "../onchain-data";
 import { BigNumber, ethers } from "ethers";
 import { handleRpcError } from "../rpc-error-handler";
-import { getBlockTimestamp } from "./helpers";
+import { getBlockTimestamp, getDateFromTimestamp } from "./helpers";
 import { archLogger } from "../../logger/chalk-theme";
+import { SubgraphData } from "utils/graphql";
+
 
 const archStillNeedsToPublishPrivateKey = (archaeologist: any): boolean => {
   return archaeologist.privateKey === ethers.constants.HashZero;
-}
+};
 
 const isSarcoInactive = (sarcophagus: any): boolean => {
   return (
@@ -27,13 +29,16 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
   inMemoryStore.gracePeriod = inMemoryStore.gracePeriod || (await getGracePeriod());
 
   const sarcophagi: SarcophagusData[] = [];
-  const sarcoIds = await getSarcophagiIds();
+  const sarcosSubgraph = await SubgraphData.getSarcophagi();
 
   const currentBlockTimestampSec = await getBlockTimestamp();
 
-  sarcoIds
-    .filter(id => !inMemoryStore.deadSarcophagusIds.includes(id))
-    .map(async sarcoId => {
+  sarcosSubgraph
+    .filter(sarco => !inMemoryStore.deadSarcophagusIds.includes(sarco.sarcoId))
+    .map(async sarco => {
+      const { sarcoId, blockTimestamp } = sarco;
+      const creationDate = getDateFromTimestamp(Number.parseInt(blockTimestamp));
+
       try {
         const sarcoFromContract = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
 
@@ -50,8 +55,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
 
         if (tooLateToUnwrap) {
           archLogger.debug(
-            `Too late to unwrap: ${sarcoId} with resurrection time: ${sarcoFromContract.resurrectionTime.toNumber()} -- current time is ${
-              Date.now() / 1000
+            `Too late to unwrap: ${sarcoId} with resurrection time: ${sarcoFromContract.resurrectionTime.toNumber()} -- current time is ${Date.now() / 1000
             }`
           );
 
@@ -92,7 +96,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
             // schedule resurrection time, taking into account system clock differential + buffer
             scheduledResurrectionTime = new Date(
               (sarcoFromContract.resurrectionTime.toNumber() + systemClockDifferenceSecs) * 1000 +
-                15_000
+              15_000
             );
           }
 
@@ -107,6 +111,9 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
           sarcophagi.push({
             id: sarcoId,
             resurrectionTime: scheduledResurrectionTime,
+            perSecondFee: archaeologist.diggingFeePerSecond,
+            cursedAmount: archaeologist.curseFee,
+            creationDate,
           });
         } else {
           // Save inactive ones in memory to save RPC calls on next re-sync

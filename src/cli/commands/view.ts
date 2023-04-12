@@ -14,6 +14,7 @@ import { archLogger } from "../../logger/chalk-theme";
 import { ethers } from "ethers";
 
 import fs from "fs/promises";
+import { SubgraphData } from "utils/graphql";
 
 export class View implements Command {
   name = "view";
@@ -39,14 +40,19 @@ export class View implements Command {
     }
 
     if (options.sarcophagi) {
-      const sarcoIds = await getSarcophagiIds();
+      const subgraphSarcos = await SubgraphData.getSarcophagi();
+
       logCallout(() => {
         archLogger.info("Your Sarcophagi:\n\n");
-        sarcoIds.map(sarcoId => archLogger.info(`${sarcoId}\n`));
+        subgraphSarcos.map(sarco => {
+          archLogger.info(`${sarco.sarcoId}`);
+          archLogger.info(`Created: ${sarco.blockTimestamp}\n`);
+          archLogger.info(`Resurrection: ${sarco.resurrectionTime}\n`);
+        });
       });
 
       if (options.export) {
-        this.exportToCsv("sarcophagi", sarcoIds.join(","));
+        this.exportToCsv("sarcophagi", subgraphSarcos.map(s => `${s.sarcoId}|${s.blockTimestamp}|${s.resurrectionTime}`).join(","));
       }
     }
 
