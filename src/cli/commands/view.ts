@@ -52,7 +52,12 @@ export class View implements Command {
       });
 
       if (options.export) {
-        this.exportToCsv("sarcophagi", subgraphSarcos.map(s => `${s.sarcoId}|${s.blockTimestamp}|${s.resurrectionTime}`).join(","));
+        this.exportToCsv(
+          "sarcophagi",
+          subgraphSarcos
+            .map(s => `${s.sarcoId}|${s.blockTimestamp}|${s.resurrectionTime}`)
+            .join(",")
+        );
       }
     }
 

@@ -43,6 +43,7 @@
     "it-pipe": "^2.0.4",
     "jsonfile": "^6.1.0",
     "libp2p": "^0.40.0",
+    "node-fetch": "^3.3.1",
     "node-schedule": "^2.1.0",
     "peer-id": "^0.16.0",
     "wrtc": "^0.4.7"
