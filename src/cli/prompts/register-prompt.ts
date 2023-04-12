@@ -32,7 +32,7 @@ const confirmReviewQuestion = (
       `Free Bond: ${freeBond} SARCO\n` +
       `Maximum Rewrap Interval: ${rewrapInterval}\n` +
       `Maximum Resurrection Time in: ${maxResTime}\n` +
-      `Domain: ${process.env.DOMAIN}\n\n` +
+      `Domain: ${process.env.DOMAIN}\n` +
       `Curse Fee: ${curseFee}\n\n` +
       "Do you want to continue?",
     default: true,
