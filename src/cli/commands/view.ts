@@ -14,7 +14,7 @@ import { archLogger } from "../../logger/chalk-theme";
 import { ethers } from "ethers";
 
 import fs from "fs/promises";
-import { SubgraphData } from "utils/graphql";
+import { SubgraphData } from "../../utils/graphql";
 
 export class View implements Command {
   name = "view";
