@@ -69,7 +69,7 @@ const curseFeeQuestion = [
     type: "input",
     name: "curseFee",
     message:
-      `How much would you like to be reimbursed for making the transaction to publish your private key in the future? \n\n` +
+      `How much would you like to be reimbursed for making the transaction to publish your private key on a sarcophagus? This is paid once per sarcophagus you are assigned to. \n\n` +
       `${logColors.muted(
         `The curse fee will be provided by the embalmer and be paid to you on your first rewrap or when you publish your private key. Gas prices may vary. Default is ${DEFAULT_CURSE_FEE} SARCO.`
       )}\n\n` +
