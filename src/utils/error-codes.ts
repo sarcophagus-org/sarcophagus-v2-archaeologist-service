@@ -12,4 +12,5 @@ export enum SarcophagusValidationError {
   DIGGING_FEE_TOO_LOW,
   INVALID_TIMESTAMP,
   MAX_RESURRECTION_TIME_TOO_LARGE,
+  CURSE_FEE_TOO_LOW,
 }

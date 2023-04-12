@@ -42,4 +42,11 @@ export const profileOptionDefinitions = [
     description:
       "How much free bond you would like to deposit when registering. You can add more free bond later in a separate transaction. Free bond is locked up when you accept curses, and returned after a successful unwrapping.",
   },
+  {
+    name: "curse-fee",
+    alias: "c",
+    type: parseEther,
+    description:
+      "A one-time fee paid by the embalmer per curse, meant to cover the transaction costs of publishing a sarcophagus's private key. Will be paid either on first rewrap of a sarcophagus, or if no rewrap occurs, then on unwrap (when you publish a private key for the sarcophagus)",
+  },
 ];

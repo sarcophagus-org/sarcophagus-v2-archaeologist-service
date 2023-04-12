@@ -8,6 +8,8 @@ import { ONE_MONTH_IN_SECONDS } from "../utils";
 import { getBlockTimestamp } from "../../utils/blockchain/helpers";
 
 const DEFAULT_DIGGING_FEES_MONTHLY = "5";
+// TODO: May need to come up with a better default curse fee
+const DEFAULT_CURSE_FEE = "5";
 
 //
 // PROMPT QUESTIONS
@@ -17,7 +19,8 @@ const confirmReviewQuestion = (
   diggingFeePerMonth: string,
   rewrapInterval: string,
   freeBond: string,
-  maxResTime: string
+  maxResTime: string,
+  curseFee: string
 ) => [
   {
     type: "confirm",
@@ -29,6 +32,7 @@ const confirmReviewQuestion = (
       `Maximum Rewrap Interval: ${rewrapInterval}\n` +
       `Maximum Resurrection Time in: ${maxResTime}\n` +
       `Domain: ${process.env.DOMAIN}\n\n` +
+      `Curse Fee: ${curseFee}\n\n` +
       "Do you want to continue?",
     default: true,
   },
@@ -56,6 +60,31 @@ const diggingFeeQuestion = [
       return true;
     },
     default: DEFAULT_DIGGING_FEES_MONTHLY,
+  },
+];
+
+const curseFeeQuestion = [
+  {
+    type: "input",
+    name: "curseFee",
+    message:
+      `How much would you like to be reimbursed for making the transaction to publish your private key in the future? \n\n` +
+      `${logColors.muted(
+        `The curse fee will be provided by the embalmer and be paid to you on your first rewrap or when you publish your private key. Gas prices may vary. Default is ${DEFAULT_CURSE_FEE} SARCO.`
+      )}\n\n` +
+      `Enter SARCO Amount:`,
+    validate(value) {
+      if (value) {
+        console.log("validating with", value);
+        try {
+          parseEther(value.toString());
+        } catch (error) {
+          return "Please enter a valid SARCO amount";
+        }
+      }
+      return true;
+    },
+    default: DEFAULT_CURSE_FEE,
   },
 ];
 
@@ -215,7 +244,11 @@ const parseMaxResTimeAnswer = async (maxResTime: string | number): Promise<numbe
 // REGISTER PROMPT
 // ////////////////////
 export const registerPrompt = async (skipApproval?: boolean) => {
-  let diggingFeePerMonth: string, rewrapInterval: string, maxResTime: string, freeBond: string;
+  let diggingFeePerMonth: string,
+    rewrapInterval: string,
+    maxResTime: string,
+    freeBond: string,
+    curseFee: string;
 
   /**
    * Ask for approval
@@ -275,10 +308,18 @@ export const registerPrompt = async (skipApproval?: boolean) => {
   separator();
 
   /**
+   * Curse Fee
+   */
+  const curseFeeAnswer = await inquirer.prompt(curseFeeQuestion);
+  curseFee = curseFeeAnswer.curseFee;
+
+  separator();
+
+  /**
    * Confirm answers
    */
   const confirmReviewAnswer = await inquirer.prompt(
-    confirmReviewQuestion(diggingFeePerMonth, rewrapInterval, freeBond, maxResTime)
+    confirmReviewQuestion(diggingFeePerMonth, rewrapInterval, freeBond, maxResTime, curseFee)
   );
 
   // If user doesn't confirm, then walk through the prompt again
@@ -288,12 +329,11 @@ export const registerPrompt = async (skipApproval?: boolean) => {
   } else {
     const profileParams: ProfileCliParams = {
       // ie, Digging Fees Per Second
-      diggingFee: parseEther(
-        (Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS).toFixed(18)
-      ),
+      diggingFee: parseEther(diggingFeePerMonth),
       rewrapInterval: parseRewrapIntervalAnswer(rewrapInterval),
       maxResTime: await parseMaxResTimeAnswer(maxResTime),
       freeBond: parseEther(freeBond),
+      curseFee: parseEther(curseFee),
     };
     await approveAndRegister(profileParams);
   }

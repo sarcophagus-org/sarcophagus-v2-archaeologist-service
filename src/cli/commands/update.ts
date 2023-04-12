@@ -10,7 +10,6 @@ import {
 import { validateEnvVars } from "../../utils/validateEnv";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { archLogger } from "../../logger/chalk-theme";
-import { getWeb3Interface, Web3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
 import {
   isFreeBondProvidedAndZero,
@@ -54,6 +53,10 @@ export class Update implements Command {
 
     if (!updateArgs.maxResTime) {
       updateArgs.maxResTime = Number(this.profile!.maximumResurrectionTime);
+    }
+
+    if (!updateArgs.curseFee) {
+      updateArgs.curseFee = this.profile!.curseFee;
     }
 
     await profileSetup(updateArgs, true);
