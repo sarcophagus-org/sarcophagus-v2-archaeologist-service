@@ -10,7 +10,6 @@ import {
 import { validateEnvVars } from "../../utils/validateEnv";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { archLogger } from "../../logger/chalk-theme";
-import { getWeb3Interface, Web3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
 import {
   isFreeBondProvidedAndZero,

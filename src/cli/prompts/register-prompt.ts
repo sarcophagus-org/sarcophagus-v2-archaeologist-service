@@ -19,7 +19,8 @@ const confirmReviewQuestion = (
   diggingFeePerMonth: string,
   rewrapInterval: string,
   freeBond: string,
-  maxResTime: string
+  maxResTime: string,
+  curseFee: string
 ) => [
   {
     type: "confirm",
@@ -31,6 +32,7 @@ const confirmReviewQuestion = (
       `Maximum Rewrap Interval: ${rewrapInterval}\n` +
       `Maximum Resurrection Time in: ${maxResTime}\n` +
       `Domain: ${process.env.DOMAIN}\n\n` +
+      `Curse Fee: ${curseFee}\n\n` +
       "Do you want to continue?",
     default: true,
   },
@@ -317,7 +319,7 @@ export const registerPrompt = async (skipApproval?: boolean) => {
    * Confirm answers
    */
   const confirmReviewAnswer = await inquirer.prompt(
-    confirmReviewQuestion(diggingFeePerMonth, rewrapInterval, freeBond, maxResTime)
+    confirmReviewQuestion(diggingFeePerMonth, rewrapInterval, freeBond, maxResTime, curseFee)
   );
 
   // If user doesn't confirm, then walk through the prompt again
@@ -327,9 +329,7 @@ export const registerPrompt = async (skipApproval?: boolean) => {
   } else {
     const profileParams: ProfileCliParams = {
       // ie, Digging Fees Per Second
-      diggingFee: parseEther(
-        (Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS).toFixed(18)
-      ),
+      diggingFee: parseEther(diggingFeePerMonth),
       rewrapInterval: parseRewrapIntervalAnswer(rewrapInterval),
       maxResTime: await parseMaxResTimeAnswer(maxResTime),
       freeBond: parseEther(freeBond),
