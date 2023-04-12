@@ -1,13 +1,19 @@
-import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
 import { BigNumber } from "ethers";
-import { getWeb3Interface } from "scripts/web3-interface";
+import { getWeb3Interface } from "../scripts/web3-interface";
 import { getBlockTimestamp, getDateFromTimestamp } from "./blockchain/helpers";
-import { getGracePeriod, SarcophagusData, SarcophagusDataSimple } from "./onchain-data";
+import { getGracePeriod, SarcophagusDataSimple } from "./onchain-data";
+import fetch from "node-fetch";
 
-const graphQlClient = new ApolloClient({
-  uri: "https://api.studio.thegraph.com/query/44302/sarcotest2/13",
-  cache: new InMemoryCache(),
-});
+async function queryGraphQl(query: string) {
+  const response = await fetch("https://api.studio.thegraph.com/query/44302/sarcotest2/13", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ query }),
+  });
+
+  const { data } = await response.json() as { data: any };
+  return data;
+}
 
 const getArchStatsQuery = (archAddress: string) => `query {
     archaeologist (id: "${archAddress}") {
@@ -26,13 +32,12 @@ const getArchSarcosQuery = (
     sarcophagusDatas (
         where: {
             cursedArchaeologists_contains_nocase: ["${archAddress}"],
-            ${
-              !opts
-                ? ""
-                : opts.whereResTimeLessThan
-                ? `resurrectionTime_lt: ${opts.activeTimeThreshold}`
-                : `resurrectionTime_gte: ${opts.activeTimeThreshold}`
-            }
+            ${!opts
+      ? ""
+      : opts.whereResTimeLessThan
+        ? `resurrectionTime_lt: ${opts.activeTimeThreshold}`
+        : `resurrectionTime_gte: ${opts.activeTimeThreshold}`
+    }
         }
         orderBy:resurrectionTime,
         orderDirection: desc
@@ -59,28 +64,21 @@ interface SarcoDataSubgraph {
 export class SubgraphData {
   static getArchStats = async () => {
     const archAddress = (await getWeb3Interface()).ethWallet.address;
-    let result = await graphQlClient.query({
-      query: gql(getArchStatsQuery(archAddress)),
-      fetchPolicy: "cache-first",
-    });
+    let archStats = await queryGraphQl(getArchStatsQuery(archAddress));
 
-    const { successes, accusals } = result.data;
+    const { successes, accusals } = archStats;
 
     let fails = 0;
 
-    let archSarcosResult = await graphQlClient.query({
-      query: gql(getArchSarcosQuery(archAddress)),
-      fetchPolicy: "cache-first",
-    });
+    let archSarcos = await queryGraphQl(getArchSarcosQuery(archAddress));
 
-    // const activeSarcoIds: string[] = [];
     const inactiveSarcoIds: string[] = [];
 
     const blockTimestamp = await getBlockTimestamp();
     const gracePeriod = await getGracePeriod();
     const activeTimeThreshold = blockTimestamp - gracePeriod.toNumber();
 
-    archSarcosResult.data.forEach(sarco => {
+    archSarcos.forEach(sarco => {
       if (BigNumber.from(sarco.resurrectionTime).gt(activeTimeThreshold)) {
         // activeSarcoIds.push(sarco.sarcoId);
       } else {
@@ -88,14 +86,9 @@ export class SubgraphData {
       }
     });
 
-    let publishPrivateKeysResult = await graphQlClient.query({
-      query: gql(getPublishPrivateKeysQuery(archAddress)),
-      fetchPolicy: "cache-first",
-    });
+    let publishPrivateKeys = await queryGraphQl(getPublishPrivateKeysQuery(archAddress));
 
-    const unwrappedSarcoIds: string[] = publishPrivateKeysResult.data.map(
-      (data: any) => data.sarcoId
-    );
+    const unwrappedSarcoIds: string[] = publishPrivateKeys.map((data: any) => data.sarcoId);
 
     inactiveSarcoIds.forEach(sarcoId => {
       if (!unwrappedSarcoIds.includes(sarcoId)) ++fails;
@@ -109,11 +102,7 @@ export class SubgraphData {
   };
   static getSarcophagi = async (): Promise<SarcoDataSubgraph[]> => {
     try {
-      let result = await graphQlClient.query({
-        query: gql(getArchSarcosQuery((await getWeb3Interface()).ethWallet.address)),
-        fetchPolicy: "cache-first",
-      });
-      return result.data;
+      return await queryGraphQl(getArchSarcosQuery((await getWeb3Interface()).ethWallet.address));
     } catch (e) {
       console.error(e);
       return [];
@@ -124,17 +113,13 @@ export class SubgraphData {
     const gracePeriod = await getGracePeriod();
     const activeTimeThreshold = blockTimestamp - gracePeriod.toNumber();
     try {
-      let result = await graphQlClient.query({
-        query: gql(
-          getArchSarcosQuery((await getWeb3Interface()).ethWallet.address, {
-            whereResTimeLessThan: false,
-            activeTimeThreshold,
-          })
-        ),
-        fetchPolicy: "cache-first",
-      });
+      const res: SarcoDataSubgraph[] = await queryGraphQl(
+        getArchSarcosQuery((await getWeb3Interface()).ethWallet.address, {
+          whereResTimeLessThan: false,
+          activeTimeThreshold,
+        })
+      );
 
-      const res: SarcoDataSubgraph[] = result.data;
       return res.map<SarcophagusDataSimple>(s => ({
         id: s.sarcoId,
         creationDate: getDateFromTimestamp(Number.parseInt(s.blockTimestamp)),
@@ -150,17 +135,13 @@ export class SubgraphData {
     const gracePeriod = await getGracePeriod();
     const activeTimeThreshold = blockTimestamp - gracePeriod.toNumber();
     try {
-      let result = await graphQlClient.query({
-        query: gql(
-          getArchSarcosQuery((await getWeb3Interface()).ethWallet.address, {
-            whereResTimeLessThan: true,
-            activeTimeThreshold,
-          })
-        ),
-        fetchPolicy: "cache-first",
-      });
+      let res: SarcoDataSubgraph[] = await queryGraphQl(
+        getArchSarcosQuery((await getWeb3Interface()).ethWallet.address, {
+          whereResTimeLessThan: true,
+          activeTimeThreshold,
+        })
+      );
 
-      const res: SarcoDataSubgraph[] = result.data;
       return res.map<SarcophagusDataSimple>(s => ({
         id: s.sarcoId,
         creationDate: getDateFromTimestamp(Number.parseInt(s.blockTimestamp)),
