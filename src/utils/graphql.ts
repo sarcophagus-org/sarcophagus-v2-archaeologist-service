@@ -65,13 +65,13 @@ interface SarcoDataSubgraph {
 export class SubgraphData {
   static getArchStats = async () => {
     const archAddress = (await getWeb3Interface()).ethWallet.address;
-    let archStats = await queryGraphQl(getArchStatsQuery(archAddress));
+    const archStats = await queryGraphQl(getArchStatsQuery(archAddress));
 
     const { successes, accusals } = archStats;
 
     let fails = 0;
 
-    let archSarcos = await queryGraphQl(getArchSarcosQuery(archAddress));
+    const { sarcophagusDatas: archSarcos } = await queryGraphQl(getArchSarcosQuery(archAddress));
 
     const inactiveSarcoIds: string[] = [];
 
@@ -87,7 +87,7 @@ export class SubgraphData {
       }
     });
 
-    let publishPrivateKeys = await queryGraphQl(getPublishPrivateKeysQuery(archAddress));
+    const { publishPrivateKeys } = await queryGraphQl(getPublishPrivateKeysQuery(archAddress));
 
     const unwrappedSarcoIds: string[] = publishPrivateKeys.map((data: any) => data.sarcoId);
 
@@ -103,7 +103,10 @@ export class SubgraphData {
   };
   static getSarcophagi = async (): Promise<SarcoDataSubgraph[]> => {
     try {
-      return await queryGraphQl(getArchSarcosQuery((await getWeb3Interface()).ethWallet.address));
+      const { sarcophagusDatas } = await queryGraphQl(
+        getArchSarcosQuery((await getWeb3Interface()).ethWallet.address)
+      );
+      return sarcophagusDatas;
     } catch (e) {
       console.error(e);
       return [];
@@ -114,14 +117,14 @@ export class SubgraphData {
     const gracePeriod = await getGracePeriod();
     const activeTimeThreshold = blockTimestamp - gracePeriod.toNumber();
     try {
-      const res: SarcoDataSubgraph[] = await queryGraphQl(
+      const { sarcophagusDatas } = (await queryGraphQl(
         getArchSarcosQuery((await getWeb3Interface()).ethWallet.address, {
           whereResTimeLessThan: false,
           activeTimeThreshold,
         })
-      );
+      )) as { sarcophagusDatas: SarcoDataSubgraph[] };
 
-      return res.map<SarcophagusDataSimple>(s => ({
+      return sarcophagusDatas.map<SarcophagusDataSimple>(s => ({
         id: s.sarcoId,
         creationDate: getDateFromTimestamp(Number.parseInt(s.blockTimestamp)),
         resurrectionTime: getDateFromTimestamp(Number.parseInt(s.resurrectionTime)),
@@ -136,14 +139,14 @@ export class SubgraphData {
     const gracePeriod = await getGracePeriod();
     const activeTimeThreshold = blockTimestamp - gracePeriod.toNumber();
     try {
-      let res: SarcoDataSubgraph[] = await queryGraphQl(
+      const { sarcophagusDatas } = (await queryGraphQl(
         getArchSarcosQuery((await getWeb3Interface()).ethWallet.address, {
           whereResTimeLessThan: true,
           activeTimeThreshold,
         })
-      );
+      )) as { sarcophagusDatas: SarcoDataSubgraph[] };
 
-      return res.map<SarcophagusDataSimple>(s => ({
+      return sarcophagusDatas.map<SarcophagusDataSimple>(s => ({
         id: s.sarcoId,
         creationDate: getDateFromTimestamp(Number.parseInt(s.blockTimestamp)),
         resurrectionTime: getDateFromTimestamp(Number.parseInt(s.resurrectionTime)),
