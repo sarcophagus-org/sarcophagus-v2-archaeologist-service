@@ -14,10 +14,10 @@ export interface OnchainProfile {
 
 export interface SarcophagusData {
   id: string;
+  creationDate: Date;
   resurrectionTime: Date;
   perSecondFee: BigNumber;
   cursedAmount: BigNumber;
-  embalmerAddress: string;
 }
 
 interface InMemoryStore {
