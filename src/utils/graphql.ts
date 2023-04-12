@@ -5,13 +5,13 @@ import { getGracePeriod, SarcophagusDataSimple } from "./onchain-data";
 import fetch from "node-fetch";
 
 async function queryGraphQl(query: string) {
-  const response = await fetch("https://api.studio.thegraph.com/query/44302/sarcotest2/13", {
+  const response = await fetch(process.env.SUBGRAPH_URL!, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ query }),
   });
 
-  const { data } = await response.json() as { data: any };
+  const { data } = (await response.json()) as { data: any };
   return data;
 }
 
@@ -32,12 +32,13 @@ const getArchSarcosQuery = (
     sarcophagusDatas (
         where: {
             cursedArchaeologists_contains_nocase: ["${archAddress}"],
-            ${!opts
-      ? ""
-      : opts.whereResTimeLessThan
-        ? `resurrectionTime_lt: ${opts.activeTimeThreshold}`
-        : `resurrectionTime_gte: ${opts.activeTimeThreshold}`
-    }
+            ${
+              !opts
+                ? ""
+                : opts.whereResTimeLessThan
+                ? `resurrectionTime_lt: ${opts.activeTimeThreshold}`
+                : `resurrectionTime_gte: ${opts.activeTimeThreshold}`
+            }
         }
         orderBy:resurrectionTime,
         orderDirection: desc

@@ -54,20 +54,12 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
 
     const sarcoToken = IERC20__factory.connect(networkConfig.sarcoTokenAddress, ethWallet);
 
-    const diamondDeployAddress = process.env.DIAMOND_DEPLOY_ADDRESS ?? networkConfig.diamondDeployAddress;
+    const diamondDeployAddress =
+      process.env.DIAMOND_DEPLOY_ADDRESS ?? networkConfig.diamondDeployAddress;
 
-    const archaeologistFacet = ArchaeologistFacet__factory.connect(
-      diamondDeployAddress,
-      ethWallet
-    );
-    const viewStateFacet = ViewStateFacet__factory.connect(
-      diamondDeployAddress,
-      ethWallet
-    );
-    const thirdPartyFacet = ThirdPartyFacet__factory.connect(
-      diamondDeployAddress,
-      ethWallet
-    );
+    const archaeologistFacet = ArchaeologistFacet__factory.connect(diamondDeployAddress, ethWallet);
+    const viewStateFacet = ViewStateFacet__factory.connect(diamondDeployAddress, ethWallet);
+    const thirdPartyFacet = ThirdPartyFacet__factory.connect(diamondDeployAddress, ethWallet);
 
     const keyFinder = new KeyFinder(encryptionHdWallet);
 
