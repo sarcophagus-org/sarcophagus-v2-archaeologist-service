@@ -15,6 +15,7 @@ import { ethers } from "ethers";
 
 import fs from "fs/promises";
 import { SubgraphData } from "../../utils/graphql";
+import { validateEnvVars } from "../../utils/validateEnv";
 
 export class View implements Command {
   name = "view";
@@ -34,6 +35,8 @@ export class View implements Command {
   }
 
   async run(options: CommandOptions): Promise<void> {
+    validateEnvVars();
+
     if (Object.keys(options).length === 0) {
       archLogger.warn("Missing options to view. Use `cli help view` to see available options");
       return;
