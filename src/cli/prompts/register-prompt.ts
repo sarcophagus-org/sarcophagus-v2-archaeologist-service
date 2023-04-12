@@ -1,11 +1,12 @@
 import inquirer from "inquirer";
-import { parseEther } from "ethers/lib/utils";
+import { formatEther, parseEther } from "ethers/lib/utils";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
 import { ONE_MONTH_IN_SECONDS } from "../utils";
 import { getBlockTimestamp } from "../../utils/blockchain/helpers";
+import { getSarcoBalance } from "../../utils/onchain-data";
 
 const DEFAULT_DIGGING_FEES_MONTHLY = "5";
 // TODO: May need to come up with a better default curse fee
@@ -91,6 +92,7 @@ const curseFeeQuestion = [
 const freeBondQuestion = (args: {
   diggingFeePerSecond: number;
   maxRewrapIntervalSeconds: number;
+  sarcoBalance: string;
 }) => {
   const maxFeeOnSingleSarcophagus = Math.ceil(
     args.diggingFeePerSecond * args.maxRewrapIntervalSeconds
@@ -101,7 +103,7 @@ const freeBondQuestion = (args: {
       type: "input",
       name: "freeBond",
       message:
-        `How much would you like to deposit in your Free Bond (expressed in SARCO)?\n\n` +
+        `How much would you like to deposit in your Free Bond (expressed in SARCO)? Your current SARCO balance is: ${args.sarcoBalance} \n\n` +
         `${logColors.muted(
           `  - You may need a minimum of ${maxFeeOnSingleSarcophagus} in order to be assigned to and maintain one sarcophagus.\n\n` +
             `  - A portion of your free bond (a function of your monthly digging fees and the time you will be responsible for it) will be locked whenever you are assigned to a sarcophagus. This will be released when either you complete your unwrapping duties or the sarcophagus is buried.\n\n` +
@@ -301,6 +303,7 @@ export const registerPrompt = async (skipApproval?: boolean) => {
     freeBondQuestion({
       diggingFeePerSecond: Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS,
       maxRewrapIntervalSeconds: parseRewrapIntervalAnswer(rewrapInterval),
+      sarcoBalance: formatEther(await getSarcoBalance())
     })
   );
   freeBond = freeBondAnswer.freeBond;
