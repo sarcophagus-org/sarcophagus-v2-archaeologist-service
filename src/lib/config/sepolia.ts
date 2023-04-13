@@ -5,5 +5,5 @@ export const sepoliaNetworkConfig: NetworkConfig = {
   networkName: "Sepolia Testnet",
   networkShortName: "Sepolia",
   sarcoTokenAddress: "0xfa1FA4d51FB2babf59e402c83327Ab5087441289",
-  diamondDeployAddress: "0x478aDb74347AC204e1b382FC6B944621B97E8D98",
+  diamondDeployAddress: "0x8D844acde0b9c376EF5BF1f715C6A317b4fa3236",
 };

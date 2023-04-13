@@ -6,10 +6,34 @@ export const viewOptionDefinitions = [
     description: "Shows your profile values",
   },
   {
+    name: "stats",
+    alias: "t",
+    type: Boolean,
+    description: "Shows your archaeologist statistics",
+  },
+  {
     name: "sarcophagi",
     alias: "s",
     type: Boolean,
     description: "Shows your sarcophagi",
+  },
+  {
+    name: "sarcophagus-details",
+    alias: "d",
+    type: String,
+    description: "Shows details on a sarcophagus. You'll need its ID",
+  },
+  {
+    name: "inactive-curses",
+    alias: "i",
+    type: Boolean,
+    description: "Shows only your inactive sarcophagi",
+  },
+  {
+    name: "active-curses",
+    alias: "a",
+    type: Boolean,
+    description: "Shows  only your active sarcophagi",
   },
   {
     name: "balance",
@@ -24,9 +48,21 @@ export const viewOptionDefinitions = [
     description: "Shows your available free bond",
   },
   {
+    name: "cursed-bond",
+    alias: "c",
+    type: Boolean,
+    description: "Shows your total cursed bond",
+  },
+  {
     name: "rewards",
     alias: "r",
     type: Boolean,
     description: "Shows your available rewards",
+  },
+  {
+    name: "export",
+    alias: "e",
+    type: Boolean,
+    description: "Also exports the view data into a csv file",
   },
 ];
