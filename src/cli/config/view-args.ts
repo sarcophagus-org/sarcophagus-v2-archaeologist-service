@@ -18,6 +18,12 @@ export const viewOptionDefinitions = [
     description: "Shows your sarcophagi",
   },
   {
+    name: "sarcophagus-details",
+    alias: "d",
+    type: String,
+    description: "Shows details on a sarcophagus. You'll need its ID",
+  },
+  {
     name: "inactive-curses",
     alias: "i",
     type: Boolean,
