@@ -2,6 +2,7 @@ import { getWeb3Interface } from "../scripts/web3-interface";
 import { getBlockTimestamp, getDateFromTimestamp } from "./blockchain/helpers";
 import { getGracePeriod, SarcophagusDataSimple } from "./onchain-data";
 import fetch from "node-fetch";
+import { archLogger } from "logger/chalk-theme";
 
 async function queryGraphQl(query: string) {
   const web3Interface = await getWeb3Interface();
@@ -36,13 +37,12 @@ const getArchSarcosQuery = (
     sarcophagusDatas (
         where: {
             cursedArchaeologists_contains_nocase: ["${archAddress}"],
-            ${
-              !opts
-                ? ""
-                : opts.whereResTimeLessThan
-                ? `resurrectionTime_lt: ${opts.activeTimeThreshold}`
-                : `resurrectionTime_gte: ${opts.activeTimeThreshold}`
-            }
+            ${!opts
+      ? ""
+      : opts.whereResTimeLessThan
+        ? `resurrectionTime_lt: ${opts.activeTimeThreshold}`
+        : `resurrectionTime_gte: ${opts.activeTimeThreshold}`
+    }
         }
         orderBy:resurrectionTime,
         orderDirection: desc
@@ -95,7 +95,10 @@ export class SubgraphData {
     const activeTimeThreshold = blockTimestamp + gracePeriod.toNumber();
 
     sarcophagusDatas.forEach(sarco => {
-      if (Number.parseInt(sarco.resurrectionTime) < activeTimeThreshold) {
+      if (Number.parseInt(sarco.resurrectionTime) > activeTimeThreshold) {
+        archLogger.debug('a fail:');
+        archLogger.debug(`res time: ${getDateFromTimestamp(Number.parseInt(sarco.resurrectionTime))}`);
+        archLogger.debug(`threshold: ${getDateFromTimestamp(activeTimeThreshold)}`);
         // If this arch doesn't have a sarcoId, which is past its grace period, in its successes, then it never published
         if (!successes.includes(sarco.sarcoId)) ++fails;
       }
@@ -112,8 +115,8 @@ export class SubgraphData {
     sarcoId: string
   ): Promise<
     | (SarcophagusDataSimple & {
-        rewrapCount: number;
-      })
+      rewrapCount: number;
+    })
     | undefined
   > => {
     try {
