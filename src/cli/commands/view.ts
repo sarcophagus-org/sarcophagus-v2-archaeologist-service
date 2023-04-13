@@ -1,10 +1,13 @@
 import { Command, CommandOptions } from "./command";
 import {
+  CursedArchaeologist,
   getEthBalance,
   getOnchainProfile,
   getRewards,
   getSarcoBalance,
   getSarcophagiIds,
+  SarcophagusContract,
+  SarcophagusData,
   SarcophagusDataSimple,
 } from "../../utils/onchain-data";
 import { getWeb3Interface } from "../../scripts/web3-interface";
@@ -42,6 +45,37 @@ export class View implements Command {
     if (Object.keys(options).length === 0) {
       archLogger.warn("Missing options to view. Use `cli help view` to see available options");
       return;
+    }
+
+    if (options.sarcophagusDetails) {
+      const { viewStateFacet, ethWallet } = await getWeb3Interface();
+      const sarcoId = options.sarcophagusDetails;
+      const subgraphSarco = await SubgraphData.getSarcophagus(sarcoId);
+
+      const sarco: SarcophagusContract = await viewStateFacet.getSarcophagus(sarcoId);
+      const cursedArchData: CursedArchaeologist = await viewStateFacet.getSarcophagusArchaeologist(
+        sarcoId,
+        ethWallet.address
+      );
+
+      logCallout(() => {
+        archLogger.notice("Sarcophagus Details:\n");
+        if (subgraphSarco) archLogger.info(`  Created: ${subgraphSarco.creationDate}`);
+        if (subgraphSarco) archLogger.info(`  Number of rewraps: ${subgraphSarco?.rewrapCount}`);
+        archLogger.info(
+          `  Resurrection: ${
+            subgraphSarco ? subgraphSarco.resurrectionTime : sarco.resurrectionTime.toNumber()
+          }`
+        );
+        archLogger.info(
+          `  Per-second Fee: ${ethers.utils.formatEther(cursedArchData.diggingFeePerSecond)}`
+        );
+        archLogger.info(`  Curse fee: ${ethers.utils.formatEther(cursedArchData.curseFee)}`);
+        archLogger.info(`  Is accused: ${cursedArchData.isAccused}`);
+        archLogger.info(
+          `  Is unwrapped: ${cursedArchData.privateKey !== ethers.constants.HashZero}`
+        );
+      });
     }
 
     if (options.sarcophagi) {
@@ -86,7 +120,7 @@ export class View implements Command {
 
       logCallout(() => {
         archLogger.notice("Your Stats:\n\n");
-        archLogger.info(`  Successes: ${stats.successes}`);
+        archLogger.info(`  Unwraps: ${stats.successes}`);
         archLogger.info(`  Failures: ${stats.fails}`);
         archLogger.info(`  Accusals: ${stats.accusals}`);
       });

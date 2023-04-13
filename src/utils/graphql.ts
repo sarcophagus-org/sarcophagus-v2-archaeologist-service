@@ -49,16 +49,27 @@ const getArchSarcosQuery = (
     ) {
         sarcoId
         resurrectionTime
+        previousRewrapTime
         blockTimestamp
     }
   }`;
 };
 
-const getPublishPrivateKeysQuery = (archAddress: string) => `query {
-   publishPrivateKeys (where:{ archaeologist: "${archAddress}" }) {
-    sarcoId
+const getSarcoWithRewrapsQuery = (sarcoId: string) => {
+  return `query {
+    sarcophagusData (id: "${sarcoId}") {
+        sarcoId
+        resurrectionTime
+        previousRewrapTime
+        blockTimestamp
+    },
+    rewrapSarcophaguses (where:{sarcoId: "${sarcoId}"}) {
+      id
+      blockNumber
+      totalDiggingFees
     }
-}`;
+  }`;
+};
 
 interface SarcoDataSubgraph {
   sarcoId: string;
@@ -95,6 +106,36 @@ export class SubgraphData {
       accusals,
       fails,
     };
+  };
+
+  static getSarcophagus = async (
+    sarcoId: string
+  ): Promise<
+    | (SarcophagusDataSimple & {
+        rewrapCount: number;
+      })
+    | undefined
+  > => {
+    try {
+      const { sarcophagusData, rewrapSarcophaguses } = (await queryGraphQl(
+        getSarcoWithRewrapsQuery(sarcoId)
+      )) as {
+        sarcophagusData: SarcoDataSubgraph;
+        rewrapSarcophaguses: {
+          blockNumber: string;
+          totalDiggingFees: string;
+        }[];
+      };
+
+      return {
+        id: sarcophagusData.sarcoId,
+        creationDate: getDateFromTimestamp(Number.parseInt(sarcophagusData.blockTimestamp)),
+        resurrectionTime: getDateFromTimestamp(Number.parseInt(sarcophagusData.resurrectionTime)),
+        rewrapCount: rewrapSarcophaguses.length,
+      };
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   /**
