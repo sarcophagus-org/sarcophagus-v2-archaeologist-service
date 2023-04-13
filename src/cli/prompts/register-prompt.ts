@@ -303,7 +303,7 @@ export const registerPrompt = async (skipApproval?: boolean) => {
     freeBondQuestion({
       diggingFeePerSecond: Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS,
       maxRewrapIntervalSeconds: parseRewrapIntervalAnswer(rewrapInterval),
-      sarcoBalance: formatEther(await getSarcoBalance())
+      sarcoBalance: formatEther(await getSarcoBalance()),
     })
   );
   freeBond = freeBondAnswer.freeBond;
