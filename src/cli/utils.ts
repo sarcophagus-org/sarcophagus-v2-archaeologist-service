@@ -45,7 +45,9 @@ export const handleCommandArgs = (
  * Logs archaeologist on-chain profile
  * @param profile
  */
-export const logProfile = (profile: OnchainProfile): void => {
+export const logProfile = (profile: OnchainProfile): {} => {
+  const formattedProfile = {};
+
   logCallout(() => {
     if (!profile.exists) {
       archLogger.error("This archaeologist is not yet registered, please run: \n");
@@ -53,12 +55,11 @@ export const logProfile = (profile: OnchainProfile): void => {
     } else {
       console.log("ARCHAEOLOGIST PROFILE: \n");
 
-      const formattedProfile = {};
       // Remove any entries where keys are numeric
       for (let [key, value] of Object.entries(profile)) {
         let formattedValue: string = value.toString();
         if (isNaN(Number(key))) {
-          if (["minimumDiggingFeePerSecond", "freeBond", "cursedBond"].includes(key)) {
+          if (["minimumDiggingFeePerSecond", "freeBond", "cursedBond", "curseFee"].includes(key)) {
             formattedValue = `${formatEther(value)} SARCO`;
 
             if (key === "minimumDiggingFeePerSecond") {
@@ -83,7 +84,6 @@ export const logProfile = (profile: OnchainProfile): void => {
         }
       }
 
-      // TODO: update this to use menmonic if private key changes to that
       const privKey = process.env.ETH_PRIVATE_KEY!;
       formattedProfile["address"] = privKey.startsWith("0x")
         ? ethers.utils.computeAddress(process.env.ETH_PRIVATE_KEY!)
@@ -92,6 +92,8 @@ export const logProfile = (profile: OnchainProfile): void => {
       console.log(columnify(formattedProfile, { columns: ["FIELD", "VALUE"] }));
     }
   });
+
+  return formattedProfile;
 };
 
 export const logValidationErrorAndExit = (message: string): void => {
@@ -108,7 +110,7 @@ export const logBalances = (
   ethBalance: BigNumber,
   address: string
 ): void => {
-  console.log(`YOUR BALANCES (${address}):\n`);
+  archLogger.info(`YOUR BALANCES (${address}):\n`);
 
   const balances = [
     {
@@ -125,7 +127,7 @@ export const logBalances = (
     },
   ];
 
-  console.log(columnify(balances, { minWidth: 30 }));
+  archLogger.notice(columnify(balances, { minWidth: 30 }));
 };
 
 export function logNotRegistered() {
@@ -151,7 +153,7 @@ export async function loadPeerIdJsonFromFileOrExit(): Promise<Record<string, str
   try {
     return jsonfile.readFile(peerIdFile);
   } catch (e) {
-    archLogger.error(`Error reading file: ${e}`);
+    archLogger.error(`Error reading file: ${e}`, true);
     exit(FILE_READ_EXCEPTION);
   }
 }

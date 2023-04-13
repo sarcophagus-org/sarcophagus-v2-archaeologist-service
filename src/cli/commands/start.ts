@@ -2,7 +2,6 @@ import { Command, CommandOptions } from "./command";
 import { getOnchainProfile } from "../../utils/onchain-data";
 import { ONE_MONTH_IN_SECONDS } from "../utils";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
-import { Web3Interface } from "../../scripts/web3-interface";
 import { parseEther } from "ethers/lib/utils";
 import { startOptionDefinitions } from "../config/start-args";
 import { randomTestArchVals } from "../../utils/random-arch-gen";
@@ -19,6 +18,7 @@ export class Start implements Command {
     rewrapInterval: 31536000, // 1 year
     maxResTime: ONE_MONTH_IN_SECONDS * 24, // 2 years
     freeBond: parseEther("100"),
+    curseFee: parseEther("10"),
   };
 
   async registerAndStartRandomArch() {

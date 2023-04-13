@@ -96,7 +96,8 @@ export async function runTests() {
     ethers.utils.parseEther("100"),
     1000,
     ethers.utils.parseEther("100"),
-    5678987689
+    5678987689,
+    ethers.utils.parseEther("5")
   );
   archLogger.warn("done");
 

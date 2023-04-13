@@ -43,7 +43,11 @@ export class Register implements Command {
       return;
     }
 
-    const requiredOptions = [ProfileOptionNames.DIGGING_FEE, ProfileOptionNames.REWRAP_INTERVAL];
+    const requiredOptions = [
+      ProfileOptionNames.DIGGING_FEE,
+      ProfileOptionNames.REWRAP_INTERVAL,
+      ProfileOptionNames.CURSE_FEE,
+    ];
     const providedOptions = Object.keys(options);
     const missingRequiredOptions = requiredOptions.filter(
       field => !providedOptions.includes(field)

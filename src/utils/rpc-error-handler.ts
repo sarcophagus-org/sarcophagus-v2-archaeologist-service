@@ -23,7 +23,7 @@ export function handleRpcError(e: any) {
   const errorString: string = reason || errorName || "";
 
   if (alreadyUnwrapped(errorString)) {
-    archLogger.error(`\nAlready unwrapped this Sarcophagus`);
+    archLogger.error(`\nAlready unwrapped this Sarcophagus`, true);
     return;
   }
 
@@ -31,19 +31,20 @@ export function handleRpcError(e: any) {
     // This error is handled in `getOnchainProfile`, which should be called first before calling
     // any contract functions that need a profile to exist. Only methods that fail to do this
     // will end up here.
-    archLogger.error(`\nProfile not registered`);
+    archLogger.error(`\nProfile not registered`, true);
     return;
   }
 
   if (profileShouldExistOrNot(errorString) && errorArgs.includes(false)) {
-    archLogger.error(`\nProfile already exists`);
+    archLogger.error(`\nProfile already exists`, true);
     return;
   }
 
   if (notEnoughFreeBond(errorString)) {
     const available = errorArgs[0];
     archLogger.error(
-      `\nNot enough free bond. Available: ${ethers.utils.formatEther(available)} SARCO`
+      `\nNot enough free bond. Available: ${ethers.utils.formatEther(available)} SARCO`,
+      true
     );
     return;
   }
@@ -51,59 +52,64 @@ export function handleRpcError(e: any) {
   if (notEnoughReward(errorString)) {
     const available = errorArgs[0];
     archLogger.error(
-      `\nNot enough reward. Available: ${ethers.utils.formatEther(available)} SARCO`
+      `\nNot enough reward. Available: ${ethers.utils.formatEther(available)} SARCO`,
+      true
     );
     return;
   }
 
   if (insufficientAllowance(errorString)) {
     archLogger.error(
-      `\nInsufficient allowance: You will need to approve Sarcophagus contracts to spend SARCO on your behalf`
+      `\nInsufficient allowance: You will need to approve Sarcophagus contracts to spend SARCO on your behalf`,
+      true
     );
     return;
   }
 
   if (lowSarcoBalance(errorString)) {
-    archLogger.error(`\nInsufficient balance`);
-    archLogger.error(`Add some SARCO to your account to continue`);
+    archLogger.error(`\nInsufficient balance`, true);
+    archLogger.error(`Add some SARCO to your account to continue`, true);
     return;
   }
 
   if (sarcoDoesNotExist(errorString)) {
-    archLogger.error(`\nNo Sarcophagus found matching provided ID`);
+    archLogger.error(`\nNo Sarcophagus found matching provided ID`, true);
     return;
   }
 
   if (badlyFormattedHash(errorString)) {
     archLogger.error(
-      `\nInvalid data format. Please check to make sure your input is a valid keccak256 hash.`
+      `\nInvalid data format. Please check to make sure your input is a valid keccak256 hash.`,
+      true
     );
     return;
   }
 
   if (sarcoNotCleanable(errorString)) {
-    archLogger.error(`\nThis Sarcophagus cannot be cleaned at this time`);
+    archLogger.error(`\nThis Sarcophagus cannot be cleaned at this time`, true);
     return;
   }
 
   if (sarcoIsActuallyUnwrappable(errorString)) {
     archLogger.error(
-      `\nThis Sarcophagus is ready to be unwrapped, so archaeologists cannot be accused of leaking`
+      `\nThis Sarcophagus is ready to be unwrapped, so archaeologists cannot be accused of leaking`,
+      true
     );
     return;
   }
 
   if (notEnoughProof(errorString)) {
     archLogger.error(
-      `\nYou have not provided enough unencrypted shard hashes to fully raise an accusal`
+      `\nYou have not provided enough unencrypted shard hashes to fully raise an accusal`,
+      true
     );
     return;
   }
 
   if (incorrectProof(errorString)) {
-    archLogger.error(`\nOne or more of the proofs provided is incorrect`);
+    archLogger.error(`\nOne or more of the proofs provided is incorrect`, true);
     return;
   }
 
-  archLogger.error(`\n${e}`);
+  archLogger.error(`\n${e}`, true);
 }

@@ -29,7 +29,7 @@
     "@libp2p/webrtc-star-signalling-server": "^2.0.5",
     "@libp2p/websockets": "^5.0.1",
     "@mapbox/node-pre-gyp": "^1.0.10",
-    "@sarcophagus-org/sarcophagus-v2-contracts": "^0.14.5",
+    "@sarcophagus-org/sarcophagus-v2-contracts": "^0.16.0",
     "@types/node": "^18.0.0",
     "bip39": "^3.0.4",
     "chalk": "^5.0.1",
@@ -43,6 +43,7 @@
     "it-pipe": "^2.0.4",
     "jsonfile": "^6.1.0",
     "libp2p": "^0.40.0",
+    "node-fetch": "^3.3.1",
     "node-schedule": "^2.1.0",
     "peer-id": "^0.16.0",
     "wrtc": "^0.4.7"

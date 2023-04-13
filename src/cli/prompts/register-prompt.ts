@@ -1,13 +1,16 @@
 import inquirer from "inquirer";
-import { parseEther } from "ethers/lib/utils";
+import { formatEther, parseEther } from "ethers/lib/utils";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
 import { ONE_MONTH_IN_SECONDS } from "../utils";
 import { getBlockTimestamp } from "../../utils/blockchain/helpers";
+import { getSarcoBalance } from "../../utils/onchain-data";
 
 const DEFAULT_DIGGING_FEES_MONTHLY = "5";
+// TODO: May need to come up with a better default curse fee
+const DEFAULT_CURSE_FEE = "5";
 
 //
 // PROMPT QUESTIONS
@@ -17,7 +20,8 @@ const confirmReviewQuestion = (
   diggingFeePerMonth: string,
   rewrapInterval: string,
   freeBond: string,
-  maxResTime: string
+  maxResTime: string,
+  curseFee: string
 ) => [
   {
     type: "confirm",
@@ -28,7 +32,8 @@ const confirmReviewQuestion = (
       `Free Bond: ${freeBond} SARCO\n` +
       `Maximum Rewrap Interval: ${rewrapInterval}\n` +
       `Maximum Resurrection Time in: ${maxResTime}\n` +
-      `Domain: ${process.env.DOMAIN}\n\n` +
+      `Domain: ${process.env.DOMAIN}\n` +
+      `Curse Fee: ${curseFee}\n\n` +
       "Do you want to continue?",
     default: true,
   },
@@ -59,9 +64,35 @@ const diggingFeeQuestion = [
   },
 ];
 
+const curseFeeQuestion = [
+  {
+    type: "input",
+    name: "curseFee",
+    message:
+      `How much would you like to be reimbursed for making the transaction to publish your private key on a sarcophagus? This is paid once per sarcophagus you are assigned to. \n\n` +
+      `${logColors.muted(
+        `The curse fee will be provided by the embalmer and be paid to you on your first rewrap or when you publish your private key. Gas prices may vary. Default is ${DEFAULT_CURSE_FEE} SARCO.`
+      )}\n\n` +
+      `Enter SARCO Amount:`,
+    validate(value) {
+      if (value) {
+        console.log("validating with", value);
+        try {
+          parseEther(value.toString());
+        } catch (error) {
+          return "Please enter a valid SARCO amount";
+        }
+      }
+      return true;
+    },
+    default: DEFAULT_CURSE_FEE,
+  },
+];
+
 const freeBondQuestion = (args: {
   diggingFeePerSecond: number;
   maxRewrapIntervalSeconds: number;
+  sarcoBalance: string;
 }) => {
   const maxFeeOnSingleSarcophagus = Math.ceil(
     args.diggingFeePerSecond * args.maxRewrapIntervalSeconds
@@ -72,9 +103,9 @@ const freeBondQuestion = (args: {
       type: "input",
       name: "freeBond",
       message:
-        `How much would you like to deposit in your Free Bond (expressed in SARCO)?\n\n` +
+        `How much would you like to deposit in your Free Bond (expressed in SARCO)? Your current SARCO balance is: ${args.sarcoBalance} \n\n` +
         `${logColors.muted(
-          `  - You may need a minimum of ${maxFeeOnSingleSarcophagus} in order to be assigned to and maintain one sarcophagus.\n\n` +
+          `  - You would need a minimum of ${maxFeeOnSingleSarcophagus} in order to be assigned to and maintain one sarcophagus using your selected maximum rewrap interval.\n\n` +
             `  - A portion of your free bond (a function of your monthly digging fees and the time you will be responsible for it) will be locked whenever you are assigned to a sarcophagus. This will be released when either you complete your unwrapping duties or the sarcophagus is buried.\n\n` +
             `  - You will need to have enough SARCO in your free bond in order to be successfully assigned to a new Sarcophagus.\n\n`
         )}` +
@@ -208,14 +239,18 @@ const parseMaxResTimeAnswer = async (maxResTime: string | number): Promise<numbe
     maxResurrectionTimeInterval = maxResTime * ONE_MONTH_IN_SECONDS;
   }
 
-  return Math.trunc((await getBlockTimestamp())) + maxResurrectionTimeInterval;
+  return Math.trunc(await getBlockTimestamp()) + maxResurrectionTimeInterval;
 };
 
 //
 // REGISTER PROMPT
 // ////////////////////
 export const registerPrompt = async (skipApproval?: boolean) => {
-  let diggingFeePerMonth: string, rewrapInterval: string, maxResTime: string, freeBond: string;
+  let diggingFeePerMonth: string,
+    rewrapInterval: string,
+    maxResTime: string,
+    freeBond: string,
+    curseFee: string;
 
   /**
    * Ask for approval
@@ -268,6 +303,7 @@ export const registerPrompt = async (skipApproval?: boolean) => {
     freeBondQuestion({
       diggingFeePerSecond: Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS,
       maxRewrapIntervalSeconds: parseRewrapIntervalAnswer(rewrapInterval),
+      sarcoBalance: formatEther(await getSarcoBalance()),
     })
   );
   freeBond = freeBondAnswer.freeBond;
@@ -275,10 +311,18 @@ export const registerPrompt = async (skipApproval?: boolean) => {
   separator();
 
   /**
+   * Curse Fee
+   */
+  const curseFeeAnswer = await inquirer.prompt(curseFeeQuestion);
+  curseFee = curseFeeAnswer.curseFee;
+
+  separator();
+
+  /**
    * Confirm answers
    */
   const confirmReviewAnswer = await inquirer.prompt(
-    confirmReviewQuestion(diggingFeePerMonth, rewrapInterval, freeBond, maxResTime)
+    confirmReviewQuestion(diggingFeePerMonth, rewrapInterval, freeBond, maxResTime, curseFee)
   );
 
   // If user doesn't confirm, then walk through the prompt again
@@ -288,12 +332,11 @@ export const registerPrompt = async (skipApproval?: boolean) => {
   } else {
     const profileParams: ProfileCliParams = {
       // ie, Digging Fees Per Second
-      diggingFee: parseEther(
-        (Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS).toFixed(18)
-      ),
+      diggingFee: parseEther(diggingFeePerMonth),
       rewrapInterval: parseRewrapIntervalAnswer(rewrapInterval),
       maxResTime: await parseMaxResTimeAnswer(maxResTime),
       freeBond: parseEther(freeBond),
+      curseFee: parseEther(curseFee),
     };
     await approveAndRegister(profileParams);
   }

@@ -7,19 +7,23 @@ export const logColors = {
   green: chalk.green,
 };
 
-const log = (msg: string) => {
-  console.log(`${new Date(Date.now()).toDateString()}: ${msg}`);
-}
+const currentTimePrefix = () => logColors.muted(`${new Date(Date.now()).toISOString()}  `);
 
 export const archLogger = {
   debug: msg => {
     if (process.env.DEBUG) {
-      const debugLog = logColors.muted(`debug-${process.env.npm_package_version}::${msg}`);
+      const debugLog = logColors.muted(
+        `${currentTimePrefix()}debug-${process.env.npm_package_version}::${msg}`
+      );
       console.log(debugLog);
     }
   },
-  info: msg => log(logColors.muted(msg)),
-  notice: msg => log(logColors.green(msg)),
-  warn: msg => log(logColors.warning(msg)),
-  error: msg => log(logColors.error(msg)),
+  info: (msg, logTimestamp = false) =>
+    console.log(`${logTimestamp ? currentTimePrefix() : ""}${logColors.muted(msg)}`),
+  notice: (msg, logTimestamp = false) =>
+    console.log(`${logTimestamp ? currentTimePrefix() : ""}${logColors.green(msg)}`),
+  warn: (msg, logTimestamp = false) =>
+    console.log(`${logTimestamp ? currentTimePrefix() : ""}${logColors.warning(msg)}`),
+  error: (msg, logTimestamp = false) =>
+    console.log(`${logTimestamp ? currentTimePrefix() : ""}${logColors.error(msg)}`),
 };

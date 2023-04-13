@@ -1,15 +1,15 @@
 import { archLogger } from "../../logger/chalk-theme";
 import { getWeb3Interface } from "../../scripts/web3-interface";
 
-const MAX_RETRIES = 5;
+const MAX_RETRIES = 2;
 const INTERVAL_BETWEEN_RETRIES = 5000;
 export const wait = ms => new Promise(res => setTimeout(res, ms));
 
-export const retryFn = async (fn: Function, depth = 0, randomize = false, logOutput = '') => {
+export const retryFn = async (fn: Function, depth = 0, randomize = false, logOutput = "") => {
   try {
     return await fn();
   } catch (e) {
-    archLogger.warn(`${logOutput} attempt ${depth + 1} failed, retrying....`);
+    archLogger.warn(`${logOutput} attempt ${depth + 1} failed, retrying....`, true);
     if (depth > MAX_RETRIES) {
       throw e;
     }
@@ -40,7 +40,9 @@ export const getBlockTimestamp = async (): Promise<number> => {
     return block.timestamp;
   } catch (error) {
     // Not a good fallback, may want to institute a retry or failure (or notification)
-    archLogger.warn(`Error retrieving block time: ${error}`);
-    return Date.now();
+    archLogger.warn(`Error retrieving block time: ${error}`, true);
+    return Math.trunc(Date.now() / 1000);
   }
 };
+
+export const getDateFromTimestamp = (timestamp: number) => new Date(timestamp * 1000);

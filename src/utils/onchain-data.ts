@@ -10,10 +10,48 @@ export interface OnchainProfile {
   freeBond: BigNumber;
   cursedBond: BigNumber;
   peerId: string;
+  curseFee: BigNumber;
 }
 
 export interface SarcophagusData {
   id: string;
+  creationDate: Date;
+  resurrectionTime: Date;
+  perSecondFee: BigNumber;
+  cursedAmount: BigNumber;
+  name?: string;
+  cursedArchaeologist?: CursedArchaeologist[];
+}
+
+export interface SarcophagusContract {
+  resurrectionTime: BigNumber;
+  previousRewrapTime: BigNumber;
+  isCompromised: boolean;
+  isCleaned: boolean;
+  name: string;
+  threshold: BigNumber;
+  maximumRewrapInterval: BigNumber;
+  maximumResurrectionTime: BigNumber;
+  cursedBondPercentage: BigNumber;
+  arweaveTxId: string;
+  embalmerAddress: string;
+  recipientAddress: string;
+  archaeologistAddresses: string[];
+  publishedPrivateKeyCount: BigNumber;
+  hasLockedBond: boolean;
+}
+
+export interface CursedArchaeologist {
+  diggingFeePerSecond: BigNumber;
+  privateKey: string;
+  publicKey: string;
+  isAccused: boolean;
+  curseFee: BigNumber;
+}
+
+export interface SarcophagusDataSimple {
+  id: string;
+  creationDate: Date;
   resurrectionTime: Date;
 }
 

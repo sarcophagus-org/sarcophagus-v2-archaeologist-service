@@ -36,6 +36,7 @@ interface SarcophagusNegotiationParams {
   maximumResurrectionTime: number;
   diggingFeePerSecond: string;
   timestamp: number;
+  curseFee: string;
 }
 
 export class Archaeologist {
@@ -85,7 +86,7 @@ export class Archaeologist {
   }
 
   async shutdown() {
-    archLogger.info(`${this.name} is stopping...`);
+    archLogger.info(`${this.name} is stopping...`, true);
     await this.node.stop();
   }
 
@@ -111,7 +112,7 @@ export class Archaeologist {
 
   emitError(stream: Stream, error: StreamCommsError) {
     this.streamToBrowser(stream, JSON.stringify({ error }));
-    archLogger.error(`Error: ${error.message}`);
+    archLogger.error(`Error: ${error.message}`, true);
   }
 
   async setupSarcophagusNegotiationStream() {
@@ -128,6 +129,7 @@ export class Archaeologist {
                 maximumResurrectionTime,
                 diggingFeePerSecond, // this is assumed to, and should, be in wei
                 timestamp,
+                curseFee,
               }: SarcophagusNegotiationParams = JSON.parse(
                 new TextDecoder().decode(data.subarray())
               );
@@ -180,9 +182,25 @@ export class Archaeologist {
               }
 
               /**
+               * Validate supplied curse fee matches archaeologist's required curse fee
+               */
+              if (ethers.utils.parseEther(curseFee).lt(inMemoryStore.profile!.curseFee)) {
+                this.emitError(stream, {
+                  code: SarcophagusValidationError.CURSE_FEE_TOO_LOW,
+                  message: `${errorMessagePrefix} \n Curse fee sent is too low.  
+                  \n Got: ${curseFee.toString()}
+                  \n Minimum needed: ${inMemoryStore.profile!.curseFee.toString()}`,
+                });
+                return;
+              }
+
+              /**
                * Validate negotiation timestamp is within allowed drift of when we received this request
                */
-              if (timestamp > ((await getBlockTimestamp() * 1000) + CREATION_TIMESTAMP_DRIFT_ALLOWED_MS)) {
+              if (
+                timestamp >
+                (await getBlockTimestamp()) * 1000 + CREATION_TIMESTAMP_DRIFT_ALLOWED_MS
+              ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.INVALID_TIMESTAMP,
                   message: `${errorMessagePrefix} \n Timestamp received is in the future.  
@@ -199,18 +217,19 @@ export class Archaeologist {
               // sign sarcophagus parameters to demonstrate agreement
               const signature = await signPacked(
                 web3Interface.ethWallet,
-                ["bytes", "uint256", "uint256", "uint256", "uint256"],
+                ["bytes", "uint256", "uint256", "uint256", "uint256", "uint256"],
                 [
                   publicKey,
                   maximumRewrapIntervalBN.toString(),
                   maximumResurrectionTimeBN.toString(),
                   diggingFeePerSecond,
                   Math.trunc(timestamp / 1000).toString(),
+                  curseFee,
                 ]
               );
               this.streamToBrowser(stream, JSON.stringify({ signature, publicKey }));
             } catch (e) {
-              archLogger.error(e);
+              archLogger.error(e, true);
               this.emitError(stream, {
                 code: SarcophagusValidationError.UNKNOWN_ERROR,
                 message: e.code ? `${e.code}\n${e.message}` : e.message ?? e,
@@ -219,7 +238,7 @@ export class Archaeologist {
           }
         });
       } catch (err) {
-        archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`);
+        archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`, true);
       }
     });
   }
