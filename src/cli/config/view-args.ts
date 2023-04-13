@@ -6,10 +6,28 @@ export const viewOptionDefinitions = [
     description: "Shows your profile values",
   },
   {
+    name: "stats",
+    alias: "t",
+    type: Boolean,
+    description: "Shows your archaeologist statistics",
+  },
+  {
     name: "sarcophagi",
     alias: "s",
     type: Boolean,
     description: "Shows your sarcophagi",
+  },
+  {
+    name: "inactive-curses",
+    alias: "i",
+    type: Boolean,
+    description: "Shows only your inactive sarcophagi",
+  },
+  {
+    name: "active-curses",
+    alias: "a",
+    type: Boolean,
+    description: "Shows  only your active sarcophagi",
   },
   {
     name: "balance",

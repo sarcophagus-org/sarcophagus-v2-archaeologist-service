@@ -41,7 +41,7 @@ export const getBlockTimestamp = async (): Promise<number> => {
   } catch (error) {
     // Not a good fallback, may want to institute a retry or failure (or notification)
     archLogger.warn(`Error retrieving block time: ${error}`, true);
-    return Date.now();
+    return Math.trunc(Date.now() / 1000);
   }
 };
 
