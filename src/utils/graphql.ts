@@ -1,15 +1,19 @@
-import { BigNumber } from "ethers";
 import { getWeb3Interface } from "../scripts/web3-interface";
 import { getBlockTimestamp, getDateFromTimestamp } from "./blockchain/helpers";
 import { getGracePeriod, SarcophagusDataSimple } from "./onchain-data";
 import fetch from "node-fetch";
 
 async function queryGraphQl(query: string) {
-  const response = await fetch(process.env.SUBGRAPH_URL!, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ query }),
-  });
+  const web3Interface = await getWeb3Interface();
+
+  const response = await fetch(
+    web3Interface.networkConfig.subgraphUrl || process.env.SUBGRAPH_URL!,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query }),
+    }
+  );
 
   const { data } = (await response.json()) as { data: any };
   return data;
