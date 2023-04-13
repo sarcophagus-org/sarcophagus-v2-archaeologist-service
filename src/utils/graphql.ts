@@ -2,7 +2,7 @@ import { getWeb3Interface } from "../scripts/web3-interface";
 import { getBlockTimestamp, getDateFromTimestamp } from "./blockchain/helpers";
 import { getGracePeriod, SarcophagusDataSimple } from "./onchain-data";
 import fetch from "node-fetch";
-import { archLogger } from "logger/chalk-theme";
+import { archLogger } from "../logger/chalk-theme";
 
 async function queryGraphQl(query: string) {
   const web3Interface = await getWeb3Interface();
@@ -92,13 +92,13 @@ export class SubgraphData {
 
     const blockTimestamp = await getBlockTimestamp();
     const gracePeriod = await getGracePeriod();
-    const activeTimeThreshold = blockTimestamp + gracePeriod.toNumber();
 
     sarcophagusDatas.forEach(sarco => {
-      if (Number.parseInt(sarco.resurrectionTime) > activeTimeThreshold) {
+      const resurrectionTimeThreshold = Number.parseInt(sarco.resurrectionTime) + gracePeriod.toNumber();
+      if (resurrectionTimeThreshold < blockTimestamp) {
         archLogger.debug('a fail:');
-        archLogger.debug(`res time: ${getDateFromTimestamp(Number.parseInt(sarco.resurrectionTime))}`);
-        archLogger.debug(`threshold: ${getDateFromTimestamp(activeTimeThreshold)}`);
+        archLogger.debug(`now time: ${getDateFromTimestamp(blockTimestamp)}`);
+        archLogger.debug(`resurrectionTimeThreshold: ${getDateFromTimestamp(resurrectionTimeThreshold)}`);
         // If this arch doesn't have a sarcoId, which is past its grace period, in its successes, then it never published
         if (!successes.includes(sarco.sarcoId)) ++fails;
       }
