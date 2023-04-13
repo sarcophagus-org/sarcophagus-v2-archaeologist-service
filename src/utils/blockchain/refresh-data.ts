@@ -51,8 +51,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
 
         if (tooLateToUnwrap) {
           archLogger.debug(
-            `Too late to unwrap: ${sarcoId} with resurrection time: ${sarcoFromContract.resurrectionTime.toNumber()} -- current time is ${
-              Date.now() / 1000
+            `Too late to unwrap: ${sarcoId} with resurrection time: ${sarcoFromContract.resurrectionTime.toNumber()} -- current time is ${Date.now() / 1000
             }`
           );
 
@@ -93,7 +92,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
             // schedule resurrection time, taking into account system clock differential + buffer
             scheduledResurrectionTime = new Date(
               (sarcoFromContract.resurrectionTime.toNumber() + systemClockDifferenceSecs) * 1000 +
-                15_000
+              15_000
             );
           }
 
