@@ -1,11 +1,12 @@
 import inquirer from "inquirer";
-import { parseEther } from "ethers/lib/utils";
+import { formatEther, parseEther } from "ethers/lib/utils";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
 import { ONE_MONTH_IN_SECONDS } from "../utils";
 import { getBlockTimestamp } from "../../utils/blockchain/helpers";
+import { getSarcoBalance } from "../../utils/onchain-data";
 
 const DEFAULT_DIGGING_FEES_MONTHLY = "5";
 // TODO: May need to come up with a better default curse fee
@@ -31,7 +32,7 @@ const confirmReviewQuestion = (
       `Free Bond: ${freeBond} SARCO\n` +
       `Maximum Rewrap Interval: ${rewrapInterval}\n` +
       `Maximum Resurrection Time in: ${maxResTime}\n` +
-      `Domain: ${process.env.DOMAIN}\n\n` +
+      `Domain: ${process.env.DOMAIN}\n` +
       `Curse Fee: ${curseFee}\n\n` +
       "Do you want to continue?",
     default: true,
@@ -68,7 +69,7 @@ const curseFeeQuestion = [
     type: "input",
     name: "curseFee",
     message:
-      `How much would you like to be reimbursed for making the transaction to publish your private key in the future? \n\n` +
+      `How much would you like to be reimbursed for making the transaction to publish your private key on a sarcophagus? This is paid once per sarcophagus you are assigned to. \n\n` +
       `${logColors.muted(
         `The curse fee will be provided by the embalmer and be paid to you on your first rewrap or when you publish your private key. Gas prices may vary. Default is ${DEFAULT_CURSE_FEE} SARCO.`
       )}\n\n` +
@@ -91,6 +92,7 @@ const curseFeeQuestion = [
 const freeBondQuestion = (args: {
   diggingFeePerSecond: number;
   maxRewrapIntervalSeconds: number;
+  sarcoBalance: string;
 }) => {
   const maxFeeOnSingleSarcophagus = Math.ceil(
     args.diggingFeePerSecond * args.maxRewrapIntervalSeconds
@@ -101,9 +103,9 @@ const freeBondQuestion = (args: {
       type: "input",
       name: "freeBond",
       message:
-        `How much would you like to deposit in your Free Bond (expressed in SARCO)?\n\n` +
+        `How much would you like to deposit in your Free Bond (expressed in SARCO)? Your current SARCO balance is: ${args.sarcoBalance} \n\n` +
         `${logColors.muted(
-          `  - You may need a minimum of ${maxFeeOnSingleSarcophagus} in order to be assigned to and maintain one sarcophagus.\n\n` +
+          `  - You would need a minimum of ${maxFeeOnSingleSarcophagus} in order to be assigned to and maintain one sarcophagus using your selected maximum rewrap interval.\n\n` +
             `  - A portion of your free bond (a function of your monthly digging fees and the time you will be responsible for it) will be locked whenever you are assigned to a sarcophagus. This will be released when either you complete your unwrapping duties or the sarcophagus is buried.\n\n` +
             `  - You will need to have enough SARCO in your free bond in order to be successfully assigned to a new Sarcophagus.\n\n`
         )}` +
@@ -301,6 +303,7 @@ export const registerPrompt = async (skipApproval?: boolean) => {
     freeBondQuestion({
       diggingFeePerSecond: Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS,
       maxRewrapIntervalSeconds: parseRewrapIntervalAnswer(rewrapInterval),
+      sarcoBalance: formatEther(await getSarcoBalance())
     })
   );
   freeBond = freeBondAnswer.freeBond;
