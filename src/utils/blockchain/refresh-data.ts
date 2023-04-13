@@ -28,15 +28,12 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
   inMemoryStore.gracePeriod = inMemoryStore.gracePeriod || (await getGracePeriod());
 
   const sarcophagi: SarcophagusData[] = [];
-  const sarcosSubgraph = await SubgraphData.getSarcophagi();
-
   const currentBlockTimestampSec = await getBlockTimestamp();
 
-  sarcosSubgraph
-    .filter(sarco => !inMemoryStore.deadSarcophagusIds.includes(sarco.sarcoId))
+  (await SubgraphData.getSarcophagi())
+    .filter(s => !inMemoryStore.deadSarcophagusIds.includes(s.id))
     .map(async sarco => {
-      const { sarcoId, blockTimestamp } = sarco;
-      const creationDate = getDateFromTimestamp(Number.parseInt(blockTimestamp));
+      const { id: sarcoId, creationDate } = sarco;
 
       try {
         const sarcoFromContract = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);

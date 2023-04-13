@@ -5,6 +5,7 @@ import {
   getRewards,
   getSarcoBalance,
   getSarcophagiIds,
+  SarcophagusDataSimple,
 } from "../../utils/onchain-data";
 import { getWeb3Interface } from "../../scripts/web3-interface";
 import { viewOptionDefinitions } from "../config/view-args";
@@ -16,6 +17,7 @@ import { ethers } from "ethers";
 import fs from "fs/promises";
 import { SubgraphData } from "../../utils/graphql";
 import { validateEnvVars } from "../../utils/validateEnv";
+import { getDateFromTimestamp } from "../../utils/blockchain/helpers";
 
 export class View implements Command {
   name = "view";
@@ -43,25 +45,51 @@ export class View implements Command {
     }
 
     if (options.sarcophagi) {
-      const subgraphSarcos = await SubgraphData.getSarcophagi();
+      const logSarcos = (title: string, subgraphSarcos: SarcophagusDataSimple[]) => {
+        logCallout(() => {
+          archLogger.info(`${title}:\n\n`);
+          subgraphSarcos.map(sarco => {
+            archLogger.notice(`${sarco.id}`);
+            archLogger.info(`  Created: ${sarco.creationDate}`);
+            archLogger.info(`  Resurrection: ${sarco.resurrectionTime}\n`);
+          });
 
-      logCallout(() => {
-        archLogger.info("Your Sarcophagi:\n\n");
-        subgraphSarcos.map(sarco => {
-          archLogger.info(`${sarco.sarcoId}`);
-          archLogger.info(`Created: ${sarco.blockTimestamp}\n`);
-          archLogger.info(`Resurrection: ${sarco.resurrectionTime}\n`);
+          archLogger.notice(`\nTotal: ${subgraphSarcos.length}`);
         });
-      });
+      };
+
+      if (options.inactiveCurses) {
+        logSarcos("Past Sarcophagi", await SubgraphData.getPastSarcophagi());
+      }
+
+      if (options.activeCurses) {
+        logSarcos("Current Sarcophagi", await SubgraphData.getActiveSarcophagi());
+      }
+
+      if (options.inactiveCurses || options.activeCurses) return;
+
+      const subgraphSarcos = await SubgraphData.getSarcophagi();
+      logSarcos("Your Sarcophagi", subgraphSarcos);
 
       if (options.export) {
         this.exportToCsv(
           "sarcophagi",
           subgraphSarcos
-            .map(s => `${s.sarcoId}|${s.blockTimestamp}|${s.resurrectionTime}`)
+            .map(s => `${s.id}|${s.creationDate.getSeconds()}|${s.resurrectionTime.getSeconds()}`)
             .join(",")
         );
       }
+    }
+
+    if (options.stats) {
+      const stats = await SubgraphData.getArchStats();
+
+      logCallout(() => {
+        archLogger.notice("Your Stats:\n\n");
+        archLogger.info(`  Successes: ${stats.successes}`);
+        archLogger.info(`  Failures: ${stats.fails}`);
+        archLogger.info(`  Accusals: ${stats.accusals}`);
+      });
     }
 
     if (options.profile) {
