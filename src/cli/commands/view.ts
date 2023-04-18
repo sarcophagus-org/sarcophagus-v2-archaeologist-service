@@ -61,7 +61,7 @@ export class View implements Command {
       logCallout(() => {
         archLogger.notice("Sarcophagus Details:\n");
         if (subgraphSarco) archLogger.info(`  Created: ${subgraphSarco.creationDate}`);
-        if (subgraphSarco) archLogger.info(`  Number of rewraps: ${subgraphSarco?.rewrapCount}`);
+        if (subgraphSarco) archLogger.info(`  Number of rewraps: ${subgraphSarco.rewrapCount}`);
         archLogger.info(
           `  Resurrection: ${
             subgraphSarco ? subgraphSarco.resurrectionTime : sarco.resurrectionTime.toNumber()
@@ -71,10 +71,9 @@ export class View implements Command {
           `  Per-second Fee: ${ethers.utils.formatEther(cursedArchData.diggingFeePerSecond)}`
         );
         archLogger.info(`  Curse fee: ${ethers.utils.formatEther(cursedArchData.curseFee)}`);
-        archLogger.info(`  Is accused: ${cursedArchData.isAccused}`);
-        archLogger.info(
-          `  Is unwrapped: ${cursedArchData.privateKey !== ethers.constants.HashZero}`
-        );
+        archLogger.info(`  Accused: ${cursedArchData.isAccused}`);
+        archLogger.info(`  Unwrapped: ${cursedArchData.privateKey !== ethers.constants.HashZero}`);
+        if (subgraphSarco) archLogger.info(`  Status: ${subgraphSarco.curseStatus}`);
       });
     }
 
@@ -85,7 +84,8 @@ export class View implements Command {
           subgraphSarcos.map(sarco => {
             archLogger.notice(`${sarco.id}`);
             archLogger.info(`  Created: ${sarco.creationDate}`);
-            archLogger.info(`  Resurrection: ${sarco.resurrectionTime}\n`);
+            archLogger.info(`  Resurrection: ${sarco.resurrectionTime}`);
+            archLogger.info(`  Status: ${sarco.curseStatus}\n`);
           });
 
           archLogger.notice(`\nTotal: ${subgraphSarcos.length}`);
