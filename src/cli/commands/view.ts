@@ -183,5 +183,12 @@ export class View implements Command {
         this.exportToCsv("rewards", `${rewards.toString()}`);
       }
     }
+
+    if (options.version) {
+      logCallout(() => {
+        archLogger.info("Version:");
+        archLogger.notice(process.env.npm_package_version);
+      });
+    }
   }
 }
