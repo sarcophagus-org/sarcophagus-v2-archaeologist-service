@@ -5,9 +5,7 @@ import {
   getOnchainProfile,
   getRewards,
   getSarcoBalance,
-  getSarcophagiIds,
   SarcophagusContract,
-  SarcophagusData,
   SarcophagusDataSimple,
 } from "../../utils/onchain-data";
 import { getWeb3Interface } from "../../scripts/web3-interface";
@@ -20,7 +18,6 @@ import { ethers } from "ethers";
 import fs from "fs/promises";
 import { SubgraphData } from "../../utils/graphql";
 import { validateEnvVars } from "../../utils/validateEnv";
-import { getDateFromTimestamp } from "../../utils/blockchain/helpers";
 
 export class View implements Command {
   name = "view";
@@ -185,9 +182,10 @@ export class View implements Command {
     }
 
     if (options.version) {
+      const version = require('./package.json').version;
       logCallout(() => {
         archLogger.info("Version:");
-        archLogger.notice(process.env.npm_package_version);
+        archLogger.notice(version);
       });
     }
   }
