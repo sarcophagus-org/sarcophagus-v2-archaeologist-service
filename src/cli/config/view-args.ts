@@ -65,4 +65,10 @@ export const viewOptionDefinitions = [
     type: Boolean,
     description: "Also exports the view data into a csv file",
   },
+  {
+    name: "version",
+    alias: "v",
+    type: Boolean,
+    description: "Shows version of the archaeologist service",
+  },
 ];
