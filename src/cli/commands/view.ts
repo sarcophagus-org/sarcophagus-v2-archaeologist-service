@@ -14,6 +14,7 @@ import { logBalances, logProfile } from "../utils";
 import { logCallout } from "../../logger/formatter";
 import { archLogger } from "../../logger/chalk-theme";
 import { ethers } from "ethers";
+const { version } = require('./package.json');
 
 import fs from "fs/promises";
 import { SubgraphData } from "../../utils/graphql";
@@ -182,7 +183,6 @@ export class View implements Command {
     }
 
     if (options.version) {
-      const version = require('./package.json').version;
       logCallout(() => {
         archLogger.info("Version:");
         archLogger.notice(version);
