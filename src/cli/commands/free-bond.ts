@@ -6,6 +6,7 @@ import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { depositFreeBond, withdrawFreeBond } from "../../utils/blockchain/profile";
 import { exit } from "process";
 import { SUCCESS } from "../../utils/exit-codes";
+import { getFreeBondBalance } from "../../utils/onchain-data";
 
 export class FreeBond implements Command {
   name = "free-bond";
@@ -33,7 +34,10 @@ export class FreeBond implements Command {
   }
 
   async run(options: CommandOptions): Promise<void> {
-    if (options.withdraw) {
+    if (options.withdrawAll) {
+      await withdrawFreeBond(await getFreeBondBalance());
+      exit(SUCCESS);
+    } else if (options.withdraw) {
       await withdrawFreeBond(options.withdraw);
       exit(SUCCESS);
     } else if (options.deposit) {
