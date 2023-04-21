@@ -9,31 +9,31 @@ export const viewOptionDefinitions = [
     name: "stats",
     alias: "t",
     type: Boolean,
-    description: "Shows your archaeologist statistics",
+    description: "Shows your archaeologist statistics\n",
   },
   {
     name: "sarcophagi",
     alias: "s",
     type: Boolean,
-    description: "Shows your sarcophagi",
+    description: "Shows your sarcophagi. Can be filtered by adding either of 2 optional flags below:",
+  },
+  {
+    name: "active-curses",
+    alias: "a",
+    description: "- Shows only your active sarcophagi",
+    type: Boolean,
+  },
+  {
+    name: "inactive-curses",
+    alias: "i",
+    description: "- Shows only your inactive sarcophagi\n",
+    type: Boolean,
   },
   {
     name: "sarcophagus-details",
     alias: "d",
     type: String,
     description: "Shows details on a sarcophagus. You'll need its ID",
-  },
-  {
-    name: "inactive-curses",
-    alias: "i",
-    type: Boolean,
-    description: "Shows only your inactive sarcophagi",
-  },
-  {
-    name: "active-curses",
-    alias: "a",
-    type: Boolean,
-    description: "Shows  only your active sarcophagi",
   },
   {
     name: "balance",
@@ -63,6 +63,6 @@ export const viewOptionDefinitions = [
     name: "export",
     alias: "e",
     type: Boolean,
-    description: "Also exports the view data into a csv file",
+    description: "Also exports the view data into a csv file"
   },
 ];

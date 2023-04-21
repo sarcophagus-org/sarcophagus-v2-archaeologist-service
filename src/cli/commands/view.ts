@@ -5,9 +5,7 @@ import {
   getOnchainProfile,
   getRewards,
   getSarcoBalance,
-  getSarcophagiIds,
   SarcophagusContract,
-  SarcophagusData,
   SarcophagusDataSimple,
 } from "../../utils/onchain-data";
 import { getWeb3Interface } from "../../scripts/web3-interface";
@@ -20,7 +18,6 @@ import { ethers } from "ethers";
 import fs from "fs/promises";
 import { SubgraphData } from "../../utils/graphql";
 import { validateEnvVars } from "../../utils/validateEnv";
-import { getDateFromTimestamp } from "../../utils/blockchain/helpers";
 
 export class View implements Command {
   name = "view";
@@ -63,8 +60,7 @@ export class View implements Command {
         if (subgraphSarco) archLogger.info(`  Created: ${subgraphSarco.creationDate}`);
         if (subgraphSarco) archLogger.info(`  Number of rewraps: ${subgraphSarco.rewrapCount}`);
         archLogger.info(
-          `  Resurrection: ${
-            subgraphSarco ? subgraphSarco.resurrectionTime : sarco.resurrectionTime.toNumber()
+          `  Resurrection: ${subgraphSarco ? subgraphSarco.resurrectionTime : sarco.resurrectionTime.toNumber()
           }`
         );
         archLogger.info(
