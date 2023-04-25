@@ -60,8 +60,7 @@ export class View implements Command {
         if (subgraphSarco) archLogger.info(`  Created: ${subgraphSarco.creationDate}`);
         if (subgraphSarco) archLogger.info(`  Number of rewraps: ${subgraphSarco.rewrapCount}`);
         archLogger.info(
-          `  Resurrection: ${
-            subgraphSarco ? subgraphSarco.resurrectionTime : sarco.resurrectionTime.toNumber()
+          `  Resurrection: ${subgraphSarco ? subgraphSarco.resurrectionTime : sarco.resurrectionTime.toNumber()
           }`
         );
         archLogger.info(
