@@ -2,7 +2,6 @@ import { getWeb3Interface } from "../scripts/web3-interface";
 import { getBlockTimestamp, getDateFromTimestamp } from "./blockchain/helpers";
 import { getGracePeriod, SarcophagusDataSimple } from "./onchain-data";
 import fetch from "node-fetch";
-import { archLogger } from "../logger/chalk-theme";
 
 async function queryGraphQl(query: string) {
   const web3Interface = await getWeb3Interface();
@@ -24,6 +23,7 @@ const getArchStatsQuery = (archAddress: string) => `query {
     archaeologist (id: "${archAddress}") {
         address
         successes
+        failures
         accusals
         blockTimestamp
     }
@@ -31,25 +31,29 @@ const getArchStatsQuery = (archAddress: string) => `query {
 
 const getArchSarcosQuery = (
   archAddress: string,
-  opts?: { activeTimeThreshold: number; whereResTimeLessThan: boolean }
+  opts?: { activeTimeThreshold: number; limitToActiveForArch: boolean }
 ) => {
   return `query {
     sarcophagusDatas (
         where: {
             cursedArchaeologists_contains_nocase: ["${archAddress}"],
-            ${!opts
-      ? ""
-      : opts.whereResTimeLessThan
-        ? `resurrectionTime_lt: ${opts.activeTimeThreshold}`
-        : `resurrectionTime_gte: ${opts.activeTimeThreshold}`
-    }
+            ${
+              !opts
+                ? ""
+                : opts.limitToActiveForArch
+                ? // ACTIVE: arch has NOT published, AND sarco is not expired
+                  `publishes_not_contains_nocase: ["${archAddress}"], resurrectionTime_gt: ${opts.activeTimeThreshold}`
+                : // INACTIVE: res time is behind resurrection threshold (sarco has expired)
+                  `resurrectionTime_lte: ${opts.activeTimeThreshold}`
+            }
         }
-        orderBy:resurrectionTime,
+        orderBy: resurrectionTime,
         orderDirection: desc
     ) {
         sarcoId
         resurrectionTime
         previousRewrapTime
+        publishes
         blockTimestamp
     }
   }`;
@@ -61,6 +65,7 @@ const getSarcoWithRewrapsQuery = (sarcoId: string) => {
         sarcoId
         resurrectionTime
         previousRewrapTime
+        publishes
         blockTimestamp
     },
     rewrapSarcophaguses (where:{sarcoId: "${sarcoId}"}) {
@@ -73,41 +78,34 @@ const getSarcoWithRewrapsQuery = (sarcoId: string) => {
 
 interface SarcoDataSubgraph {
   sarcoId: string;
+  publishes: string[];
   resurrectionTime: string;
   blockTimestamp: string;
 }
+
+const getCurseStatus = (
+  sarcophagusData: SarcoDataSubgraph,
+  archAddress: string,
+  blockTimestamp: number,
+  resurrectionThreshold: number
+): string =>
+  sarcophagusData.publishes.includes(archAddress.toLowerCase())
+    ? "SUCCESS"
+    : blockTimestamp < resurrectionThreshold
+    ? "ACTIVE"
+    : "FAILED";
 
 export class SubgraphData {
   static getArchStats = async () => {
     const archAddress = (await getWeb3Interface()).ethWallet.address;
     const { archaeologist: archStats } = await queryGraphQl(getArchStatsQuery(archAddress));
 
-    const { successes, accusals } = archStats;
-
-    let fails = 0;
-
-    const { sarcophagusDatas } = (await queryGraphQl(getArchSarcosQuery(archAddress))) as {
-      sarcophagusDatas: SarcoDataSubgraph[];
-    };
-
-    const blockTimestamp = await getBlockTimestamp();
-    const gracePeriod = await getGracePeriod();
-
-    sarcophagusDatas.forEach(sarco => {
-      const resurrectionTimeThreshold = Number.parseInt(sarco.resurrectionTime) + gracePeriod.toNumber();
-      if (resurrectionTimeThreshold < blockTimestamp) {
-        archLogger.debug('a fail:');
-        archLogger.debug(`now time: ${getDateFromTimestamp(blockTimestamp)}`);
-        archLogger.debug(`resurrectionTimeThreshold: ${getDateFromTimestamp(resurrectionTimeThreshold)}`);
-        // If this arch doesn't have a sarcoId, which is past its grace period, in its successes, then it never published
-        if (!successes.includes(sarco.sarcoId)) ++fails;
-      }
-    });
+    const { successes, accusals, failures } = archStats;
 
     return {
       successes: successes.length,
       accusals,
-      fails,
+      fails: failures,
     };
   };
 
@@ -115,8 +113,8 @@ export class SubgraphData {
     sarcoId: string
   ): Promise<
     | (SarcophagusDataSimple & {
-      rewrapCount: number;
-    })
+        rewrapCount: number;
+      })
     | undefined
   > => {
     try {
@@ -130,8 +128,18 @@ export class SubgraphData {
         }[];
       };
 
+      const blockTimestamp = await getBlockTimestamp();
+      const resurrectionThreshold =
+        Number.parseInt(sarcophagusData.resurrectionTime) + (await getGracePeriod()).toNumber();
+
       return {
         id: sarcophagusData.sarcoId,
+        curseStatus: getCurseStatus(
+          sarcophagusData,
+          (await getWeb3Interface()).ethWallet.address,
+          blockTimestamp,
+          resurrectionThreshold
+        ),
         creationDate: getDateFromTimestamp(Number.parseInt(sarcophagusData.blockTimestamp)),
         resurrectionTime: getDateFromTimestamp(Number.parseInt(sarcophagusData.resurrectionTime)),
         rewrapCount: rewrapSarcophaguses.length,
@@ -142,18 +150,28 @@ export class SubgraphData {
   };
 
   /**
-   * Returns all sarcophagus that the archaeologist is cursed on, sourced
+   * Returns all sarcophagi that the archaeologist is cursed on, sourced
    * from subgraph. This DOES NOT include `cursedAmount` and `perSecondFee`
    * and must be queryed separately from the contracts.
    */
   static getSarcophagi = async (): Promise<SarcophagusDataSimple[]> => {
     try {
-      const { sarcophagusDatas } = (await queryGraphQl(
-        getArchSarcosQuery((await getWeb3Interface()).ethWallet.address)
-      )) as { sarcophagusDatas: SarcoDataSubgraph[] };
+      const archAddress = (await getWeb3Interface()).ethWallet.address.toLowerCase();
+      const { sarcophagusDatas } = (await queryGraphQl(getArchSarcosQuery(archAddress))) as {
+        sarcophagusDatas: SarcoDataSubgraph[];
+      };
+
+      const blockTimestamp = await getBlockTimestamp();
+      const gracePeriod = (await getGracePeriod()).toNumber();
 
       return sarcophagusDatas.map(s => ({
         id: s.sarcoId,
+        curseStatus: getCurseStatus(
+          s,
+          archAddress,
+          blockTimestamp,
+          Number.parseInt(s.resurrectionTime) + gracePeriod
+        ),
         creationDate: getDateFromTimestamp(Number.parseInt(s.blockTimestamp)),
         resurrectionTime: getDateFromTimestamp(Number.parseInt(s.resurrectionTime)),
       }));
@@ -164,19 +182,21 @@ export class SubgraphData {
   };
 
   static getActiveSarcophagi = async (): Promise<SarcophagusDataSimple[]> => {
-    const blockTimestamp = await getBlockTimestamp();
-    const gracePeriod = await getGracePeriod();
-    const activeTimeThreshold = blockTimestamp - gracePeriod.toNumber();
     try {
+      const blockTimestamp = await getBlockTimestamp();
+      const gracePeriod = (await getGracePeriod()).toNumber();
+      const archAddress = (await getWeb3Interface()).ethWallet.address.toLowerCase();
+
       const { sarcophagusDatas } = (await queryGraphQl(
-        getArchSarcosQuery((await getWeb3Interface()).ethWallet.address, {
-          whereResTimeLessThan: false,
-          activeTimeThreshold,
+        getArchSarcosQuery(archAddress, {
+          limitToActiveForArch: true,
+          activeTimeThreshold: blockTimestamp - gracePeriod,
         })
       )) as { sarcophagusDatas: SarcoDataSubgraph[] };
 
       return sarcophagusDatas.map<SarcophagusDataSimple>(s => ({
         id: s.sarcoId,
+        curseStatus: "ACTIVE",
         creationDate: getDateFromTimestamp(Number.parseInt(s.blockTimestamp)),
         resurrectionTime: getDateFromTimestamp(Number.parseInt(s.resurrectionTime)),
       }));
@@ -187,19 +207,26 @@ export class SubgraphData {
   };
 
   static getPastSarcophagi = async (): Promise<SarcophagusDataSimple[]> => {
-    const blockTimestamp = await getBlockTimestamp();
-    const gracePeriod = await getGracePeriod();
-    const activeTimeThreshold = blockTimestamp - gracePeriod.toNumber();
     try {
+      const blockTimestamp = await getBlockTimestamp();
+      const gracePeriod = (await getGracePeriod()).toNumber();
+      const archAddress = (await getWeb3Interface()).ethWallet.address.toLowerCase();
+
       const { sarcophagusDatas } = (await queryGraphQl(
-        getArchSarcosQuery((await getWeb3Interface()).ethWallet.address, {
-          whereResTimeLessThan: true,
-          activeTimeThreshold,
+        getArchSarcosQuery(archAddress, {
+          limitToActiveForArch: false,
+          activeTimeThreshold: blockTimestamp - gracePeriod,
         })
       )) as { sarcophagusDatas: SarcoDataSubgraph[] };
 
       return sarcophagusDatas.map<SarcophagusDataSimple>(s => ({
         id: s.sarcoId,
+        curseStatus: getCurseStatus(
+          s,
+          archAddress,
+          blockTimestamp,
+          Number.parseInt(s.resurrectionTime) + gracePeriod
+        ),
         creationDate: getDateFromTimestamp(Number.parseInt(s.blockTimestamp)),
         resurrectionTime: getDateFromTimestamp(Number.parseInt(s.resurrectionTime)),
       }));

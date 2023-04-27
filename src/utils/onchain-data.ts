@@ -51,6 +51,7 @@ export interface CursedArchaeologist {
 
 export interface SarcophagusDataSimple {
   id: string;
+  curseStatus: string;
   creationDate: Date;
   resurrectionTime: Date;
 }

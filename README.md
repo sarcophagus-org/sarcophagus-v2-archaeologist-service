@@ -1,5 +1,5 @@
 # DEPRECATED DOCS
-These docs are in the process of being updated. Please see: [https://github.com/sarcophagus-org/quickstart-archaeologist](this repo) for instructions on setting up an archaeologist.
+These docs are in the process of being updated. Please see: [this repo](https://github.com/sarcophagus-org/quickstart-archaeologist) for instructions on setting up an archaeologist.
 
 ## Getting started
 
