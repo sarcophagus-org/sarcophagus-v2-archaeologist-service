@@ -6,5 +6,5 @@ export const goerliNetworkConfig: NetworkConfig = {
   networkShortName: "Goerli",
   sarcoTokenAddress: "0x4633b43990b41B57b3678c6F3Ac35bA75C3D8436",
   diamondDeployAddress: "0x6B84f17bbfCe26776fEFDf5cF039cA0E66C46Caf",
-  subgraphUrl: "https://api.studio.thegraph.com/query/44302/sarcotest/9",
+  subgraphUrl: "https://api.studio.thegraph.com/query/44302/sarcotest2/18",
 };
