@@ -41,8 +41,8 @@ const getArchSarcosQuery = (
               !opts
                 ? ""
                 : opts.limitToActiveForArch
-                ? // ACTIVE: arch has NOT published, AND sarco is not expired
-                  `publishes_not_contains_nocase: ["${archAddress}"], resurrectionTime_gt: ${opts.activeTimeThreshold}`
+                ? // ACTIVE: arch has NOT published, AND sarco is not expired or buried
+                  `publishes_not_contains_nocase: ["${archAddress}"], resurrectionTime_gt: ${opts.activeTimeThreshold}, isBuried: false`
                 : // INACTIVE: res time is behind resurrection threshold (sarco has expired)
                   `resurrectionTime_lte: ${opts.activeTimeThreshold}`
             }

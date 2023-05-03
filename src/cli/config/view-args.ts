@@ -15,7 +15,8 @@ export const viewOptionDefinitions = [
     name: "sarcophagi",
     alias: "s",
     type: Boolean,
-    description: "Shows your sarcophagi. Can be filtered by adding either of 2 optional flags below:",
+    description:
+      "Shows your sarcophagi. Can be filtered by adding either of 2 optional flags below:",
   },
   {
     name: "active-curses",
@@ -63,6 +64,6 @@ export const viewOptionDefinitions = [
     name: "export",
     alias: "e",
     type: Boolean,
-    description: "Also exports the view data into a csv file"
+    description: "Also exports the view data into a csv file",
   },
 ];
