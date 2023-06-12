@@ -11,6 +11,7 @@ import { FILE_READ_EXCEPTION } from "../utils/exit-codes";
 
 const PEER_ID_DELIMITER = ":";
 export const ONE_MONTH_IN_SECONDS = 2628288;
+export const ONE_DAY_IN_SECONDS = 86400;
 
 export const handleCommandArgs = (
   optionDefinitions: any,
