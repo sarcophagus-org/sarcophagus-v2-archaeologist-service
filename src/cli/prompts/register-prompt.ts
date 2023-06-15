@@ -4,13 +4,12 @@ import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
-import { ONE_MONTH_IN_SECONDS } from "../utils";
+import { ONE_DAY_IN_SECONDS, ONE_MONTH_IN_SECONDS } from "../utils";
 import { getBlockTimestamp } from "../../utils/blockchain/helpers";
 import { getSarcoBalance } from "../../utils/onchain-data";
 
-const DEFAULT_DIGGING_FEES_MONTHLY = "5";
-// TODO: May need to come up with a better default curse fee
-const DEFAULT_CURSE_FEE = "5";
+const DEFAULT_DIGGING_FEES_MONTHLY = "10";
+const DEFAULT_CURSE_FEE = "300";
 
 //
 // PROMPT QUESTIONS
@@ -44,10 +43,20 @@ const diggingFeeQuestion = [
     type: "input",
     name: "diggingFee",
     message:
-      `How much would you like to earn in SARCO (per month)? \n\n` +
+      `What is your digging fee? \n\n` +
       `${logColors.muted(
-        `Actual earnings will depend on the number of Sarcophagi, and length of time for each, you are assigned to. Default is ${DEFAULT_DIGGING_FEES_MONTHLY} SARCO per month.`
-      )}\n\n` +
+        `The digging fee setting is the fee that is charged by each node to the user for the service of `+
+        `monitoring EACH of their sarcophagi over time. It is expressed in $SARCO / Month.\n\n` +
+        `This fee should be set high enough to cover operating expenses of the server, but low enough to ` +
+        `be competitive in the market.` +
+        `Actual earnings will depend on the number of customers (sarcophagi) you attract, the length of ` +
+        `their respective curses, and the frequency of their attestations.\n\n` + 
+        `Digging fees are paid to to archaeologist ` + 
+        `nodes every time the embalmer attests to their liveliness (re-wraps), or after a successful resurrection. ` +
+        `This means that the digging fee you specify here will be the minimum you will earn, per month, per sarcophagus.\n\n` +
+        `If the market price of $SARCO goes up or down, this fee should be adjusted to match current market conditions.\n\n` +
+        `Suggested setting as of mainnet launch: ${DEFAULT_DIGGING_FEES_MONTHLY} SARCO per Month.`
+        )}\n\n` +
       `Enter SARCO Amount (per month):`,
     validate(value) {
       if (value) {
@@ -69,9 +78,24 @@ const curseFeeQuestion = [
     type: "input",
     name: "curseFee",
     message:
-      `How much would you like to be reimbursed for making the transaction to publish your private key on a sarcophagus? This is paid once per sarcophagus you are assigned to. \n\n` +
+      `What is your Curse Fee?\n\n` +
       `${logColors.muted(
-        `The curse fee will be provided by the embalmer and be paid to you on your first rewrap or when you publish your private key. Gas prices may vary. Default is ${DEFAULT_CURSE_FEE} SARCO.`
+        `The Curse Fee is a one-time fee charged to the user upfront to cover the cost of gas for the node(s) they choose, ` +
+        `it is charged by each node that is chosen. This value is set by the individual archaeologist operator, but ` +
+        `should be greater than or equal to the the cost of gas to perform the resurrection operation. This operation has ` +
+        `a gas limit of ~170,000.\n\nSince gas costs on ETH are a market, there is an opportunity for node operators ` + 
+        `to predict gas costs in the future to generate alpha. They can choose to be:\n\n` +
+        ` - Conservative in their curse fee assuming gas will always be 100gwei in the future and charging a higher curseFee, ` +
+        `thus getting less customers, or` +
+        `\n\n - Aggressive in their pricing assuming gas will be 50gwei in the future, ` +
+        `charging a lower fee, getting more customers, but taking on the risk of losing money on gas expense in the future.\n\n` +
+        `Since the gas fee paid at the time of resurrection (one time expense) will be whatever the market is current charging ` +
+        `(resurrections MUST happen on time within the 1hr grace period), this setting is probabilistic and can be informed by ` +
+        `historical gas price research. Not every customer that chooses your node will have a resurrection, many sarcophagi ` + 
+        `will be buried and never resurrected, in this case your node will still receive the full curse fee, but will not be ` +
+        `required to spend any gas on that customer. The ratio of resurrected to buried sarcophagi however is totally ` +
+        `unpredictable at network launch.\n\nIf the market price of $SARCO goes up or down, this fee should be adjusted ` +
+        `to match current market conditions.\n\nSuggested setting as of mainnet launch: 300 SARCO`
       )}\n\n` +
       `Enter SARCO Amount:`,
     validate(value) {
@@ -91,23 +115,25 @@ const curseFeeQuestion = [
 
 const freeBondQuestion = (args: {
   diggingFeePerSecond: number;
-  maxRewrapIntervalSeconds: number;
   sarcoBalance: string;
+  curseFee: number;
 }) => {
-  const maxFeeOnSingleSarcophagus = Math.ceil(
-    args.diggingFeePerSecond * args.maxRewrapIntervalSeconds
-  );
+  const diggingFeePerMonth = args.diggingFeePerSecond * ONE_MONTH_IN_SECONDS;
 
   return [
     {
       type: "input",
       name: "freeBond",
       message:
-        `How much would you like to deposit in your Free Bond (expressed in SARCO)? Your current SARCO balance is: ${args.sarcoBalance} \n\n` +
+        `Choose how much $SARCO you would like to deposit into the contract to accept new curses from Sarcophagus users \n\n` +
         `${logColors.muted(
-          `  - You would need a minimum of ${maxFeeOnSingleSarcophagus} in order to be assigned to and maintain one sarcophagus using your selected maximum rewrap interval.\n\n` +
-            `  - A portion of your free bond (a function of your monthly digging fees and the time you will be responsible for it) will be locked whenever you are assigned to a sarcophagus. This will be released when either you complete your unwrapping duties or the sarcophagus is buried.\n\n` +
-            `  - You will need to have enough SARCO in your free bond in order to be successfully assigned to a new Sarcophagus.\n\n`
+          `Since you set your Digging Fee to ${diggingFeePerMonth} and your Curse Fee to ${args.curseFee},` + 
+          `the minimum you can deposit to accept one customer is ${diggingFeePerMonth+args.curseFee}.\n\n` + 
+          `When a customer chooses you as one of their archaeologist nodes, your free bond will be locked until the ` +
+          `sarcophagus is successfully resurrected or buried by the user. It will then be released and available for ` +
+          `future curses. Potential customers will not be able to see your node as an option if you do not have ` +
+          `sufficient free bond available, however there is no added benefit to having a unnecessarily large free bond, ` +
+          `and you can add more at any time. Your current SARCO balance is ${args.sarcoBalance}.\n\n`
         )}` +
         `Enter SARCO amount:`,
       validate(value) {
@@ -130,9 +156,9 @@ const maxRewrapIntervalQuestion = [
     message:
       `What is your maximum rewrap interval? \n\n` +
       `${logColors.muted(
-        "This is the longest amount of time you find acceptable before being paid."
+        "This setting allows the archaeologist node operator to specify the maximum duration of each successive re-wrap for the embalmer.\nThis setting will only become important as the network matures, so it is best to leave to default during launch.\nThe max re-wrap interval must be less than or equal to the time between now and the max resurrection time set in the previous step.\n\nDefault is equal to the length of time between now and the maximum resurrection time you set in the previous step.\n\n"
       )}`,
-    choices: ["1 year", "200 days", "100 days", "30 days", "other"],
+    choices: ["default", "1 year", "200 days", "100 days", "30 days", "other"],
   },
 ];
 
@@ -158,9 +184,9 @@ const maxResTimeQuestion = [
     message:
       `What is your maximum resurrection time? \n\n` +
       `${logColors.muted(
-        "This is maximum amount of time, from now, you are willing to accept any Sarcophagus curses or rewraps."
+        "This setting allows archaeologist nodes to set how long into the future they are willing to operate their node.\nIt is expressed as point in time (unix timestamp). This setting exists so that nodes are not expected to operate forever.\nYour max resurrection time can always be extended, but the extension will only apply to future sarcophagi.\nThere is no suggested max resurrection time, but shutting down your node prior to the date you specify will result in the loss of your free bond, harm your on-chain reputation, and harm the users who have chosen you as their archaeologist node.\n\n"
       )}`,
-    choices: ["2 years", "1 year", "6 months", "3 months", "other"],
+    choices: ["1 year", "6 months", "3 months", "other"],
   },
 ];
 
@@ -199,19 +225,18 @@ const approveAndRegister = async (profileParams: ProfileCliParams) => {
 };
 
 const parseRewrapIntervalAnswer = (rewrapIntervalAnswer: string | number): number => {
-  const oneDayInSeconds = 24 * 60 * 60;
   if (typeof rewrapIntervalAnswer === "string") {
     if (rewrapIntervalAnswer === "1 year") {
-      return 365 * oneDayInSeconds;
+      return 365 * ONE_DAY_IN_SECONDS;
     }
 
-    return Number(rewrapIntervalAnswer.split(" ")[0]) * oneDayInSeconds;
+    return Number(rewrapIntervalAnswer.split(" ")[0]) * ONE_DAY_IN_SECONDS;
   }
 
-  return rewrapIntervalAnswer * oneDayInSeconds;
+  return rewrapIntervalAnswer * ONE_DAY_IN_SECONDS;
 };
 
-const parseMaxResTimeAnswer = async (maxResTime: string | number): Promise<number> => {
+const parseMaxResTimeAnswer = async (maxResTime: string | number, blockTimestamp: number): Promise<number> => {
   let maxResurrectionTimeInterval = 0;
   if (typeof maxResTime === "string") {
     switch (maxResTime) {
@@ -239,7 +264,7 @@ const parseMaxResTimeAnswer = async (maxResTime: string | number): Promise<numbe
     maxResurrectionTimeInterval = maxResTime * ONE_MONTH_IN_SECONDS;
   }
 
-  return Math.trunc(await getBlockTimestamp()) + maxResurrectionTimeInterval;
+  return blockTimestamp + maxResurrectionTimeInterval;
 };
 
 //
@@ -260,6 +285,38 @@ export const registerPrompt = async (skipApproval?: boolean) => {
     separator();
   }
 
+  const blockTimestamp = await getBlockTimestamp();
+
+  /**
+   * Digging Fees
+   */
+  const diggingFeesAnswer = await inquirer.prompt(diggingFeeQuestion);
+  diggingFeePerMonth = diggingFeesAnswer.diggingFee;
+
+  separator();
+
+  /**
+   * Curse Fee
+   */
+  const curseFeeAnswer = await inquirer.prompt(curseFeeQuestion);
+  curseFee = curseFeeAnswer.curseFee;
+
+  separator();
+
+  /**
+   * Free Bond
+   */
+  const freeBondAnswer = await inquirer.prompt(
+    freeBondQuestion({
+      diggingFeePerSecond: Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS,
+      curseFee: Number.parseFloat(curseFee),
+      sarcoBalance: formatEther(await getSarcoBalance()),
+    })
+  );
+  freeBond = freeBondAnswer.freeBond;
+
+  separator();
+
   /**
    * Max Sarcophagus Life Span
    */
@@ -272,6 +329,7 @@ export const registerPrompt = async (skipApproval?: boolean) => {
     maxResTime = maxMonthsAnswer.maxResTimeMonths;
   }
 
+
   separator();
 
   /**
@@ -279,42 +337,15 @@ export const registerPrompt = async (skipApproval?: boolean) => {
    */
   const maxRewrapIntervalAnswer = await inquirer.prompt(maxRewrapIntervalQuestion);
 
-  if (maxRewrapIntervalAnswer.maxRewrapInterval !== "other") {
+  if (maxRewrapIntervalAnswer.maxRewrapInterval === "default") {
+    const maxResTimestamp = await parseMaxResTimeAnswer(maxResTime, blockTimestamp);
+    rewrapInterval = `${Math.floor((maxResTimestamp - blockTimestamp) / ONE_DAY_IN_SECONDS)} days`;
+  } else if (maxRewrapIntervalAnswer.maxRewrapInterval !== "other") {
     rewrapInterval = maxRewrapIntervalAnswer.maxRewrapInterval;
   } else {
     const maxRewrapIntervalDaysAnswer = await inquirer.prompt(maxRewrapIntervalDaysQuestion);
     rewrapInterval = maxRewrapIntervalDaysAnswer.maxRewrapIntervalDays;
   }
-
-  separator();
-
-  /**
-   * Digging Fees
-   */
-  const diggingFeesAnswer = await inquirer.prompt(diggingFeeQuestion);
-  diggingFeePerMonth = diggingFeesAnswer.diggingFee;
-
-  separator();
-
-  /**
-   * Free Bond
-   */
-  const freeBondAnswer = await inquirer.prompt(
-    freeBondQuestion({
-      diggingFeePerSecond: Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS,
-      maxRewrapIntervalSeconds: parseRewrapIntervalAnswer(rewrapInterval),
-      sarcoBalance: formatEther(await getSarcoBalance()),
-    })
-  );
-  freeBond = freeBondAnswer.freeBond;
-
-  separator();
-
-  /**
-   * Curse Fee
-   */
-  const curseFeeAnswer = await inquirer.prompt(curseFeeQuestion);
-  curseFee = curseFeeAnswer.curseFee;
 
   separator();
 
@@ -334,7 +365,7 @@ export const registerPrompt = async (skipApproval?: boolean) => {
       // ie, Digging Fees Per Second
       diggingFee: parseEther(diggingFeePerMonth),
       rewrapInterval: parseRewrapIntervalAnswer(rewrapInterval),
-      maxResTime: await parseMaxResTimeAnswer(maxResTime),
+      maxResTime: await parseMaxResTimeAnswer(maxResTime, blockTimestamp),
       freeBond: parseEther(freeBond),
       curseFee: parseEther(curseFee),
     };
