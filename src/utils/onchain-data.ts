@@ -1,6 +1,7 @@
 import { BigNumber } from "ethers";
 import { getWeb3Interface } from "../scripts/web3-interface";
 import { fetchSarcophagiAndSchedulePublish } from "./blockchain/refresh-data";
+import { SubgraphData } from "./graphql";
 
 export interface OnchainProfile {
   exists: boolean;
@@ -118,7 +119,7 @@ export async function getFreeBondBalance(): Promise<BigNumber> {
 
 export async function getSarcophagiIds(): Promise<string[]> {
   const web3Interface = await getWeb3Interface();
-  return web3Interface.viewStateFacet.getArchaeologistSarcophagi(web3Interface.ethWallet.address);
+  return SubgraphData.getSarcophagiIds(web3Interface.ethWallet.address.toLowerCase());
 }
 
 export enum SarcophagusState {
