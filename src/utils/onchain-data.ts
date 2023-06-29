@@ -119,7 +119,7 @@ export async function getFreeBondBalance(): Promise<BigNumber> {
 
 export async function getSarcophagiIds(): Promise<string[]> {
   const web3Interface = await getWeb3Interface();
-  return SubgraphData.getSarcophagiIds(web3Interface.ethWallet.address.toLowerCase());
+  return SubgraphData.getSarcophagiIds();
 }
 
 export enum SarcophagusState {
