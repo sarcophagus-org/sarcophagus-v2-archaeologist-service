@@ -115,11 +115,6 @@ export class View implements Command {
     if (options.stats) {
       const stats = await SubgraphData.getArchStats();
 
-      if (!stats) {
-        archLogger.error("Failed to get stats");
-        return;
-      }
-
       logCallout(() => {
         archLogger.notice("Your Stats:\n\n");
         archLogger.info(`  Unwraps: ${stats.successes}`);

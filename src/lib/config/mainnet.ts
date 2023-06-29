@@ -6,5 +6,4 @@ export const mainnetNetworkConfig: NetworkConfig = {
   networkShortName: "Mainnet",
   sarcoTokenAddress: "",
   diamondDeployAddress: "",
-  subgraphBaseUrl: "https://api.encryptafile.com/subgraph",
 };
