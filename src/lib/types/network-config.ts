@@ -6,4 +6,5 @@ export interface NetworkConfig {
   diamondDeployAddress: string;
   providerUrl?: string;
   signalServerPort?: number;
+  subgraphBaseUrl?: string;
 }

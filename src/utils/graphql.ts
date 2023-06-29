@@ -17,9 +17,12 @@ interface ArchStats {
 export class SubgraphData {
   static getArchStats = async (): Promise<ArchStats | undefined> => {
     try {
-      const archAddress = (await getWeb3Interface()).ethWallet.address.toLowerCase();
+      const web3Interface = await getWeb3Interface();
+      const archAddress = web3Interface.ethWallet.address.toLowerCase();
+      const { chainId, subgraphBaseUrl } = web3Interface.networkConfig;
+
       return fetchApiData(
-        `https://api.encryptafile.com/subgraph/arch-stats?archAddress=${archAddress}`
+        `${subgraphBaseUrl}/arch-stats?chainId=${chainId}&archAddress=${archAddress}`
       );
     } catch (e) {
       console.error(e);
@@ -35,9 +38,12 @@ export class SubgraphData {
     | undefined
   > => {
     try {
-      const archAddress = (await getWeb3Interface()).ethWallet.address.toLowerCase();
+      const web3Interface = await getWeb3Interface();
+      const archAddress = web3Interface.ethWallet.address.toLowerCase();
+      const { chainId, subgraphBaseUrl } = web3Interface.networkConfig;
+
       return fetchApiData(
-        `https://api.encryptafile.com/subgraph/sarcophagus?sarcoId=${sarcoId}&archAddress=${archAddress}`
+        `${subgraphBaseUrl}/sarcophagus?chainId=${chainId}&sarcoId=${sarcoId}&archAddress=${archAddress}`
       );
     } catch (e) {
       console.error(e);
@@ -49,9 +55,12 @@ export class SubgraphData {
    */
   static getSarcophagiIds = async (): Promise<string[]> => {
     try {
-      const archAddress = (await getWeb3Interface()).ethWallet.address.toLowerCase();
+      const web3Interface = await getWeb3Interface();
+      const archAddress = web3Interface.ethWallet.address.toLowerCase();
+      const { chainId, subgraphBaseUrl } = web3Interface.networkConfig;
+
       return fetchApiData(
-        `https://api.encryptafile.com/subgraph/sarcophagi-ids?archAddress=${archAddress}`
+        `${subgraphBaseUrl}/sarcophagi-ids?chainId=${chainId}&archAddress=${archAddress}`
       );
     } catch (e) {
       console.error(e);
@@ -66,9 +75,12 @@ export class SubgraphData {
    */
   static getSarcophagi = async (): Promise<SarcophagusDataSimple[]> => {
     try {
-      const archAddress = (await getWeb3Interface()).ethWallet.address.toLowerCase();
+      const web3Interface = await getWeb3Interface();
+      const archAddress = web3Interface.ethWallet.address.toLowerCase();
+      const { chainId, subgraphBaseUrl } = web3Interface.networkConfig;
+
       return fetchApiData(
-        `https://api.encryptafile.com/subgraph/sarcophagi?archAddress=${archAddress}`
+        `${subgraphBaseUrl}/sarcophagi?chainId=${chainId}&archAddress=${archAddress}`
       );
     } catch (e) {
       console.error(e);
@@ -78,9 +90,12 @@ export class SubgraphData {
 
   static getActiveSarcophagi = async (): Promise<SarcophagusDataSimple[]> => {
     try {
-      const archAddress = (await getWeb3Interface()).ethWallet.address.toLowerCase();
+      const web3Interface = await getWeb3Interface();
+      const archAddress = web3Interface.ethWallet.address.toLowerCase();
+      const { chainId, subgraphBaseUrl } = web3Interface.networkConfig;
+
       return fetchApiData(
-        `https://api.encryptafile.com/subgraph/active-sarcophagi?archAddress=${archAddress}`
+        `${subgraphBaseUrl}/active-sarcophagi?chainId=${chainId}&archAddress=${archAddress}`
       );
     } catch (e) {
       console.error(e);
@@ -90,9 +105,12 @@ export class SubgraphData {
 
   static getPastSarcophagi = async (): Promise<SarcophagusDataSimple[]> => {
     try {
-      const archAddress = (await getWeb3Interface()).ethWallet.address.toLowerCase();
+      const web3Interface = await getWeb3Interface();
+      const archAddress = web3Interface.ethWallet.address.toLowerCase();
+      const { chainId, subgraphBaseUrl } = web3Interface.networkConfig;
+
       return fetchApiData(
-        `https://api.encryptafile.com/subgraph/past-sarcophagi?archAddress=${archAddress}`
+        `https://api.encryptafile.com/subgraph/past-sarcophagi?chainId=${chainId}&archAddress=${archAddress}`
       );
     } catch (e) {
       console.error(e);
