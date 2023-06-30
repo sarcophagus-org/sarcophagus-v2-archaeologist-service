@@ -5,7 +5,7 @@ import { BigNumber, ethers } from "ethers";
 import { handleRpcError } from "../rpc-error-handler";
 import { getBlockTimestamp, getDateFromTimestamp } from "./helpers";
 import { archLogger } from "../../logger/chalk-theme";
-import { SubgraphData } from "../../utils/graphql";
+import { SubgraphData } from "../graphql";
 
 const archStillNeedsToPublishPrivateKey = (archaeologist: any): boolean => {
   return archaeologist.privateKey === ethers.constants.HashZero;
