@@ -152,7 +152,25 @@ export class SubgraphData {
   /**
    * Returns all sarcophagi that the archaeologist is cursed on, sourced
    * from subgraph. This DOES NOT include `cursedAmount` and `perSecondFee`
-   * and must be queryed separately from the contracts.
+   * and must be queried separately from the contracts.
+   */
+  static getSarcophagiIds = async (archAddress: string): Promise<string[]> => {
+    try {
+      const { sarcophagusDatas } = (await queryGraphQl(getArchSarcosQuery(archAddress))) as {
+        sarcophagusDatas: SarcoDataSubgraph[];
+      };
+
+      return sarcophagusDatas.map(s => s.sarcoId);
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  };
+
+  /**
+   * Returns all sarcophagi that the archaeologist is cursed on, sourced
+   * from subgraph. This DOES NOT include `cursedAmount` and `perSecondFee`
+   * and must be queried separately from the contracts.
    */
   static getSarcophagi = async (): Promise<SarcophagusDataSimple[]> => {
     try {
