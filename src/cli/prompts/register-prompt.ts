@@ -5,7 +5,7 @@ import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { logColors } from "../../logger/chalk-theme";
 import { runApprove } from "../../utils/blockchain/approve";
 import { ONE_DAY_IN_SECONDS, ONE_MONTH_IN_SECONDS } from "../utils";
-import { getBlockTimestamp } from "../../utils/blockchain/helpers";
+import { getBlockTimestamp, getDateFromTimestamp } from "../../utils/blockchain/helpers";
 import { getSarcoBalance } from "../../utils/onchain-data";
 
 const DEFAULT_DIGGING_FEES_MONTHLY = "10";
@@ -115,10 +115,14 @@ const curseFeeQuestion = [
 
 const freeBondQuestion = (args: {
   diggingFeePerSecond: number;
+  maxResTime: number;
   sarcoBalance: string;
   curseFee: number;
 }) => {
   const diggingFeePerMonth = args.diggingFeePerSecond * ONE_MONTH_IN_SECONDS;
+  const maxResDateTime = getDateFromTimestamp(args.maxResTime).toISOString();
+  const maxResDate = maxResDateTime.split('T')[0];
+  const maxResTime = maxResDateTime.split('T')[1];
 
   return [
     {
@@ -127,13 +131,13 @@ const freeBondQuestion = (args: {
       message:
         `Choose how much $SARCO you would like to deposit into the contract to accept new curses from Sarcophagus users \n\n` +
         `${logColors.muted(
-          `Since you set your Digging Fee to ${diggingFeePerMonth} and your Curse Fee to ${args.curseFee},` + 
-          `the minimum you can deposit to accept one customer is ${diggingFeePerMonth+args.curseFee}.\n\n` + 
+          `Since you set your maximum resurrection time to ${maxResDate} at ${maxResTime}, your Digging Fee to ${diggingFeePerMonth} SARCO/month and your Curse Fee to ${args.curseFee} SARCO, ` + 
+          `you may need a minimum of ${Math.ceil(args.diggingFeePerSecond * args.maxResTime + args.curseFee)} SARCO to accept one job for the full term of your maximum resurrection time.\n\n` + 
           `When a customer chooses you as one of their archaeologist nodes, your free bond will be locked until the ` +
           `sarcophagus is successfully resurrected or buried by the user. It will then be released and available for ` +
           `future curses. Potential customers will not be able to see your node as an option if you do not have ` +
           `sufficient free bond available, however there is no added benefit to having a unnecessarily large free bond, ` +
-          `and you can add more at any time. Your current SARCO balance is ${args.sarcoBalance}.\n\n`
+          `and you can add more at any time. \nYour current SARCO balance is ${args.sarcoBalance}.\n\n`
         )}` +
         `Enter SARCO amount:`,
       validate(value) {
@@ -158,7 +162,7 @@ const maxRewrapIntervalQuestion = [
       `${logColors.muted(
         "This setting allows the archaeologist node operator to specify the maximum duration of each successive re-wrap for the embalmer.\nThis setting will only become important as the network matures, so it is best to leave to default during launch.\nThe max re-wrap interval must be less than or equal to the time between now and the max resurrection time set in the previous step.\n\nDefault is equal to the length of time between now and the maximum resurrection time you set in the previous step.\n\n"
       )}`,
-    choices: ["default", "1 year", "200 days", "100 days", "30 days", "other"],
+    choices: ["default", "12 months", "200 days", "100 days", "30 days", "other"],
   },
 ];
 
@@ -186,7 +190,7 @@ const maxResTimeQuestion = [
       `${logColors.muted(
         "This setting allows archaeologist nodes to set how long into the future they are willing to operate their node.\nIt is expressed as point in time (unix timestamp). This setting exists so that nodes are not expected to operate forever.\nYour max resurrection time can always be extended, but the extension will only apply to future sarcophagi.\nThere is no suggested max resurrection time, but shutting down your node prior to the date you specify will result in the loss of your free bond, harm your on-chain reputation, and harm the users who have chosen you as their archaeologist node.\n\n"
       )}`,
-    choices: ["1 year", "6 months", "3 months", "other"],
+    choices: ["12 months", "6 months", "3 months", "other"],
   },
 ];
 
@@ -226,7 +230,7 @@ const approveAndRegister = async (profileParams: ProfileCliParams) => {
 
 const parseRewrapIntervalAnswer = (rewrapIntervalAnswer: string | number): number => {
   if (typeof rewrapIntervalAnswer === "string") {
-    if (rewrapIntervalAnswer === "1 year") {
+    if (rewrapIntervalAnswer === "12 months") {
       return 365 * ONE_DAY_IN_SECONDS;
     }
 
@@ -240,11 +244,7 @@ const parseMaxResTimeAnswer = async (maxResTime: string | number, blockTimestamp
   let maxResurrectionTimeInterval = 0;
   if (typeof maxResTime === "string") {
     switch (maxResTime) {
-      case "2 years":
-        maxResurrectionTimeInterval = 24 * ONE_MONTH_IN_SECONDS;
-        break;
-
-      case "1 year":
+      case "12 months":
         maxResurrectionTimeInterval = 12 * ONE_MONTH_IN_SECONDS;
         break;
 
@@ -288,6 +288,37 @@ export const registerPrompt = async (skipApproval?: boolean) => {
   const blockTimestamp = await getBlockTimestamp();
 
   /**
+   * Max Resurrection Time
+   */
+  const maxResTimeAnswer = await inquirer.prompt(maxResTimeQuestion);
+
+  if (maxResTimeAnswer.maxResTime !== "other") {
+    maxResTime = maxResTimeAnswer.maxResTime;
+  } else {
+    const maxMonthsAnswer = await inquirer.prompt(maxResTimeMonthsQuestion);
+    maxResTime = maxMonthsAnswer.maxResTimeMonths;
+  }
+
+  separator();
+
+  /**
+   * Max Rewrap Interval
+   */
+  const maxRewrapIntervalAnswer = await inquirer.prompt(maxRewrapIntervalQuestion);
+
+  if (maxRewrapIntervalAnswer.maxRewrapInterval === "default") {
+    const maxResTimestamp = await parseMaxResTimeAnswer(maxResTime, blockTimestamp);
+    rewrapInterval = `${Math.floor((maxResTimestamp - blockTimestamp) / ONE_MONTH_IN_SECONDS)} months`;
+  } else if (maxRewrapIntervalAnswer.maxRewrapInterval !== "other") {
+    rewrapInterval = maxRewrapIntervalAnswer.maxRewrapInterval;
+  } else {
+    const maxRewrapIntervalDaysAnswer = await inquirer.prompt(maxRewrapIntervalDaysQuestion);
+    rewrapInterval = maxRewrapIntervalDaysAnswer.maxRewrapIntervalDays;
+  }
+
+  separator();
+
+  /**
    * Digging Fees
    */
   const diggingFeesAnswer = await inquirer.prompt(diggingFeeQuestion);
@@ -310,42 +341,11 @@ export const registerPrompt = async (skipApproval?: boolean) => {
     freeBondQuestion({
       diggingFeePerSecond: Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS,
       curseFee: Number.parseFloat(curseFee),
+      maxResTime: await parseMaxResTimeAnswer(maxResTime, blockTimestamp),
       sarcoBalance: formatEther(await getSarcoBalance()),
     })
   );
   freeBond = freeBondAnswer.freeBond;
-
-  separator();
-
-  /**
-   * Max Sarcophagus Life Span
-   */
-  const maxResTimeAnswer = await inquirer.prompt(maxResTimeQuestion);
-
-  if (maxResTimeAnswer.maxResTime !== "other") {
-    maxResTime = maxResTimeAnswer.maxResTime;
-  } else {
-    const maxMonthsAnswer = await inquirer.prompt(maxResTimeMonthsQuestion);
-    maxResTime = maxMonthsAnswer.maxResTimeMonths;
-  }
-
-
-  separator();
-
-  /**
-   * Max Rewrap Interval
-   */
-  const maxRewrapIntervalAnswer = await inquirer.prompt(maxRewrapIntervalQuestion);
-
-  if (maxRewrapIntervalAnswer.maxRewrapInterval === "default") {
-    const maxResTimestamp = await parseMaxResTimeAnswer(maxResTime, blockTimestamp);
-    rewrapInterval = `${Math.floor((maxResTimestamp - blockTimestamp) / ONE_DAY_IN_SECONDS)} days`;
-  } else if (maxRewrapIntervalAnswer.maxRewrapInterval !== "other") {
-    rewrapInterval = maxRewrapIntervalAnswer.maxRewrapInterval;
-  } else {
-    const maxRewrapIntervalDaysAnswer = await inquirer.prompt(maxRewrapIntervalDaysQuestion);
-    rewrapInterval = maxRewrapIntervalDaysAnswer.maxRewrapIntervalDays;
-  }
 
   separator();
 
