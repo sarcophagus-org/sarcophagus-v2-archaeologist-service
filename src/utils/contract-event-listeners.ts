@@ -127,6 +127,11 @@ export async function setupEventListeners() {
     web3Interface.embalmerFacet.on(filters.clean, handlers.clean);
     web3Interface.embalmerFacet.on(filters.bury, handlers.bury);
     web3Interface.embalmerFacet.on(filters.accuse, handlers.accuse);
+
+    web3Interface.ethWallet.provider.on("close", () => {
+        console.log("Provider connection closed");
+        setupEventListeners();
+    });
   } catch (e) {
     console.error(e);
     exit(RPC_EXCEPTION);
