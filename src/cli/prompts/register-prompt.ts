@@ -45,18 +45,18 @@ const diggingFeeQuestion = [
     message:
       `What is your digging fee? \n\n` +
       `${logColors.muted(
-        `The digging fee setting is the fee that is charged by each node to the user for the service of `+
-        `monitoring EACH of their sarcophagi over time. It is expressed in $SARCO / Month.\n\n` +
-        `This fee should be set high enough to cover operating expenses of the server, but low enough to ` +
-        `be competitive in the market.` +
-        `Actual earnings will depend on the number of customers (sarcophagi) you attract, the length of ` +
-        `their respective curses, and the frequency of their attestations.\n\n` + 
-        `Digging fees are paid to to archaeologist ` + 
-        `nodes every time the embalmer attests to their liveliness (re-wraps), or after a successful resurrection. ` +
-        `This means that the digging fee you specify here will be the minimum you will earn, per month, per sarcophagus.\n\n` +
-        `If the market price of $SARCO goes up or down, this fee should be adjusted to match current market conditions.\n\n` +
-        `Suggested setting as of mainnet launch: ${DEFAULT_DIGGING_FEES_MONTHLY} SARCO per Month.`
-        )}\n\n` +
+        `The digging fee setting is the fee that is charged by each node to the user for the service of ` +
+          `monitoring EACH of their sarcophagi over time. It is expressed in $SARCO / Month.\n\n` +
+          `This fee should be set high enough to cover operating expenses of the server, but low enough to ` +
+          `be competitive in the market.` +
+          `Actual earnings will depend on the number of customers (sarcophagi) you attract, the length of ` +
+          `their respective curses, and the frequency of their attestations.\n\n` +
+          `Digging fees are paid to to archaeologist ` +
+          `nodes every time the embalmer attests to their liveliness (re-wraps), or after a successful resurrection. ` +
+          `This means that the digging fee you specify here will be the minimum you will earn, per month, per sarcophagus.\n\n` +
+          `If the market price of $SARCO goes up or down, this fee should be adjusted to match current market conditions.\n\n` +
+          `Suggested setting as of mainnet launch: ${DEFAULT_DIGGING_FEES_MONTHLY} SARCO per Month.`
+      )}\n\n` +
       `Enter SARCO Amount (per month):`,
     validate(value) {
       if (value) {
@@ -81,21 +81,21 @@ const curseFeeQuestion = [
       `What is your Curse Fee?\n\n` +
       `${logColors.muted(
         `The Curse Fee is a one-time fee charged to the user upfront to cover the cost of gas for the node(s) they choose, ` +
-        `it is charged by each node that is chosen. This value is set by the individual archaeologist operator, but ` +
-        `should be greater than or equal to the the cost of gas to perform the resurrection operation. This operation has ` +
-        `a gas limit of ~170,000.\n\nSince gas costs on ETH are a market, there is an opportunity for node operators ` + 
-        `to predict gas costs in the future to generate alpha. They can choose to be:\n\n` +
-        ` - Conservative in their curse fee assuming gas will always be 100gwei in the future and charging a higher curseFee, ` +
-        `thus getting less customers, or` +
-        `\n\n - Aggressive in their pricing assuming gas will be 50gwei in the future, ` +
-        `charging a lower fee, getting more customers, but taking on the risk of losing money on gas expense in the future.\n\n` +
-        `Since the gas fee paid at the time of resurrection (one time expense) will be whatever the market is current charging ` +
-        `(resurrections MUST happen on time within the 1hr grace period), this setting is probabilistic and can be informed by ` +
-        `historical gas price research. Not every customer that chooses your node will have a resurrection, many sarcophagi ` + 
-        `will be buried and never resurrected, in this case your node will still receive the full curse fee, but will not be ` +
-        `required to spend any gas on that customer. The ratio of resurrected to buried sarcophagi however is totally ` +
-        `unpredictable at network launch.\n\nIf the market price of $SARCO goes up or down, this fee should be adjusted ` +
-        `to match current market conditions.\n\nSuggested setting as of mainnet launch: 300 SARCO`
+          `it is charged by each node that is chosen. This value is set by the individual archaeologist operator, but ` +
+          `should be greater than or equal to the the cost of gas to perform the resurrection operation. This operation has ` +
+          `a gas limit of ~170,000.\n\nSince gas costs on ETH are a market, there is an opportunity for node operators ` +
+          `to predict gas costs in the future to generate alpha. They can choose to be:\n\n` +
+          ` - Conservative in their curse fee assuming gas will always be 100gwei in the future and charging a higher curseFee, ` +
+          `thus getting less customers, or` +
+          `\n\n - Aggressive in their pricing assuming gas will be 50gwei in the future, ` +
+          `charging a lower fee, getting more customers, but taking on the risk of losing money on gas expense in the future.\n\n` +
+          `Since the gas fee paid at the time of resurrection (one time expense) will be whatever the market is current charging ` +
+          `(resurrections MUST happen on time within the 1hr grace period), this setting is probabilistic and can be informed by ` +
+          `historical gas price research. Not every customer that chooses your node will have a resurrection, many sarcophagi ` +
+          `will be buried and never resurrected, in this case your node will still receive the full curse fee, but will not be ` +
+          `required to spend any gas on that customer. The ratio of resurrected to buried sarcophagi however is totally ` +
+          `unpredictable at network launch.\n\nIf the market price of $SARCO goes up or down, this fee should be adjusted ` +
+          `to match current market conditions.\n\nSuggested setting as of mainnet launch: 300 SARCO`
       )}\n\n` +
       `Enter SARCO Amount:`,
     validate(value) {
@@ -121,8 +121,8 @@ const freeBondQuestion = (args: {
 }) => {
   const diggingFeePerMonth = args.diggingFeePerSecond * ONE_MONTH_IN_SECONDS;
   const maxResDateTime = getDateFromTimestamp(args.maxResTime).toISOString();
-  const maxResDate = maxResDateTime.split('T')[0];
-  const maxResTime = maxResDateTime.split('T')[1];
+  const maxResDate = maxResDateTime.split("T")[0];
+  const maxResTime = maxResDateTime.split("T")[1];
 
   return [
     {
@@ -131,13 +131,15 @@ const freeBondQuestion = (args: {
       message:
         `Choose how much $SARCO you would like to deposit into the contract to accept new curses from Sarcophagus users \n\n` +
         `${logColors.muted(
-          `Since you set your maximum resurrection time to ${maxResDate} at ${maxResTime}, your Digging Fee to ${diggingFeePerMonth} SARCO/month and your Curse Fee to ${args.curseFee} SARCO, ` + 
-          `you may need a minimum of ${Math.ceil(args.diggingFeePerSecond * args.maxResTime + args.curseFee)} SARCO to accept one job for the full term of your maximum resurrection time.\n\n` + 
-          `When a customer chooses you as one of their archaeologist nodes, your free bond will be locked until the ` +
-          `sarcophagus is successfully resurrected or buried by the user. It will then be released and available for ` +
-          `future curses. Potential customers will not be able to see your node as an option if you do not have ` +
-          `sufficient free bond available, however there is no added benefit to having a unnecessarily large free bond, ` +
-          `and you can add more at any time. \nYour current SARCO balance is ${args.sarcoBalance}.\n\n`
+          `Since you set your maximum resurrection time to ${maxResDate} at ${maxResTime}, your Digging Fee to ${diggingFeePerMonth} SARCO/month and your Curse Fee to ${args.curseFee} SARCO, ` +
+            `you may need a minimum of ${Math.ceil(
+              args.diggingFeePerSecond * args.maxResTime + args.curseFee
+            )} SARCO to accept one job for the full term of your maximum resurrection time.\n\n` +
+            `When a customer chooses you as one of their archaeologist nodes, your free bond will be locked until the ` +
+            `sarcophagus is successfully resurrected or buried by the user. It will then be released and available for ` +
+            `future curses. Potential customers will not be able to see your node as an option if you do not have ` +
+            `sufficient free bond available, however there is no added benefit to having a unnecessarily large free bond, ` +
+            `and you can add more at any time. \nYour current SARCO balance is ${args.sarcoBalance}.\n\n`
         )}` +
         `Enter SARCO amount:`,
       validate(value) {
@@ -240,7 +242,10 @@ const parseRewrapIntervalAnswer = (rewrapIntervalAnswer: string | number): numbe
   return rewrapIntervalAnswer * ONE_DAY_IN_SECONDS;
 };
 
-const parseMaxResTimeAnswer = async (maxResTime: string | number, blockTimestamp: number): Promise<number> => {
+const parseMaxResTimeAnswer = async (
+  maxResTime: string | number,
+  blockTimestamp: number
+): Promise<number> => {
   let maxResurrectionTimeInterval = 0;
   if (typeof maxResTime === "string") {
     switch (maxResTime) {
@@ -308,7 +313,9 @@ export const registerPrompt = async (skipApproval?: boolean) => {
 
   if (maxRewrapIntervalAnswer.maxRewrapInterval === "default") {
     const maxResTimestamp = await parseMaxResTimeAnswer(maxResTime, blockTimestamp);
-    rewrapInterval = `${Math.floor((maxResTimestamp - blockTimestamp) / ONE_MONTH_IN_SECONDS)} months`;
+    rewrapInterval = `${Math.floor(
+      (maxResTimestamp - blockTimestamp) / ONE_MONTH_IN_SECONDS
+    )} months`;
   } else if (maxRewrapIntervalAnswer.maxRewrapInterval !== "other") {
     rewrapInterval = maxRewrapIntervalAnswer.maxRewrapInterval;
   } else {

@@ -9,6 +9,8 @@ import {
   IERC20__factory,
   ThirdPartyFacet,
   ThirdPartyFacet__factory,
+  EmbalmerFacet,
+  EmbalmerFacet__factory,
 } from "@sarcophagus-org/sarcophagus-v2-contracts";
 import { BAD_ENV } from "../utils/exit-codes";
 import { getNetworkConfigByChainId, localChainId } from "../lib/config";
@@ -23,6 +25,7 @@ export interface Web3Interface {
   keyFinder: KeyFinder;
   sarcoToken: IERC20;
   archaeologistFacet: ArchaeologistFacetX;
+  embalmerFacet: EmbalmerFacet;
   thirdPartyFacet: ThirdPartyFacet;
   viewStateFacet: ViewStateFacet;
   networkConfig: NetworkConfig;
@@ -60,6 +63,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
     const archaeologistFacet = ArchaeologistFacet__factory.connect(diamondDeployAddress, ethWallet);
     const viewStateFacet = ViewStateFacet__factory.connect(diamondDeployAddress, ethWallet);
     const thirdPartyFacet = ThirdPartyFacet__factory.connect(diamondDeployAddress, ethWallet);
+    const embalmerFacet = EmbalmerFacet__factory.connect(diamondDeployAddress, ethWallet);
 
     const keyFinder = new KeyFinder(encryptionHdWallet);
 
@@ -73,6 +77,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       ethWallet,
       sarcoToken,
       archaeologistFacet: new ArchaeologistFacetX(archaeologistFacet),
+      embalmerFacet,
       viewStateFacet,
       thirdPartyFacet,
       networkConfig,

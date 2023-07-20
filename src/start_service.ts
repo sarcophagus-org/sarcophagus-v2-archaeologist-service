@@ -6,6 +6,7 @@ import { healthCheck, warnIfEthBalanceIsLow } from "./utils/health-check";
 import { loadPeerIdFromFile } from "./utils";
 import { SIGNAL_SERVER_LIST } from "./models/node-config";
 import { archLogger } from "./logger/chalk-theme";
+import { setupEventListeners } from "./utils/contract-event-listeners";
 
 const RESTART_INTERVAL = 1_200_000; // 2O Minutes
 const CONTRACT_DATA_REFETCH_INTERVAL = process.env.REFETCH_INTERVAL
@@ -42,6 +43,7 @@ export async function startService(opts: {
 
   // refetch every so often
   setInterval(() => fetchProfileAndSchedulePublish(), CONTRACT_DATA_REFETCH_INTERVAL);
+  setupEventListeners();
 
   // TODO -- delay starting the node until the creation window has passed
   // Consider only doing this if arch as at least one sarcophagus
