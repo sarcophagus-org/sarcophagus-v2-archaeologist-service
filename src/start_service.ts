@@ -42,7 +42,8 @@ export async function startService(opts: {
   fetchProfileAndSchedulePublish();
 
   // refetch every so often
-  setInterval(() => fetchProfileAndSchedulePublish(), CONTRACT_DATA_REFETCH_INTERVAL);
+  fetchProfileAndSchedulePublish(); // TODO: remove this. It's here for testing.
+  // setInterval(() => fetchProfileAndSchedulePublish(), CONTRACT_DATA_REFETCH_INTERVAL);
   setupEventListeners();
 
   // TODO -- delay starting the node until the creation window has passed
