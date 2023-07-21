@@ -1,10 +1,11 @@
 import { exit } from "process";
-import { getWeb3Interface } from "../scripts/web3-interface";
+import { destroyWeb3Interface, getWeb3Interface } from "../scripts/web3-interface";
 import { RPC_EXCEPTION } from "./exit-codes";
 import { inMemoryStore } from "./onchain-data";
 import { archLogger } from "../logger/chalk-theme";
 import { cancelSheduledPublish, schedulePublishPrivateKeyWithBuffer } from "./scheduler";
 import { getBlockTimestamp, getDateFromTimestamp } from "./blockchain/helpers";
+import { ethers } from "ethers";
 
 function getCreateSarcoHandler() {
   return async (
@@ -109,7 +110,7 @@ export async function setupEventListeners() {
     const filters = {
       createSarco: web3Interface.embalmerFacet.filters.CreateSarcophagus(),
       rewrap: web3Interface.embalmerFacet.filters.RewrapSarcophagus(),
-      clean: web3Interface.thirdPartyFacet.filters.CleanUpSarcophagus(),
+      clean: web3Interface.thirdPartyFacet.filters.Clean(),
       bury: web3Interface.embalmerFacet.filters.BurySarcophagus(),
       accuse: web3Interface.thirdPartyFacet.filters.AccuseArchaeologist(),
     };
@@ -128,10 +129,21 @@ export async function setupEventListeners() {
     web3Interface.embalmerFacet.on(filters.bury, handlers.bury);
     web3Interface.embalmerFacet.on(filters.accuse, handlers.accuse);
 
-    web3Interface.ethWallet.provider.on("close", () => {
-      console.log("Provider connection closed");
+    web3Interface.ethWallet.provider.on("error", async e => {
+      archLogger.error(`Provider connection error: ${e}. Reconnecting...`);
+      await destroyWeb3Interface();
       setupEventListeners();
     });
+
+    (web3Interface.ethWallet.provider as ethers.providers.WebSocketProvider)._websocket.on(
+      "close",
+      async e => {
+        archLogger.info(`Provider WS connection closed: ${e}. Reconnecting...`);
+        await destroyWeb3Interface();
+        setupEventListeners();
+      }
+    );
+
   } catch (e) {
     console.error(e);
     exit(RPC_EXCEPTION);
