@@ -41,9 +41,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
   try {
     const networkConfig = getNetworkConfigByChainId(process.env.CHAIN_ID || localChainId);
 
-    const rpcProvider = new ethers.providers.JsonRpcProvider(
-      networkConfig.providerUrl || process.env.PROVIDER_URL
-    );
+    const rpcProvider = new ethers.providers.WebSocketProvider(process.env.PROVIDER_URL!);
 
     // TODO -- if the mnemonic needs to gen the wallet for signing key
     // this will need updated
@@ -81,7 +79,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       viewStateFacet,
       thirdPartyFacet,
       networkConfig,
-    } as Web3Interface;
+    };
 
     return web3Interface;
   } catch (e) {
