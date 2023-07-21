@@ -25,29 +25,29 @@ function getCreateSarcoHandler() {
     const isCursed = (cursedArchs as string[]).includes(archAddress);
     if (!isCursed) return;
 
-      const currentBlockTimestampSec = await getBlockTimestamp();
+    const currentBlockTimestampSec = await getBlockTimestamp();
 
-      const scheduledResurrectionTime = schedulePublishPrivateKeyWithBuffer(
-        currentBlockTimestampSec,
-        sarcoId,
-        resurrectionTime.toNumber()
-      );
+    const scheduledResurrectionTime = schedulePublishPrivateKeyWithBuffer(
+      currentBlockTimestampSec,
+      sarcoId,
+      resurrectionTime.toNumber()
+    );
 
-      const archaeologist = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(
-        sarcoId,
-        web3Interface.ethWallet.address
-      );
+    const archaeologist = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(
+      sarcoId,
+      web3Interface.ethWallet.address
+    );
 
-      const block = await web3Interface.ethWallet.provider.getBlock(event.blockNumber);
-      const creationDate = getDateFromTimestamp(block.timestamp);
+    const block = await web3Interface.ethWallet.provider.getBlock(event.blockNumber);
+    const creationDate = getDateFromTimestamp(block.timestamp);
 
-      inMemoryStore.sarcophagi.push({
-        id: sarcoId,
-        resurrectionTime: scheduledResurrectionTime,
-        perSecondFee: archaeologist.diggingFeePerSecond,
-        cursedAmount: archaeologist.curseFee,
-        creationDate,
-      });
+    inMemoryStore.sarcophagi.push({
+      id: sarcoId,
+      resurrectionTime: scheduledResurrectionTime,
+      perSecondFee: archaeologist.diggingFeePerSecond,
+      cursedAmount: archaeologist.curseFee,
+      creationDate,
+    });
   };
 }
 
@@ -95,9 +95,9 @@ function getAccuseHandler() {
     const web3Interface = await getWeb3Interface();
     const sarcoFromContract = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
     if (sarcoFromContract.isCompromised) {
-        inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
-        inMemoryStore.deadSarcophagusIds.push(sarcoId);
-        cancelSheduledPublish(sarcoId);
+      inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
+      inMemoryStore.deadSarcophagusIds.push(sarcoId);
+      cancelSheduledPublish(sarcoId);
     }
   };
 }
@@ -129,8 +129,8 @@ export async function setupEventListeners() {
     web3Interface.embalmerFacet.on(filters.accuse, handlers.accuse);
 
     web3Interface.ethWallet.provider.on("close", () => {
-        console.log("Provider connection closed");
-        setupEventListeners();
+      console.log("Provider connection closed");
+      setupEventListeners();
     });
   } catch (e) {
     console.error(e);
