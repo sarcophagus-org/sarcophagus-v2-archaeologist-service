@@ -33,6 +33,14 @@ export interface Web3Interface {
 
 let web3Interface: Web3Interface | undefined;
 
+export const destroyWeb3Interface = async (): Promise<void> => {
+  if (!!web3Interface) {
+    web3Interface.ethWallet.provider.removeAllListeners();
+    (web3Interface.ethWallet.provider as ethers.providers.WebSocketProvider)._websocket.terminate();
+    web3Interface = undefined;
+  }
+};
+
 export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface> => {
   if (!!web3Interface) {
     return web3Interface;
