@@ -123,6 +123,12 @@ export async function setupEventListeners() {
       accuse: getAccuseHandler(),
     };
 
+    // TODO: REMOVE. TESTING ONLY
+    web3Interface.archaeologistFacet.contract.on(
+      web3Interface.archaeologistFacet.contract.filters.UpdateArchaeologist(),
+      (archaeologist: string) => archLogger.info(`archaeologist updated: ${archaeologist}`)
+    );
+
     web3Interface.embalmerFacet.on(filters.createSarco, handlers.createSarco);
     web3Interface.embalmerFacet.on(filters.rewrap, handlers.rewrap);
     web3Interface.embalmerFacet.on(filters.clean, handlers.clean);
@@ -144,6 +150,12 @@ export async function setupEventListeners() {
       }
     );
 
+    // TODO: REMOVE. TESTING ONLY
+    setTimeout(() => {
+      (
+        web3Interface.ethWallet.provider as ethers.providers.WebSocketProvider
+      )._websocket.terminate();
+    }, 3000);
   } catch (e) {
     console.error(e);
     exit(RPC_EXCEPTION);
