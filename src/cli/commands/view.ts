@@ -18,6 +18,8 @@ import { ethers } from "ethers";
 import fs from "fs/promises";
 import { SubgraphData } from "../../utils/graphql";
 import { validateEnvVars } from "../../utils/validateEnv";
+import { exit } from "process";
+import { SUCCESS } from "../../utils/exit-codes";
 
 export class View implements Command {
   name = "view";
@@ -180,5 +182,7 @@ export class View implements Command {
         this.exportToCsv("rewards", `${rewards.toString()}`);
       }
     }
+
+    exit(SUCCESS);
   }
 }

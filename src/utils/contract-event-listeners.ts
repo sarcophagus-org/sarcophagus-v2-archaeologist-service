@@ -1,5 +1,5 @@
 import { exit } from "process";
-import { getWeb3Interface } from "scripts/web3-interface";
+import { getWeb3Interface } from "../scripts/web3-interface";
 import { RPC_EXCEPTION } from "./exit-codes";
 import { inMemoryStore } from "./onchain-data";
 import { archLogger } from "../logger/chalk-theme";
