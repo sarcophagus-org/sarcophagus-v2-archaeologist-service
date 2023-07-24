@@ -42,7 +42,7 @@ export async function startService(opts: {
   fetchProfileAndSchedulePublish();
 
   // refetch every so often
-  fetchProfileAndSchedulePublish(); // TODO: remove this. It's here for testing.
+  // TODO: restore this. It's commented out for testing.
   // setInterval(() => fetchProfileAndSchedulePublish(), CONTRACT_DATA_REFETCH_INTERVAL);
   setupEventListeners();
 

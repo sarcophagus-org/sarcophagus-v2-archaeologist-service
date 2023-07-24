@@ -90,6 +90,7 @@ const fetchProfileOrExit = async (logBalances: Function): Promise<OnchainProfile
   return profile;
 };
 
+// fix this logic, add curse fee.
 const warnIfFreeBondIsLessThanMinDiggingFee = (
   freeBondBal: BigNumber,
   minDiggingFee: BigNumber
