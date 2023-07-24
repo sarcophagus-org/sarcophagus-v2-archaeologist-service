@@ -6,7 +6,7 @@ import { inMemoryStore } from "./onchain-data";
 const scheduledPublishPrivateKey: Record<string, scheduler.Job | undefined> = {};
 const sarcoIdToResurrectionTime: Record<string, number> = {};
 
-export function schedulePublishPrivateKey(
+function schedulePublishPrivateKey(
   sarcoId: string,
   resurrectionTime: Date,
   exactResurrectionTime: number
@@ -45,4 +45,44 @@ export function schedulePublishPrivateKey(
   scheduledPublishPrivateKey[sarcoId] = scheduler.scheduleJob(resurrectionTime, async () => {
     await publishPrivateKey(sarcoId);
   });
+}
+
+export function cancelSheduledPublish(sarcoId: string) {
+  scheduledPublishPrivateKey[sarcoId]?.cancel();
+}
+
+export function schedulePublishPrivateKeyWithBuffer(
+  currentBlockTimestampSec: number,
+  sarcoId: string,
+  resurrectionTimeSec: number
+): Date {
+  // Account for out of sync system clocks
+  // Scheduler will use the system clock which may not be in sync with block.timestamp
+  const systemClockDifferenceSecs = Math.round(Date.now() / 1000 - currentBlockTimestampSec);
+  archLogger.debug(`currentBlockTimestampSec is ${currentBlockTimestampSec}`);
+  archLogger.debug(`systemClockDifference is ${systemClockDifferenceSecs}`);
+
+  // NOTE: If we are past the resurrection time (but still in the grace period)
+  // Then schedule the unwrap for 5 seconds from now. Otherwise schedule for resurrection time
+  // (plus 15 seconds to allow block.timestamp to advance past resurrection time).
+  archLogger.debug(`resurrectionTime raw: ${resurrectionTimeSec}`);
+
+  const isResurrectionTimeInPast = currentBlockTimestampSec > resurrectionTimeSec;
+  let scheduledResurrectionTime: Date;
+
+  if (isResurrectionTimeInPast) {
+    archLogger.debug(`resurrection time is in the past, scheduling for 5 seconds from now`);
+    scheduledResurrectionTime = new Date(Date.now() + 5000);
+  } else {
+    // schedule resurrection time, taking into account system clock differential + buffer
+    scheduledResurrectionTime = new Date(
+      (resurrectionTimeSec + systemClockDifferenceSecs) * 1000 + 15_000
+    );
+  }
+
+  archLogger.debug(`resurrection time with buffer: ${scheduledResurrectionTime}`);
+
+  schedulePublishPrivateKey(sarcoId, scheduledResurrectionTime, resurrectionTimeSec);
+
+  return scheduledResurrectionTime;
 }

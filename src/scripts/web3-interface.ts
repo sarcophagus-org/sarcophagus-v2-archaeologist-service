@@ -9,6 +9,8 @@ import {
   IERC20__factory,
   ThirdPartyFacet,
   ThirdPartyFacet__factory,
+  EmbalmerFacet,
+  EmbalmerFacet__factory,
 } from "@sarcophagus-org/sarcophagus-v2-contracts";
 import { BAD_ENV } from "../utils/exit-codes";
 import { getNetworkConfigByChainId, localChainId } from "../lib/config";
@@ -23,12 +25,21 @@ export interface Web3Interface {
   keyFinder: KeyFinder;
   sarcoToken: IERC20;
   archaeologistFacet: ArchaeologistFacetX;
+  embalmerFacet: EmbalmerFacet;
   thirdPartyFacet: ThirdPartyFacet;
   viewStateFacet: ViewStateFacet;
   networkConfig: NetworkConfig;
 }
 
 let web3Interface: Web3Interface | undefined;
+
+export const destroyWeb3Interface = async (): Promise<void> => {
+  if (!!web3Interface) {
+    web3Interface.ethWallet.provider.removeAllListeners();
+    (web3Interface.ethWallet.provider as ethers.providers.WebSocketProvider)._websocket.terminate();
+    web3Interface = undefined;
+  }
+};
 
 export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface> => {
   if (!!web3Interface) {
@@ -37,10 +48,9 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
 
   try {
     const networkConfig = getNetworkConfigByChainId(process.env.CHAIN_ID || localChainId);
-
-    const rpcProvider = new ethers.providers.JsonRpcProvider(
-      networkConfig.providerUrl || process.env.PROVIDER_URL
-    );
+    
+    // PROVIDER_URL should be "wss://<network>.infura.io/ws/v3/<api-key>"
+    const rpcProvider = new ethers.providers.WebSocketProvider(process.env.PROVIDER_URL!);
 
     // TODO -- if the mnemonic needs to gen the wallet for signing key
     // this will need updated
@@ -60,6 +70,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
     const archaeologistFacet = ArchaeologistFacet__factory.connect(diamondDeployAddress, ethWallet);
     const viewStateFacet = ViewStateFacet__factory.connect(diamondDeployAddress, ethWallet);
     const thirdPartyFacet = ThirdPartyFacet__factory.connect(diamondDeployAddress, ethWallet);
+    const embalmerFacet = EmbalmerFacet__factory.connect(diamondDeployAddress, ethWallet);
 
     const keyFinder = new KeyFinder(encryptionHdWallet);
 
@@ -73,10 +84,11 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
       ethWallet,
       sarcoToken,
       archaeologistFacet: new ArchaeologistFacetX(archaeologistFacet),
+      embalmerFacet,
       viewStateFacet,
       thirdPartyFacet,
       networkConfig,
-    } as Web3Interface;
+    };
 
     return web3Interface;
   } catch (e) {

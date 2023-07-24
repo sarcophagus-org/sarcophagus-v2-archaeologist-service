@@ -5,6 +5,5 @@ export interface NetworkConfig {
   sarcoTokenAddress: string;
   diamondDeployAddress: string;
   subgraphUrl?: string;
-  providerUrl?: string;
   signalServerPort?: number;
 }

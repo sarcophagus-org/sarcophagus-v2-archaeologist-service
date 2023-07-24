@@ -16,7 +16,7 @@ import {
   validateMaxResurrectionTime,
   validateRewrapInterval,
 } from "../shared/profile-validations";
-import { NO_ONCHAIN_PROFILE } from "../../utils/exit-codes";
+import { NO_ONCHAIN_PROFILE, SUCCESS } from "../../utils/exit-codes";
 
 export class Update implements Command {
   name = "update";
@@ -89,5 +89,7 @@ export class Update implements Command {
     } else {
       await this.updateArchaeologist(options as ProfileCliParams);
     }
+
+    exit(SUCCESS);
   }
 }

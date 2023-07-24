@@ -36,21 +36,20 @@ export class FreeBond implements Command {
   async run(options: CommandOptions): Promise<void> {
     if (options.withdrawAll) {
       await withdrawFreeBond(await getFreeBondBalance());
-      exit(SUCCESS);
     } else if (options.withdraw) {
       await withdrawFreeBond(options.withdraw);
-      exit(SUCCESS);
     } else if (options.deposit) {
       if (!(await hasAllowance(options.deposit))) {
         await requestApproval();
       }
 
       await depositFreeBond(options.deposit);
-      exit(SUCCESS);
     } else {
       archLogger.warn("Use:\n");
       archLogger.info("cli help free-bond");
       archLogger.warn("\nto see available options.\n");
     }
+
+    exit(SUCCESS);
   }
 }
