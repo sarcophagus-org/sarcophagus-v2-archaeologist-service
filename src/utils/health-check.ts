@@ -11,7 +11,13 @@ import {
   getSarcoBalance,
   OnchainProfile,
 } from "./onchain-data";
-import { formatFullPeerString, logBalances, logNotRegistered, logProfile } from "../cli/utils";
+import {
+  ONE_MONTH_IN_SECONDS,
+  formatFullPeerString,
+  logBalances,
+  logNotRegistered,
+  logProfile,
+} from "../cli/utils";
 import { getBlockTimestamp } from "./blockchain/helpers";
 
 /**
@@ -66,9 +72,11 @@ export async function healthCheck(peerId?: string) {
 
     logCallout(async () => {
       logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address);
-
-      // Free bond must be >= their min digging fee to accept new jobs
-      warnIfFreeBondIsLessThanMinDiggingFee(freeBondBalance, profile.minimumDiggingFeePerSecond);
+      warnIfFreeBondIsLessThanMinDiggingFee(
+        freeBondBalance,
+        profile.minimumDiggingFeePerSecond,
+        profile.curseFee
+      );
     });
   } catch (e) {
     archLogger.error(e, true);
@@ -90,17 +98,19 @@ const fetchProfileOrExit = async (logBalances: Function): Promise<OnchainProfile
   return profile;
 };
 
-// fix this logic, add curse fee.
 const warnIfFreeBondIsLessThanMinDiggingFee = (
   freeBondBal: BigNumber,
-  minDiggingFee: BigNumber
+  curseFee: BigNumber,
+  diggingFeePerSecond: BigNumber
 ): void => {
-  if (freeBondBal.lt(minDiggingFee)) {
+  const diggingFeePerMonth = diggingFeePerSecond.mul(ONE_MONTH_IN_SECONDS).add(curseFee);
+
+  if (freeBondBal.lt(diggingFeePerMonth)) {
     archLogger.warn(
-      `\n   Your free bond is less than your minimum digging fee. You will not be able to accept new jobs!`,
+      `\n   Your free bond is less than you can lock for a new Sarcophagus lasting a month. You may not be able to accept new jobs!`,
       true
     );
-    archLogger.error(`   Run: \`cli update -f <amount>\` to deposit some SARCO\n`, true);
+    archLogger.warn(`   Run: \`cli update -f <amount>\` to deposit some SARCO\n`, true);
   }
 };
 
