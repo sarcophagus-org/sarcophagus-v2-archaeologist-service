@@ -26,7 +26,6 @@ import { notifyUser } from "./notification";
  * @param peerId -- libp2p peer ID that will be validated with arch profile if provided
  */
 export async function healthCheck(peerId?: string) {
-  notifyUser("Archaeologist health check started");
   const web3Interface = await getWeb3Interface();
 
   try {
@@ -46,14 +45,21 @@ export async function healthCheck(peerId?: string) {
         profile.peerId !== formatFullPeerString(peerId, process.env.DOMAIN)
       ) {
         logCallout(async () => {
-          archLogger.error("Peer ID on profile does not match local Peer Id!\n", true);
-          archLogger.error("Please update your profile \n", true);
-          archLogger.error("Your archaeologist will not appear in the embalmer webapp\n", true);
+          archLogger.error("Peer ID on profile does not match local Peer Id!\n", {
+            logTimestamp: true,
+          });
+          archLogger.error("Please update your profile \n", { logTimestamp: true });
+          archLogger.error("Your archaeologist will not appear in the embalmer webapp\n", {
+            logTimestamp: true,
+          });
           archLogger.warn(`Local Peer ID: ${process.env.DOMAIN}:${peerId}`, true);
           archLogger.warn(`Profile Peer ID: ${profile.peerId}`, true);
         });
 
-        // TODO -- add notification once notifications are setup
+        await notifyUser(
+          "There is a problem with your archaeologist profile. Please check the logs on your node for more information."
+        );
+
         // TODO -- consider quitting and forcing user to update their profile
       } else {
         archLogger.debug("local PeerID and domain matches profile value");
@@ -80,7 +86,10 @@ export async function healthCheck(peerId?: string) {
       );
     });
   } catch (e) {
-    archLogger.error(e, true);
+    archLogger.error(`Health Check error: ${e.toString()}`, {
+      sendNotification: true,
+      logTimestamp: true,
+    });
     exit(RPC_EXCEPTION);
   }
 }
@@ -124,12 +133,8 @@ export const warnIfEthBalanceIsLow = async (
       `\nYou have very little ETH in your account: ${ethers.utils.formatEther(
         ethBalance
       )} ETH.\nYou may not have enough gas for any transactions!\n`,
-      true
+      { logTimestamp: true, sendNotification: doNotify }
     );
-
-    if (doNotify) {
-      // Notify using user's preferred method
-    }
   }
 
   return { ethBalance };

@@ -31,6 +31,7 @@
     "@libp2p/websockets": "^5.0.1",
     "@mapbox/node-pre-gyp": "^1.0.10",
     "@sarcophagus-org/sarcophagus-v2-contracts": "^0.17.2",
+    "@sendgrid/mail": "^7.7.0",
     "@types/node": "^18.0.0",
     "bip39": "^3.0.4",
     "chalk": "^5.0.1",

@@ -154,7 +154,7 @@ export async function loadPeerIdJsonFromFileOrExit(): Promise<Record<string, str
   try {
     return jsonfile.readFile(peerIdFile);
   } catch (e) {
-    archLogger.error(`Error reading file: ${e}`, true);
+    archLogger.error(`Error reading file: ${e}`, { logTimestamp: true });
     exit(FILE_READ_EXCEPTION);
   }
 }
