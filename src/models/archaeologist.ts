@@ -112,7 +112,7 @@ export class Archaeologist {
 
   emitError(stream: Stream, error: StreamCommsError) {
     this.streamToBrowser(stream, JSON.stringify({ error }));
-    archLogger.error(`Error: ${error.message}`, true);
+    archLogger.error(`Error: ${error.message}`, { logTimestamp: true });
   }
 
   async setupSarcophagusNegotiationStream() {
@@ -229,7 +229,7 @@ export class Archaeologist {
               );
               this.streamToBrowser(stream, JSON.stringify({ signature, publicKey }));
             } catch (e) {
-              archLogger.error(e, true);
+              archLogger.error(e, { logTimestamp: true, sendNotification: true });
               this.emitError(stream, {
                 code: SarcophagusValidationError.UNKNOWN_ERROR,
                 message: e.code ? `${e.code}\n${e.message}` : e.message ?? e,
@@ -238,7 +238,10 @@ export class Archaeologist {
           }
         });
       } catch (err) {
-        archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`, true);
+        archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`, {
+          logTimestamp: true,
+          sendNotification: true,
+        });
       }
     });
   }

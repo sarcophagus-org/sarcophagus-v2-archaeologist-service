@@ -33,8 +33,8 @@ export class View implements Command {
       await fs.writeFile(filename, content, { flag: "w+" });
       archLogger.info(`Exported output to file: ${filename}`);
     } catch (err) {
-      archLogger.error("Failed to export csv", true);
-      archLogger.error(err, true);
+      archLogger.error("Failed to export csv", { logTimestamp: true });
+      archLogger.error(err, { logTimestamp: true });
     }
   }
 
