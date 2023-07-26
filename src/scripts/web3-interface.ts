@@ -49,6 +49,7 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
   try {
     const networkConfig = getNetworkConfigByChainId(process.env.CHAIN_ID || localChainId);
 
+    // PROVIDER_URL should be "wss://<network>.infura.io/ws/v3/<api-key>"
     const rpcProvider = new ethers.providers.WebSocketProvider(process.env.PROVIDER_URL!);
 
     // TODO -- if the mnemonic needs to gen the wallet for signing key
