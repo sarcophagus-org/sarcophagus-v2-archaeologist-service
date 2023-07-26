@@ -19,20 +19,21 @@ import {
   logProfile,
 } from "../cli/utils";
 import { getBlockTimestamp } from "./blockchain/helpers";
+import { notifyUser } from "./notification";
 
 /**
  * Runs on service startup
  * @param peerId -- libp2p peer ID that will be validated with arch profile if provided
  */
 export async function healthCheck(peerId?: string) {
+  notifyUser("Archaeologist health check started");
   const web3Interface = await getWeb3Interface();
 
   try {
     const sarcoBalance = await getSarcoBalance();
     warnIfSarcoBalanceIsLow(sarcoBalance);
 
-    const ethBalance = await getEthBalance();
-    await warnIfEthBalanceIsLow(ethBalance);
+    const { ethBalance } = await warnIfEthBalanceIsLow();
 
     const profile = await fetchProfileOrExit(() =>
       logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address)
@@ -114,8 +115,10 @@ const warnIfFreeBondIsLessThanMinDiggingFee = (
   }
 };
 
-export const warnIfEthBalanceIsLow = async (ethBalanceArg?: BigNumber): Promise<void> => {
-  const ethBalance = ethBalanceArg ?? (await getEthBalance());
+export const warnIfEthBalanceIsLow = async (
+  doNotify?: boolean
+): Promise<{ ethBalance: BigNumber }> => {
+  const ethBalance = await getEthBalance();
   if (ethBalance.lte(ethers.utils.parseEther("0.05"))) {
     archLogger.error(
       `\nYou have very little ETH in your account: ${ethers.utils.formatEther(
@@ -123,7 +126,13 @@ export const warnIfEthBalanceIsLow = async (ethBalanceArg?: BigNumber): Promise<
       )} ETH.\nYou may not have enough gas for any transactions!\n`,
       true
     );
+
+    if (doNotify) {
+      // Notify using user's preferred method
+    }
   }
+
+  return { ethBalance };
 };
 
 const warnIfSarcoBalanceIsLow = (sarcoBalance: BigNumber): void => {
