@@ -12,7 +12,7 @@ import { archLogger } from "../logger/chalk-theme";
       process.exit(result.exitCode);
     }
   } catch (err) {
-    archLogger.error("cli runtime exception: " + err, {
+    await archLogger.error("cli runtime exception: " + err, {
       logTimestamp: true,
       sendNotification: true,
     });

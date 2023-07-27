@@ -23,7 +23,7 @@ export const depositFreeBond = async (amt: BigNumber) => {
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
-    handleRpcError(error);
+    await handleRpcError(error);
     exit(RPC_EXCEPTION);
   }
 };
@@ -39,7 +39,7 @@ export const withdrawFreeBond = async (amt: BigNumber) => {
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
-    handleRpcError(error);
+    await handleRpcError(error);
     exit(RPC_EXCEPTION);
   }
 };
@@ -54,7 +54,7 @@ export const withdrawRewards = async () => {
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
-    handleRpcError(error);
+    await handleRpcError(error);
     exit(RPC_EXCEPTION);
   }
 };
