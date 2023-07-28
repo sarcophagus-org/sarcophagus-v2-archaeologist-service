@@ -45,20 +45,18 @@ export async function healthCheck(peerId?: string) {
         profile.peerId !== formatFullPeerString(peerId, process.env.DOMAIN)
       ) {
         logCallout(async () => {
-          archLogger.error("Peer ID on profile does not match local Peer Id!\n", {
-            logTimestamp: true,
-          });
+          await archLogger.error(
+            "There is a problem with your archaeologist profile. Peer ID on profile does not match local Peer Id!\n" +
+              "Your archaeologist will not appear in the embalmer webapp\n",
+            {
+              logTimestamp: true,
+              sendNotification: true,
+            }
+          );
           archLogger.error("Please update your profile \n", { logTimestamp: true });
-          archLogger.error("Your archaeologist will not appear in the embalmer webapp\n", {
-            logTimestamp: true,
-          });
           archLogger.warn(`Local Peer ID: ${process.env.DOMAIN}:${peerId}`, true);
           archLogger.warn(`Profile Peer ID: ${profile.peerId}`, true);
         });
-
-        await notifyUser(
-          "There is a problem with your archaeologist profile. Please check the logs on your node for more information."
-        );
 
         // TODO -- consider quitting and forcing user to update their profile
       } else {
@@ -86,7 +84,7 @@ export async function healthCheck(peerId?: string) {
       );
     });
   } catch (e) {
-    archLogger.error(`Health Check error: ${e.toString()}`, {
+    await archLogger.error(`Health Check error: ${e.toString()}`, {
       sendNotification: true,
       logTimestamp: true,
     });
@@ -125,15 +123,15 @@ const warnIfFreeBondIsLessThanMinDiggingFee = (
 };
 
 export const warnIfEthBalanceIsLow = async (
-  doNotify?: boolean
+  sendNotification?: boolean
 ): Promise<{ ethBalance: BigNumber }> => {
   const ethBalance = await getEthBalance();
   if (ethBalance.lte(ethers.utils.parseEther("0.05"))) {
-    archLogger.error(
+    await archLogger.error(
       `\nYou have very little ETH in your account: ${ethers.utils.formatEther(
         ethBalance
       )} ETH.\nYou may not have enough gas for any transactions!\n`,
-      { logTimestamp: true, sendNotification: doNotify }
+      { sendNotification, logTimestamp: true }
     );
   }
 

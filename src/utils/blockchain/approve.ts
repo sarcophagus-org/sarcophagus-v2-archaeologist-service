@@ -33,7 +33,7 @@ export const runApprove = async () => {
     await tx.wait();
     archLogger.notice("Approval succeeded!");
   } catch (error) {
-    handleRpcError(error);
+    await handleRpcError(error);
     exit(RPC_EXCEPTION);
   } finally {
     clearInterval(interval);

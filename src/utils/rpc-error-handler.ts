@@ -17,7 +17,7 @@ const incorrectProof = (e: string) => e.includes("AccuseIncorrectProof");
 /**
  * Parses the text in RPC errors' `.reason` field and outputs more readable error messages
  * */
-export function handleRpcError(e: any) {
+export async function handleRpcError(e: any) {
   const { reason, errorArgs, errorName } = e;
 
   const errorString: string = reason || errorName || "";
@@ -42,7 +42,7 @@ export function handleRpcError(e: any) {
 
   if (notEnoughFreeBond(errorString)) {
     const available = errorArgs[0];
-    archLogger.error(
+    await archLogger.error(
       `\nNot enough free bond. Available: ${ethers.utils.formatEther(available)} SARCO`,
       { logTimestamp: true, sendNotification: true }
     );
@@ -59,7 +59,7 @@ export function handleRpcError(e: any) {
   }
 
   if (insufficientAllowance(errorString)) {
-    archLogger.error(
+    await archLogger.error(
       `\nInsufficient SARCO allowance. Run: \`cli approve -a\` to approve the contract to spend your SARCO`,
       { logTimestamp: true, sendNotification: true }
     );

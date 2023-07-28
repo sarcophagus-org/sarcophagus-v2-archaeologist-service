@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { notifyUser } from "utils/notification";
+import { notifyUser } from "../utils/notification";
 
 export const logColors = {
   error: chalk.bold.red,

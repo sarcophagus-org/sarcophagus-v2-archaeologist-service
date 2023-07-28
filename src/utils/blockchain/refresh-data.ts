@@ -85,7 +85,7 @@ export async function fetchSarcophagiAndSchedulePublish(): Promise<SarcophagusDa
           inMemoryStore.deadSarcophagusIds.push(sarcoId);
         }
       } catch (e) {
-        handleRpcError(e);
+        await handleRpcError(e);
       }
     });
 
