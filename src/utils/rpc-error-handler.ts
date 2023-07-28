@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import { archLogger } from "../logger/chalk-theme";
+import { warnIfEthBalanceIsLow } from "./health-check";
 
 const alreadyUnwrapped = (e: string) => e.includes("ArchaeologistAlreadyUnwrapped");
 const notEnoughFreeBond = (e: string) => e.includes("NotEnoughFreeBond");
@@ -111,5 +112,6 @@ export async function handleRpcError(e: any) {
     return;
   }
 
-  archLogger.error(`\n${e}`, { logTimestamp: true });
+  await archLogger.error(`\n${e}`, { logTimestamp: true });
+  await warnIfEthBalanceIsLow(true);
 }
