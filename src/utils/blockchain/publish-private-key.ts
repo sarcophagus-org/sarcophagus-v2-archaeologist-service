@@ -40,11 +40,12 @@ export async function publishPrivateKey(sarcoId: string) {
     archLogger.debug(`Gas used: ${gasUsed.toString()} ETH`);
     archLogger.debug(`Cumulative Gas used: ${cummulativeGasUsed.toString()} ETH`);
   } catch (e) {
-    archLogger.error(`Unwrap failed: ${e}`, true);
-    await warnIfEthBalanceIsLow();
+    await archLogger.error(`Unwrap failed: ${e}`, { sendNotification: true, logTimestamp: true });
     handleRpcError(e);
   } finally {
     inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished =
       inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.filter(id => id !== sarcoId);
+
+    await warnIfEthBalanceIsLow(true);
   }
 }

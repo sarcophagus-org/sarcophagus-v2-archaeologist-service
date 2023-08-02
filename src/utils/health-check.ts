@@ -11,8 +11,15 @@ import {
   getSarcoBalance,
   OnchainProfile,
 } from "./onchain-data";
-import { formatFullPeerString, logBalances, logNotRegistered, logProfile } from "../cli/utils";
+import {
+  ONE_MONTH_IN_SECONDS,
+  formatFullPeerString,
+  logBalances,
+  logNotRegistered,
+  logProfile,
+} from "../cli/utils";
 import { getBlockTimestamp } from "./blockchain/helpers";
+import { notifyUser } from "./notification";
 
 /**
  * Runs on service startup
@@ -25,8 +32,7 @@ export async function healthCheck(peerId?: string) {
     const sarcoBalance = await getSarcoBalance();
     warnIfSarcoBalanceIsLow(sarcoBalance);
 
-    const ethBalance = await getEthBalance();
-    await warnIfEthBalanceIsLow(ethBalance);
+    const { ethBalance } = await warnIfEthBalanceIsLow();
 
     const profile = await fetchProfileOrExit(() =>
       logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address)
@@ -39,14 +45,19 @@ export async function healthCheck(peerId?: string) {
         profile.peerId !== formatFullPeerString(peerId, process.env.DOMAIN)
       ) {
         logCallout(async () => {
-          archLogger.error("Peer ID on profile does not match local Peer Id!\n", true);
-          archLogger.error("Please update your profile \n", true);
-          archLogger.error("Your archaeologist will not appear in the embalmer webapp\n", true);
+          await archLogger.error(
+            "There is a problem with your archaeologist profile. Peer ID on profile does not match local Peer Id!\n" +
+              "Your archaeologist will not appear in the embalmer webapp\n",
+            {
+              logTimestamp: true,
+              sendNotification: true,
+            }
+          );
+          archLogger.error("Please update your profile \n", { logTimestamp: true });
           archLogger.warn(`Local Peer ID: ${process.env.DOMAIN}:${peerId}`, true);
           archLogger.warn(`Profile Peer ID: ${profile.peerId}`, true);
         });
 
-        // TODO -- add notification once notifications are setup
         // TODO -- consider quitting and forcing user to update their profile
       } else {
         archLogger.debug("local PeerID and domain matches profile value");
@@ -66,12 +77,17 @@ export async function healthCheck(peerId?: string) {
 
     logCallout(async () => {
       logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address);
-
-      // Free bond must be >= their min digging fee to accept new jobs
-      warnIfFreeBondIsLessThanMinDiggingFee(freeBondBalance, profile.minimumDiggingFeePerSecond);
+      warnIfFreeBondIsLessThanMinDiggingFee(
+        freeBondBalance,
+        profile.minimumDiggingFeePerSecond,
+        profile.curseFee
+      );
     });
   } catch (e) {
-    archLogger.error(e, true);
+    await archLogger.error(`Health Check error: ${e.toString()}`, {
+      sendNotification: true,
+      logTimestamp: true,
+    });
     exit(RPC_EXCEPTION);
   }
 }
@@ -90,30 +106,36 @@ const fetchProfileOrExit = async (logBalances: Function): Promise<OnchainProfile
   return profile;
 };
 
-// fix this logic, add curse fee.
 const warnIfFreeBondIsLessThanMinDiggingFee = (
   freeBondBal: BigNumber,
-  minDiggingFee: BigNumber
+  curseFee: BigNumber,
+  diggingFeePerSecond: BigNumber
 ): void => {
-  if (freeBondBal.lt(minDiggingFee)) {
+  const diggingFeePerMonth = diggingFeePerSecond.mul(ONE_MONTH_IN_SECONDS).add(curseFee);
+
+  if (freeBondBal.lt(diggingFeePerMonth)) {
     archLogger.warn(
-      `\n   Your free bond is less than your minimum digging fee. You will not be able to accept new jobs!`,
+      `\n   Your free bond is less than you can lock for a new Sarcophagus lasting a month. You may not be able to accept new jobs!`,
       true
     );
-    archLogger.error(`   Run: \`cli update -f <amount>\` to deposit some SARCO\n`, true);
+    archLogger.warn(`   Run: \`cli update -f <amount>\` to deposit some SARCO\n`, true);
   }
 };
 
-export const warnIfEthBalanceIsLow = async (ethBalanceArg?: BigNumber): Promise<void> => {
-  const ethBalance = ethBalanceArg ?? (await getEthBalance());
+export const warnIfEthBalanceIsLow = async (
+  sendNotification?: boolean
+): Promise<{ ethBalance: BigNumber }> => {
+  const ethBalance = await getEthBalance();
   if (ethBalance.lte(ethers.utils.parseEther("0.05"))) {
-    archLogger.error(
+    await archLogger.error(
       `\nYou have very little ETH in your account: ${ethers.utils.formatEther(
         ethBalance
       )} ETH.\nYou may not have enough gas for any transactions!\n`,
-      true
+      { sendNotification, logTimestamp: true }
     );
   }
+
+  return { ethBalance };
 };
 
 const warnIfSarcoBalanceIsLow = (sarcoBalance: BigNumber): void => {

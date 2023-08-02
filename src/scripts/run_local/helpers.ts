@@ -6,7 +6,7 @@ export function getLocalStarSignallingPort() {
   if (!process.env.DEV_SIGNAL_SERVER_PORT) {
     archLogger.error(
       "DEV_SIGNAL_SERVER_PORT not set in .env\nAdd this environment variable to set the port the local signalling server listens on",
-      true
+      { logTimestamp: true }
     );
     exit();
   }
@@ -14,7 +14,7 @@ export function getLocalStarSignallingPort() {
   const starServerPort = Number.parseInt(process.env.DEV_SIGNAL_SERVER_PORT);
 
   if (Number.isNaN(starServerPort)) {
-    archLogger.error("DEV_SIGNAL_SERVER_PORT  .env is not a valid integer", true);
+    archLogger.error("DEV_SIGNAL_SERVER_PORT  .env is not a valid integer", { logTimestamp: true });
     exit();
   }
 
@@ -36,7 +36,7 @@ export function parseLocalArchCountArgs() {
     if (countArg) {
       const count = Number.parseInt(countArg.split(":")[1]);
       if (Number.isNaN(count)) {
-        archLogger.error("Invalid count argument", true);
+        archLogger.error("Invalid count argument", { logTimestamp: true });
         exit();
       }
 

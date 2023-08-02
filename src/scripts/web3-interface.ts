@@ -48,7 +48,6 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
 
   try {
     const networkConfig = getNetworkConfigByChainId(process.env.CHAIN_ID || localChainId);
-    
     // PROVIDER_URL should be "wss://<network>.infura.io/ws/v3/<api-key>"
     const rpcProvider = new ethers.providers.WebSocketProvider(process.env.PROVIDER_URL!);
 
@@ -92,8 +91,10 @@ export const getWeb3Interface = async (isTest?: boolean): Promise<Web3Interface>
 
     return web3Interface;
   } catch (e) {
-    archLogger.error(e, true);
-    archLogger.error("Confirm PROVIDER_URL in .env is a valid RPC Provider URL", true);
+    await archLogger.error(e, { logTimestamp: true, sendNotification: true });
+    archLogger.error("Confirm PROVIDER_URL in .env is a valid RPC Provider URL", {
+      logTimestamp: true,
+    });
     exit(BAD_ENV);
   }
 };

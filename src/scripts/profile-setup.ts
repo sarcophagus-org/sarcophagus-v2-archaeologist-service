@@ -107,7 +107,7 @@ export async function profileSetup(
       exit(0);
     }
   } catch (error) {
-    handleRpcError(error);
+    await handleRpcError(error);
     exit(RPC_EXCEPTION);
   }
 }

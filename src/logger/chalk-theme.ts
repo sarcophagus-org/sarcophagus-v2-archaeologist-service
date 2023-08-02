@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { notifyUser } from "../utils/notification";
 
 export const logColors = {
   error: chalk.bold.red,
@@ -24,6 +25,16 @@ export const archLogger = {
     console.log(`${logTimestamp ? currentTimePrefix() : ""}${logColors.green(msg)}`),
   warn: (msg, logTimestamp = false) =>
     console.log(`${logTimestamp ? currentTimePrefix() : ""}${logColors.warning(msg)}`),
-  error: (msg, logTimestamp = false) =>
-    console.log(`${logTimestamp ? currentTimePrefix() : ""}${logColors.error(msg)}`),
+  error: async (
+    msg,
+    opt: { sendNotification?: boolean; logTimestamp?: boolean } = {
+      sendNotification: false,
+      logTimestamp: false,
+    }
+  ) => {
+    console.log(`${opt.logTimestamp ? currentTimePrefix() : ""}${logColors.error(msg)}`);
+    if (opt.sendNotification) {
+      await notifyUser(msg.toString());
+    }
+  },
 };
