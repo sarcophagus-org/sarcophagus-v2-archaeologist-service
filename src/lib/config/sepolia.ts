@@ -5,5 +5,6 @@ export const sepoliaNetworkConfig: NetworkConfig = {
   networkName: "Sepolia Testnet",
   networkShortName: "Sepolia",
   sarcoTokenAddress: "0xfa1FA4d51FB2babf59e402c83327Ab5087441289",
-  diamondDeployAddress: "0x8D844acde0b9c376EF5BF1f715C6A317b4fa3236",
+  diamondDeployAddress: "0x46395641cf7814d51b1688dA19129343E04279C6",
+  subgraphUrl: "https://api.studio.thegraph.com/query/49076/sarco-sepolia-test/one",
 };
