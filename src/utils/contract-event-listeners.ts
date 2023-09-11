@@ -11,19 +11,19 @@ function getCreateSarcoHandler() {
   return async (
     sarcoId,
     sarcoName,
-    transferrable,
     resurrectionTime,
+    creationTime,
     embalmer,
     recipient,
-    cursedArchs,
-    totalFees,
-    arweaveTxIds,
+    cursedArchaeologists,
+    totalDiggingFees,
+    arweaveTxId,
     event
   ) => {
     const web3Interface = await getWeb3Interface();
     const archAddress = web3Interface.ethWallet.address;
 
-    const isCursed = (cursedArchs as string[]).includes(archAddress);
+    const isCursed = (cursedArchaeologists as string[]).includes(archAddress);
     if (!isCursed) return;
 
     const currentBlockTimestampSec = await getBlockTimestamp();
