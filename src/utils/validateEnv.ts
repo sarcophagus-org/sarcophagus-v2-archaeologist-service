@@ -90,5 +90,21 @@ export function validateEnvVars() {
     },
   });
 
-  // TODO -- add validation for domain if it is present
+  _tryReadEnv("DOMAIN", process.env.DOMAIN, {
+    required: true,
+    callback: envVar => {
+      const isValidURL = val => {
+        try {
+          new URL(val);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      };
+
+      if (!isValidURL(envVar)) {
+        throw new Error("Invalid domain url.");
+      }
+    },
+  });
 }

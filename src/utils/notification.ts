@@ -6,7 +6,7 @@ import sgMail from "@sendgrid/mail";
 export async function notifyUser(message: string) {
   try {
     const timestamp = new Date().toISOString();
-    const msgData = { message, timestamp };
+    const msgData = { chainId: process.env.CHAIN_ID, message, timestamp };
 
     if (process.env.NOTIFICATION_WEBHOOK_URL) {
       const response = await fetch(process.env.NOTIFICATION_WEBHOOK_URL!, {
