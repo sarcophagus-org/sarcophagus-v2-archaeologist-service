@@ -93,6 +93,14 @@ export function validateEnvVars() {
         mnemonics.push(process.env.SEPOLIA_ENCRYPTION_MNEMONIC);
       }
 
+      if (!!process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC) {
+        mnemonics.push(process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC);
+      }
+
+      if (!!process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC) {
+        mnemonics.push(process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC);
+      }
+
       const hasDuplicates = mnemonics.some((val, i) => mnemonics.indexOf(val) !== i);
       if (hasDuplicates) {
         throw new Error(
