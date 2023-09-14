@@ -42,7 +42,21 @@ export function validateEnvVars() {
     },
   });
 
-  _tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL, { required: true });
+  _tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL, {
+    required: true,
+    callback(envVar) {
+      let url: URL;
+      try {
+        url = new URL(envVar);
+      } catch (_) {
+        throw new Error("Invalid provider url.");
+      }
+      
+      if (url.protocol !== "wss://") {
+        throw new Error("Invalid provider url scheme.");
+      }
+    },
+  });
   _tryReadEnv("ETH_PRIVATE_KEY", process.env.ETH_PRIVATE_KEY, { required: true });
   _tryReadEnv("ENCRYPTION_MNEMONIC", process.env.ENCRYPTION_MNEMONIC, {
     required: true,
@@ -93,16 +107,9 @@ export function validateEnvVars() {
   _tryReadEnv("DOMAIN", process.env.DOMAIN, {
     required: true,
     callback: envVar => {
-      const isValidURL = val => {
-        try {
-          new URL(val);
-          return true;
-        } catch (_) {
-          return false;
-        }
-      };
-
-      if (!isValidURL(envVar)) {
+      try {
+        new URL(envVar);
+      } catch (_) {
         throw new Error("Invalid domain url.");
       }
     },
