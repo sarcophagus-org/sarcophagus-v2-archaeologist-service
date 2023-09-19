@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
+    "@types/node": "^20.6.2",
     "@types/node-schedule": "^2.1.0",
     "cross-env": "^7.0.3",
     "ecies-geth": "^1.6.5",

@@ -78,28 +78,15 @@ export function validateEnvVars() {
       //
       // Effectively, the correct <NETWORK>_ENCRYPTION_MNEMONIC env variable is checked for validity by the code above.
       //
-      // However the env file does still contain all mnemonic variants (if set by user), which are still readable.
+      // However, the env file does still contain all mnemonic variants (if set by user), which are still readable.
       // We can thus separately check for duplicates.
-      const mnemonics: string[] = [];
-      if (!!process.env.ETH_ENCRYPTION_MNEMONIC) {
-        mnemonics.push(process.env.ETH_ENCRYPTION_MNEMONIC!);
-      }
-
-      if (!!process.env.GOERLI_ENCRYPTION_MNEMONIC) {
-        mnemonics.push(process.env.GOERLI_ENCRYPTION_MNEMONIC);
-      }
-
-      if (!!process.env.SEPOLIA_ENCRYPTION_MNEMONIC) {
-        mnemonics.push(process.env.SEPOLIA_ENCRYPTION_MNEMONIC);
-      }
-
-      if (!!process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC) {
-        mnemonics.push(process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC);
-      }
-
-      if (!!process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC) {
-        mnemonics.push(process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC);
-      }
+      const mnemonics: string[] = [
+        process.env.ETH_ENCRYPTION_MNEMONIC,
+        process.env.GOERLI_ENCRYPTION_MNEMONIC,
+        process.env.SEPOLIA_ENCRYPTION_MNEMONIC,
+        process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC,
+        process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC
+      ].filter(mnemonic => !!mnemonic)
 
       const hasDuplicates = mnemonics.some((val, i) => mnemonics.indexOf(val) !== i);
       if (hasDuplicates) {
@@ -116,9 +103,10 @@ export function validateEnvVars() {
     required: true,
     callback: envVar => {
       try {
-        new URL(envVar);
+        const prefix = "https://"
+        new URL(prefix + envVar);
       } catch (_) {
-        throw new Error("Invalid domain url.");
+        throw new Error(`Invalid domain url: ${envVar}. Make sure the domain is of format <subdomain>.<domain>.<domain-extension>`);
       }
     },
   });
