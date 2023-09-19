@@ -42,16 +42,84 @@ export function validateEnvVars() {
     },
   });
 
-  _tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL, { required: true });
+  _tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL, {
+    required: true,
+    callback(envVar) {
+      let url: URL;
+      try {
+        url = new URL(envVar);
+      } catch (_) {
+        throw new Error("Invalid provider url.");
+      }
+      
+      if (url.protocol !== "wss://") {
+        throw new Error("Invalid provider url scheme.");
+      }
+    },
+  });
   _tryReadEnv("ETH_PRIVATE_KEY", process.env.ETH_PRIVATE_KEY, { required: true });
   _tryReadEnv("ENCRYPTION_MNEMONIC", process.env.ENCRYPTION_MNEMONIC, {
     required: true,
     callback: mnemonic => {
       if (!ethers.utils.isValidMnemonic(mnemonic)) {
-        throw new Error("Invalid mnemonic");
+        throw new Error(
+          "Invalid mnemonic. Make sure you have set the correct <NETWORK>_ENCRYPTION_MNEMONIC environment variable."
+        );
+      }
+
+      // Make sure there are no duplicate mnemonics in the .env file
+      //
+      // Notes:
+      // The quickstart archaeologist, which uses this repo in dockerized form, will read from the respective
+      // <NETWORK>_ENCRYPTION_MNEMONIC env variables, and set the ENCRYPTION_MNEMONIC env variable.
+      //
+      // This means as far as the context running container is concerned, the ENCRYPTION_MNEMONIC env variable
+      // is used (while not set directly in `.env`), and that is actually what need to be checked for validity.
+      //
+      // Effectively, the correct <NETWORK>_ENCRYPTION_MNEMONIC env variable is checked for validity by the code above.
+      //
+      // However the env file does still contain all mnemonic variants (if set by user), which are still readable.
+      // We can thus separately check for duplicates.
+      const mnemonics: string[] = [];
+      if (!!process.env.ETH_ENCRYPTION_MNEMONIC) {
+        mnemonics.push(process.env.ETH_ENCRYPTION_MNEMONIC!);
+      }
+
+      if (!!process.env.GOERLI_ENCRYPTION_MNEMONIC) {
+        mnemonics.push(process.env.GOERLI_ENCRYPTION_MNEMONIC);
+      }
+
+      if (!!process.env.SEPOLIA_ENCRYPTION_MNEMONIC) {
+        mnemonics.push(process.env.SEPOLIA_ENCRYPTION_MNEMONIC);
+      }
+
+      if (!!process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC) {
+        mnemonics.push(process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC);
+      }
+
+      if (!!process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC) {
+        mnemonics.push(process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC);
+      }
+
+      const hasDuplicates = mnemonics.some((val, i) => mnemonics.indexOf(val) !== i);
+      if (hasDuplicates) {
+        throw new Error(
+          "Duplicate mnemonics. \
+        Be sure to set different <NETWORK>_ENCRYPTION_MNEMONIC environment variables \
+        for each network you intend to run on."
+        );
       }
     },
   });
 
-  // TODO -- add validation for domain if it is present
+  _tryReadEnv("DOMAIN", process.env.DOMAIN, {
+    required: true,
+    callback: envVar => {
+      try {
+        new URL(envVar);
+      } catch (_) {
+        throw new Error("Invalid domain url.");
+      }
+    },
+  });
 }

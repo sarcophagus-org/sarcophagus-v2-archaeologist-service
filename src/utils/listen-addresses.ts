@@ -12,7 +12,13 @@ export const genListenAddresses = (
 
 export const wssListenAddress = (): string[] => {
   archLogger.debug("using websockets");
-  return [`/ip4/127.0.0.1/tcp/9000/wss`];
+  return [
+    `/ip4/127.0.0.1/tcp/9000/wss`,
+    `/ip4/127.0.0.1/tcp/9001/wss`,
+    `/ip4/127.0.0.1/tcp/9002/wss`,
+    `/ip4/127.0.0.1/tcp/9003/wss`,
+    `/ip4/127.0.0.1/tcp/9004/wss`,
+  ];
 };
 
 export const ssListenAddresses = (
