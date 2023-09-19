@@ -53,7 +53,7 @@ export function validateEnvVars() {
       }
       
       if (url.protocol !== "wss://") {
-        throw new Error("Invalid provider url scheme.");
+        throw new Error(`Invalid provider protocol: ${url.protocol}`);
       }
     },
   });
