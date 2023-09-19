@@ -80,7 +80,7 @@ export function validateEnvVars() {
       //
       // However, the env file does still contain all mnemonic variants (if set by user), which are still readable.
       // We can thus separately check for duplicates.
-      const mnemonics: string[] = [
+      const mnemonics: (string | undefined)[] = [
         process.env.ETH_ENCRYPTION_MNEMONIC,
         process.env.GOERLI_ENCRYPTION_MNEMONIC,
         process.env.SEPOLIA_ENCRYPTION_MNEMONIC,
