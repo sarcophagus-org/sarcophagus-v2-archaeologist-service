@@ -71,6 +71,7 @@ export class Archaeologist {
       const { signalServerList } = this.listenAddressesConfig!;
       this.listenAddresses = genListenAddresses(
         signalServerList,
+        (await getWeb3Interface()).networkConfig.chainId,
         this.peerId.toJSON().id,
         false,
         process.env.DOMAIN

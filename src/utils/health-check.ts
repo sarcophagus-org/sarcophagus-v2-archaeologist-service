@@ -19,7 +19,6 @@ import {
   logProfile,
 } from "../cli/utils";
 import { getBlockTimestamp } from "./blockchain/helpers";
-import { notifyUser } from "./notification";
 
 /**
  * Runs on service startup
