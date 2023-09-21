@@ -51,7 +51,7 @@ export async function startService(opts: {
   await arch.initLibp2pNode();
   arch.setupSarcophagusNegotiationStream();
 
-  // Restart node on 20 min interval in attempt to avoid websocket / wrtc issues
+  // Restart node on 20 min interval in attempt to avoid websocket issues
   setInterval(async () => {
     arch.restartNode();
     warnIfEthBalanceIsLow();
