@@ -1,4 +1,3 @@
-import { hardhatNetworkConfig } from "./lib/config/hardhat";
 import {
   ArchaeologistFacet__factory,
   EmbalmerFacet,
@@ -18,6 +17,7 @@ import {
   baseGoerliNetworkConfig,
   polygonMumbaiNetworkConfig,
 } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { hardhatNetworkConfig } from "@sarcophagus-org/sarcophagus-v2-sdk/dist/networkConfig";
 import { ethers } from "ethers";
 import { ArchaeologistFacetX } from "scripts/web3-interface/archaeologist-facet-x";
 
@@ -35,10 +35,6 @@ export interface NetworkContext {
 
 type NetworkConfigReturningFunction = (providerUrl: string) => SarcoNetworkConfig;
 
-export const localChainId = hardhatNetworkConfig.chainId;
-
-export const isLocalNetwork = Number(process.env.CHAIN_ID) === localChainId;
-
 const chainIdsToProviderUrl = new Map([
   [1, process.env.ETH_PROVIDER_URL!],
   [5, process.env.GOERLI_PROVIDER_URL!],
@@ -55,7 +51,7 @@ const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkCo
     [11155111, (providerUrl: string) => sepoliaNetworkConfig(providerUrl)],
     [80001, (providerUrl: string) => polygonMumbaiNetworkConfig(providerUrl)],
     [84531, (providerUrl: string) => baseGoerliNetworkConfig(providerUrl)],
-    [31337, _ => hardhatNetworkConfig],
+    [31337, _ => hardhatNetworkConfig()],
   ]);
 
   if (!chainIdsToNetworkConfigReturningFunction.has(chainId)) {
