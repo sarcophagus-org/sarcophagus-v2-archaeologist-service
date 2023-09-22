@@ -29,11 +29,6 @@ export class KeyFinder {
     return currentWallet.privateKey;
   }
 
-  derivePrivateKeyAtIndex(index): string {
-    const walletAtCurrentIndex = this.getHdNodeAtIndex(index);
-    return walletAtCurrentIndex.privateKey;
-  }
-
   // runs during sarcophagus negotiation to determine current public key
   async getNextPublicKey() {
     const mySarcoIds = await getSarcophagiIds();
