@@ -3,7 +3,7 @@ import * as ethers from "ethers";
 import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "./exit-codes";
 import { exit } from "process";
-import { getNetworkConfigByChainId, isLocalNetwork } from "../lib/config";
+import { isLocalNetwork } from "../network-config";
 import { hardhatNetworkConfig } from "../lib/config/hardhat";
 
 const _tryReadEnv = (
@@ -33,30 +33,57 @@ const _tryReadEnv = (
   }
 };
 
+const  _validateProviderUrl = (urlString: string | undefined, network: string) => {
+  if (urlString === undefined) return; // Nothing to validate as provider url is not set.
+
+  let url: URL;
+  try {
+    url = new URL(urlString);
+  } catch (_) {
+    throw new Error(`Invalid ${network} provider url: ${urlString}}`);
+  }
+  
+  if (url.protocol !== "wss:") {
+    throw new Error(`Invalid ${network} provider protocol: ${url.protocol}`);
+  }
+};
+
+
 export function validateEnvVars() {
   const chainID = isLocalNetwork ? hardhatNetworkConfig.chainId.toString() : process.env.CHAIN_ID;
-  _tryReadEnv("CHAIN_ID", chainID, {
+  _tryReadEnv("CHAIN_IDS", chainID, {
     required: true,
     callback: envVar => {
-      getNetworkConfigByChainId(envVar);
+      if (envVar.split(",").length === 0) {
+        throw new Error("CHAIN_IDS must be a comma separated list of chain ids");
+      }
     },
   });
 
-  _tryReadEnv("PROVIDER_URL", process.env.PROVIDER_URL, {
-    required: true,
-    callback(envVar) {
-      let url: URL;
-      try {
-        url = new URL(envVar);
-      } catch (_) {
-        throw new Error("Invalid provider url.");
-      }
-      
-      if (url.protocol !== "wss:") {
-        throw new Error(`Invalid provider protocol: ${url.protocol}`);
-      }
-    },
+  // On X_PROVIDER_URL Validation:
+  // Cannot confirm rpcProvider is valid until an actual network call is attempted
+  // This is done in src/network-config.ts -> getNetworkContextByChainId
+  _tryReadEnv("ETH_PROVIDER_URL", process.env.ETH_PROVIDER_URL, {
+    required: false,
+    callback: (envVar) => _validateProviderUrl(envVar, "mainnet"),
   });
+  _tryReadEnv("GOERLI_PROVIDER_URL", process.env.GOERLI_PROVIDER_URL, {
+    required: false,
+    callback: (envVar) => _validateProviderUrl(envVar, "goerli"),
+  });
+  _tryReadEnv("SEPOLIA_PROVIDER_URL", process.env.SEPOLIA_PROVIDER_URL, {
+    required: false,
+    callback: (envVar) => _validateProviderUrl(envVar, "sepolia"),
+  });
+  _tryReadEnv("BASE_GOERLI_PROVIDER_URL", process.env.BASE_GOERLI_PROVIDER_URL, {
+    required: false,
+    callback: (envVar) => _validateProviderUrl(envVar, "baseGoerli"),
+  });
+  _tryReadEnv("POLYGON_MUMBAI_PROVIDER_URL", process.env.POLYGON_MUMBAI_PROVIDER_URL, {
+    required: false,
+    callback: (envVar) => _validateProviderUrl(envVar, "polygonMumbai"),
+  });
+
   _tryReadEnv("ETH_PRIVATE_KEY", process.env.ETH_PRIVATE_KEY, { required: true });
   _tryReadEnv("ENCRYPTION_MNEMONIC", process.env.ENCRYPTION_MNEMONIC, {
     required: true,
