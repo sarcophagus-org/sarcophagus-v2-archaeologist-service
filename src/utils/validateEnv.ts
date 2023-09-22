@@ -3,8 +3,6 @@ import * as ethers from "ethers";
 import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "./exit-codes";
 import { exit } from "process";
-import { isLocalNetwork } from "../network-config";
-import { hardhatNetworkConfig } from "../lib/config/hardhat";
 
 const _tryReadEnv = (
   envName: string,
@@ -49,8 +47,7 @@ const _validateProviderUrl = (urlString: string | undefined, network: string) =>
 };
 
 export function validateEnvVars() {
-  const chainID = isLocalNetwork ? hardhatNetworkConfig.chainId.toString() : process.env.CHAIN_ID;
-  _tryReadEnv("CHAIN_IDS", chainID, {
+  _tryReadEnv("CHAIN_IDS", process.env.CHAIN_IDS, {
     required: true,
     callback: envVar => {
       if (envVar.split(",").length === 0) {
