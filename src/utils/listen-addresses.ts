@@ -27,7 +27,7 @@ export const wssListenAddress = (chainId: number): string[] => {
     [80001, "9004"], // Polygon Mumbai
   ]);
 
-  return [`/ip4/127.0.0.1/tcp/${chainIdTolistenPort[chainId]}/wss`,];
+  return [`/ip4/127.0.0.1/tcp/${chainIdTolistenPort[chainId]}/wss`];
 };
 
 export const ssListenAddresses = (

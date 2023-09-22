@@ -33,7 +33,7 @@ const _tryReadEnv = (
   }
 };
 
-const  _validateProviderUrl = (urlString: string | undefined, network: string) => {
+const _validateProviderUrl = (urlString: string | undefined, network: string) => {
   if (urlString === undefined) return; // Nothing to validate as provider url is not set.
 
   let url: URL;
@@ -42,12 +42,11 @@ const  _validateProviderUrl = (urlString: string | undefined, network: string) =
   } catch (_) {
     throw new Error(`Invalid ${network} provider url: ${urlString}}`);
   }
-  
+
   if (url.protocol !== "wss:") {
     throw new Error(`Invalid ${network} provider protocol: ${url.protocol}`);
   }
 };
-
 
 export function validateEnvVars() {
   const chainID = isLocalNetwork ? hardhatNetworkConfig.chainId.toString() : process.env.CHAIN_ID;
@@ -65,23 +64,23 @@ export function validateEnvVars() {
   // This is done in src/network-config.ts -> getNetworkContextByChainId
   _tryReadEnv("ETH_PROVIDER_URL", process.env.ETH_PROVIDER_URL, {
     required: false,
-    callback: (envVar) => _validateProviderUrl(envVar, "mainnet"),
+    callback: envVar => _validateProviderUrl(envVar, "mainnet"),
   });
   _tryReadEnv("GOERLI_PROVIDER_URL", process.env.GOERLI_PROVIDER_URL, {
     required: false,
-    callback: (envVar) => _validateProviderUrl(envVar, "goerli"),
+    callback: envVar => _validateProviderUrl(envVar, "goerli"),
   });
   _tryReadEnv("SEPOLIA_PROVIDER_URL", process.env.SEPOLIA_PROVIDER_URL, {
     required: false,
-    callback: (envVar) => _validateProviderUrl(envVar, "sepolia"),
+    callback: envVar => _validateProviderUrl(envVar, "sepolia"),
   });
   _tryReadEnv("BASE_GOERLI_PROVIDER_URL", process.env.BASE_GOERLI_PROVIDER_URL, {
     required: false,
-    callback: (envVar) => _validateProviderUrl(envVar, "baseGoerli"),
+    callback: envVar => _validateProviderUrl(envVar, "baseGoerli"),
   });
   _tryReadEnv("POLYGON_MUMBAI_PROVIDER_URL", process.env.POLYGON_MUMBAI_PROVIDER_URL, {
     required: false,
-    callback: (envVar) => _validateProviderUrl(envVar, "polygonMumbai"),
+    callback: envVar => _validateProviderUrl(envVar, "polygonMumbai"),
   });
 
   _tryReadEnv("ETH_PRIVATE_KEY", process.env.ETH_PRIVATE_KEY, { required: true });
@@ -112,8 +111,8 @@ export function validateEnvVars() {
         process.env.GOERLI_ENCRYPTION_MNEMONIC,
         process.env.SEPOLIA_ENCRYPTION_MNEMONIC,
         process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC,
-        process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC
-      ].filter(mnemonic => !!mnemonic)
+        process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC,
+      ].filter(mnemonic => !!mnemonic);
 
       const hasDuplicates = mnemonics.some((val, i) => mnemonics.indexOf(val) !== i);
       if (hasDuplicates) {
@@ -130,10 +129,12 @@ export function validateEnvVars() {
     required: true,
     callback: envVar => {
       try {
-        const prefix = "https://"
+        const prefix = "https://";
         new URL(prefix + envVar);
       } catch (_) {
-        throw new Error(`Invalid domain url: ${envVar}. Make sure the domain is of format <subdomain>.<domain>.<domain-extension>`);
+        throw new Error(
+          `Invalid domain url: ${envVar}. Make sure the domain is of format <subdomain>.<domain>.<domain-extension>`
+        );
       }
     },
   });
