@@ -59,7 +59,7 @@ export function validateEnvVars() {
   // On X_PROVIDER_URL Validation:
   // Cannot confirm rpcProvider is valid until an actual network call is attempted
   // This is done in src/network-config.ts -> getNetworkContextByChainId
-  _tryReadEnv("ETH_PROVIDER_URL", process.env.ETH_PROVIDER_URL, {
+  _tryReadEnv("MAINNET_PROVIDER_URL", process.env.MAINNET_PROVIDER_URL, {
     required: false,
     callback: envVar => _validateProviderUrl(envVar, "mainnet"),
   });
