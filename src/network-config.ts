@@ -33,8 +33,6 @@ export interface NetworkContext {
   viewStateFacet: ViewStateFacet;
 }
 
-type NetworkConfigReturningFunction = (providerUrl: string) => SarcoNetworkConfig;
-
 const chainIdsToProviderUrl = new Map([
   [1, process.env.ETH_PROVIDER_URL!],
   [5, process.env.GOERLI_PROVIDER_URL!],
@@ -44,13 +42,15 @@ const chainIdsToProviderUrl = new Map([
   [31337, process.env.HARDHAT_PROVIDER_URL!],
 ]);
 
+type NetworkConfigReturningFunction = (providerUrl: string) => SarcoNetworkConfig;
+
 const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkContext => {
   const chainIdsToNetworkConfigReturningFunction = new Map<number, NetworkConfigReturningFunction>([
-    [1, (providerUrl: string) => mainnetNetworkConfig(providerUrl)],
-    [5, (providerUrl: string) => goerliNetworkConfig(providerUrl)],
-    [11155111, (providerUrl: string) => sepoliaNetworkConfig(providerUrl)],
-    [80001, (providerUrl: string) => polygonMumbaiNetworkConfig(providerUrl)],
-    [84531, (providerUrl: string) => baseGoerliNetworkConfig(providerUrl)],
+    [1, (providerUrl) => mainnetNetworkConfig(providerUrl)],
+    [5, (providerUrl) => goerliNetworkConfig(providerUrl)],
+    [11155111, (providerUrl) => sepoliaNetworkConfig(providerUrl)],
+    [80001, (providerUrl) => polygonMumbaiNetworkConfig(providerUrl)],
+    [84531, (providerUrl) => baseGoerliNetworkConfig(providerUrl)],
     [31337, _ => hardhatNetworkConfig()],
   ]);
 
@@ -58,10 +58,8 @@ const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkCo
     throw Error(`Unsupported Chain ID: ${chainId}`);
   }
 
-  const getNetworkConfig: NetworkConfigReturningFunction =
-    chainIdsToNetworkConfigReturningFunction[chainId];
   const providerUrl = chainIdsToProviderUrl[chainId];
-  const networkConfig = getNetworkConfig(providerUrl);
+  const networkConfig: SarcoNetworkConfig = chainIdsToNetworkConfigReturningFunction[chainId](providerUrl);
 
   const rpcProvider = new ethers.providers.WebSocketProvider(providerUrl);
   const ethWallet = isTest
