@@ -56,7 +56,7 @@ export function validateEnvVars() {
     },
   });
 
-  // On X_PROVIDER_URL Validation:
+  // On <NETWORK>_PROVIDER_URL Validation:
   // Cannot confirm rpcProvider is valid until an actual network call is attempted
   // This is done in src/network-config.ts -> getNetworkContextByChainId
   _tryReadEnv("MAINNET_PROVIDER_URL", process.env.MAINNET_PROVIDER_URL, {
@@ -90,6 +90,7 @@ export function validateEnvVars() {
         );
       }
 
+      // TODO: We may no longer want multiple mnemonics. If so, remove this check.
       // Make sure there are no duplicate mnemonics in the .env file
       //
       // Notes:
