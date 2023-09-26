@@ -66,7 +66,7 @@ export class View implements Command {
       const { viewStateFacet, ethWallet } = this.networkContext;
 
       const sarcoId = options.sarcophagusDetails;
-      const subgraphSarco = await SubgraphData.getSarcophagus(sarcoId);
+      const subgraphSarco = await SubgraphData.getSarcophagus(sarcoId, this.networkContext);
 
       const sarco: SarcophagusContract = await viewStateFacet.getSarcophagus(sarcoId);
       const cursedArchData: CursedArchaeologist = await viewStateFacet.getSarcophagusArchaeologist(
@@ -109,16 +109,16 @@ export class View implements Command {
       };
 
       if (options.inactiveCurses) {
-        logSarcos("Past Sarcophagi", await SubgraphData.getPastSarcophagi());
+        logSarcos("Past Sarcophagi", await SubgraphData.getPastSarcophagi(this.networkContext));
       }
 
       if (options.activeCurses) {
-        logSarcos("Current Sarcophagi", await SubgraphData.getActiveSarcophagi());
+        logSarcos("Current Sarcophagi", await SubgraphData.getActiveSarcophagi(this.networkContext));
       }
 
       if (options.inactiveCurses || options.activeCurses) return;
 
-      const subgraphSarcos = await SubgraphData.getSarcophagi();
+      const subgraphSarcos = await SubgraphData.getSarcophagi(this.networkContext);
       logSarcos("Your Sarcophagi", subgraphSarcos);
 
       if (options.export) {
@@ -132,7 +132,7 @@ export class View implements Command {
     }
 
     if (options.stats) {
-      const stats = await SubgraphData.getArchStats();
+      const stats = await SubgraphData.getArchStats(this.networkContext);
 
       logCallout(() => {
         archLogger.notice("Your Stats:\n\n");

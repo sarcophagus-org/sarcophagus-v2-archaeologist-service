@@ -31,9 +31,9 @@ export async function fetchSarcophagiAndSchedulePublish(network: SarcoSupportedN
   inMemoryStore.gracePeriod = inMemoryStore.gracePeriod || (await getGracePeriod(networkContext));
 
   const sarcophagi: SarcophagusData[] = [];
-  const currentBlockTimestampSec = await getBlockTimestamp();
+  const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
 
-  (await SubgraphData.getSarcophagi())
+  (await SubgraphData.getSarcophagi(this.networkContext))
     .filter(s => !inMemoryStore.deadSarcophagusIds.includes(s.id))
     .map(async sarco => {
       const { id: sarcoId, creationDate } = sarco;

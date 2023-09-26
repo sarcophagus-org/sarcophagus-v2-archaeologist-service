@@ -28,7 +28,8 @@ function getCreateSarcoHandler(network: SarcoSupportedNetwork) {
     const isCursed = (cursedArchaeologists as string[]).includes(archAddress);
     if (!isCursed) return;
 
-    const currentBlockTimestampSec = await getBlockTimestamp();
+    const networkContext = (await getWeb3Interface()).getNetworkContext(network);
+    const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
 
     const scheduledResurrectionTime = schedulePublishPrivateKeyWithBuffer(
       currentBlockTimestampSec,
@@ -60,7 +61,9 @@ function getRewrapHandler(network: SarcoSupportedNetwork) {
     const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
-    const currentBlockTimestampSec = await getBlockTimestamp();
+    
+    const networkContext = (await getWeb3Interface()).getNetworkContext(network);
+    const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
     schedulePublishPrivateKeyWithBuffer(currentBlockTimestampSec, sarcoId, newResurrectionTime, network);
   };
 }

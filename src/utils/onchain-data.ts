@@ -121,5 +121,5 @@ export async function getFreeBondBalance(networkContext: NetworkContext): Promis
 
 export async function getSarcophagiIds(networkContext: NetworkContext): Promise<string[]> {
   const { ethWallet } = networkContext;
-  return SubgraphData.getSarcophagiIds(ethWallet.address.toLowerCase());
+  return SubgraphData.getSarcophagiIds(ethWallet.address.toLowerCase(), networkContext);
 }

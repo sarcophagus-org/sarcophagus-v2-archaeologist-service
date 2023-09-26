@@ -1,23 +1,7 @@
-import { getWeb3Interface } from "../scripts/web3-interface";
+import { NetworkContext } from "network-config";
 import { getBlockTimestamp, getDateFromTimestamp } from "./blockchain/helpers";
 import { getGracePeriod, SarcophagusDataSimple } from "./onchain-data";
 import fetch from "node-fetch";
-
-async function queryGraphQl(query: string) {
-  const web3Interface = await getWeb3Interface();
-
-  const response = await fetch(
-    web3Interface.networkConfig.subgraphUrl || process.env.SUBGRAPH_URL!,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ query }),
-    }
-  );
-
-  const { data } = (await response.json()) as { data: any };
-  return data;
-}
 
 const getArchStatsQuery = (archAddress: string) => `query {
     archaeologist (id: "${archAddress}") {
@@ -96,9 +80,9 @@ const getCurseStatus = (
     : "FAILED";
 
 export class SubgraphData {
-  static getArchStats = async () => {
-    const archAddress = (await getWeb3Interface()).ethWallet.address;
-    const { archaeologist: archStats } = await queryGraphQl(getArchStatsQuery(archAddress));
+  static getArchStats = async (networkContext: NetworkContext) => {
+    const archAddress = networkContext!.ethWallet.address;
+    const { archaeologist: archStats } = await this.queryGraphQl(getArchStatsQuery(archAddress), networkContext);
 
     const { successes, accusals, failures } = archStats;
 
@@ -109,8 +93,22 @@ export class SubgraphData {
     };
   };
 
+  private static async queryGraphQl(query: string, networkContext: NetworkContext) {
+    const response = await fetch(
+      networkContext!.networkConfig.subgraphUrl || process.env.SUBGRAPH_URL!,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ query }),
+      }
+    );
+
+    const { data } = (await response.json()) as { data: any };
+    return data;
+  }
+
   static getSarcophagus = async (
-    sarcoId: string
+    sarcoId: string, networkContext: NetworkContext
   ): Promise<
     | (SarcophagusDataSimple & {
         rewrapCount: number;
@@ -118,8 +116,9 @@ export class SubgraphData {
     | undefined
   > => {
     try {
-      const { sarcophagusData, rewrapSarcophaguses } = (await queryGraphQl(
-        getSarcoWithRewrapsQuery(sarcoId)
+      const { sarcophagusData, rewrapSarcophaguses } = (await this.queryGraphQl(
+        getSarcoWithRewrapsQuery(sarcoId),
+        networkContext
       )) as {
         sarcophagusData: SarcoDataSubgraph;
         rewrapSarcophaguses: {
@@ -128,15 +127,15 @@ export class SubgraphData {
         }[];
       };
 
-      const blockTimestamp = await getBlockTimestamp();
+      const blockTimestamp = await getBlockTimestamp(networkContext!);
       const resurrectionThreshold =
-        Number.parseInt(sarcophagusData.resurrectionTime) + (await getGracePeriod()).toNumber();
+        Number.parseInt(sarcophagusData.resurrectionTime) + (await getGracePeriod(networkContext!)).toNumber();
 
       return {
         id: sarcophagusData.sarcoId,
         curseStatus: getCurseStatus(
           sarcophagusData,
-          (await getWeb3Interface()).ethWallet.address,
+          networkContext!.ethWallet.address,
           blockTimestamp,
           resurrectionThreshold
         ),
@@ -154,9 +153,9 @@ export class SubgraphData {
    * from subgraph. This DOES NOT include `cursedAmount` and `perSecondFee`
    * and must be queried separately from the contracts.
    */
-  static getSarcophagiIds = async (archAddress: string): Promise<string[]> => {
+  static getSarcophagiIds = async (archAddress: string, networkContext: NetworkContext): Promise<string[]> => {
     try {
-      const { sarcophagusDatas } = (await queryGraphQl(getArchSarcosQuery(archAddress))) as {
+      const { sarcophagusDatas } = (await this.queryGraphQl(getArchSarcosQuery(archAddress), networkContext)) as {
         sarcophagusDatas: SarcoDataSubgraph[];
       };
 
@@ -172,15 +171,15 @@ export class SubgraphData {
    * from subgraph. This DOES NOT include `cursedAmount` and `perSecondFee`
    * and must be queried separately from the contracts.
    */
-  static getSarcophagi = async (): Promise<SarcophagusDataSimple[]> => {
+  static getSarcophagi = async (networkContext: NetworkContext): Promise<SarcophagusDataSimple[]> => {
     try {
-      const archAddress = (await getWeb3Interface()).ethWallet.address.toLowerCase();
-      const { sarcophagusDatas } = (await queryGraphQl(getArchSarcosQuery(archAddress))) as {
+      const archAddress = networkContext!.ethWallet.address.toLowerCase();
+      const { sarcophagusDatas } = (await this.queryGraphQl(getArchSarcosQuery(archAddress), networkContext)) as {
         sarcophagusDatas: SarcoDataSubgraph[];
       };
 
-      const blockTimestamp = await getBlockTimestamp();
-      const gracePeriod = (await getGracePeriod()).toNumber();
+      const blockTimestamp = await getBlockTimestamp(networkContext!);
+      const gracePeriod = (await getGracePeriod(networkContext!)).toNumber();
 
       return sarcophagusDatas.map(s => ({
         id: s.sarcoId,
@@ -199,17 +198,18 @@ export class SubgraphData {
     }
   };
 
-  static getActiveSarcophagi = async (): Promise<SarcophagusDataSimple[]> => {
+  static getActiveSarcophagi = async (networkContext: NetworkContext): Promise<SarcophagusDataSimple[]> => {
     try {
-      const blockTimestamp = await getBlockTimestamp();
-      const gracePeriod = (await getGracePeriod()).toNumber();
-      const archAddress = (await getWeb3Interface()).ethWallet.address.toLowerCase();
+      const blockTimestamp = await getBlockTimestamp(networkContext!);
+      const gracePeriod = (await getGracePeriod(networkContext!)).toNumber();
+      const archAddress = networkContext!.ethWallet.address.toLowerCase();
 
-      const { sarcophagusDatas } = (await queryGraphQl(
+      const { sarcophagusDatas } = (await this.queryGraphQl(
         getArchSarcosQuery(archAddress, {
           limitToActiveForArch: true,
           activeTimeThreshold: blockTimestamp - gracePeriod,
-        })
+        }), 
+        networkContext
       )) as { sarcophagusDatas: SarcoDataSubgraph[] };
 
       return sarcophagusDatas.map<SarcophagusDataSimple>(s => ({
@@ -224,17 +224,18 @@ export class SubgraphData {
     }
   };
 
-  static getPastSarcophagi = async (): Promise<SarcophagusDataSimple[]> => {
+  static getPastSarcophagi = async (networkContext: NetworkContext): Promise<SarcophagusDataSimple[]> => {
     try {
-      const blockTimestamp = await getBlockTimestamp();
-      const gracePeriod = (await getGracePeriod()).toNumber();
-      const archAddress = (await getWeb3Interface()).ethWallet.address.toLowerCase();
+      const blockTimestamp = await getBlockTimestamp(networkContext!);
+      const gracePeriod = (await getGracePeriod(networkContext!)).toNumber();
+      const archAddress = networkContext!.ethWallet.address.toLowerCase();
 
-      const { sarcophagusDatas } = (await queryGraphQl(
+      const { sarcophagusDatas } = (await this.queryGraphQl(
         getArchSarcosQuery(archAddress, {
           limitToActiveForArch: false,
           activeTimeThreshold: blockTimestamp - gracePeriod,
-        })
+        }),
+        networkContext
       )) as { sarcophagusDatas: SarcoDataSubgraph[] };
 
       return sarcophagusDatas.map<SarcophagusDataSimple>(s => ({

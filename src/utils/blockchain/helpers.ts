@@ -1,5 +1,5 @@
+import { NetworkContext } from "network-config";
 import { archLogger } from "../../logger/chalk-theme";
-import { getWeb3Interface } from "../../scripts/web3-interface";
 
 const MAX_RETRIES = 2;
 const INTERVAL_BETWEEN_RETRIES = 5000;
@@ -30,10 +30,9 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export const getBlockTimestamp = async (): Promise<number> => {
+export const getBlockTimestamp = async (networkContext: NetworkContext): Promise<number> => {
   try {
-    const web3Interface = await getWeb3Interface();
-    const provider = web3Interface.ethWallet.provider;
+    const provider = networkContext.ethWallet.provider;
     const blockNumber = await provider.getBlockNumber();
     const block = await provider.getBlock(blockNumber);
 
