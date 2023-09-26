@@ -3,7 +3,7 @@ import "dotenv/config";
 import { getWeb3Interface } from "./web3-interface";
 import { validateEnvVars } from "../utils/validateEnv";
 import { exit } from "process";
-import { RPC_EXCEPTION } from "../utils/exit-codes";
+import { RPC_EXCEPTION, SUCCESS } from "../utils/exit-codes";
 import { archLogger } from "../logger/chalk-theme";
 import { BigNumber, ethers } from "ethers";
 import { requestApproval } from "./approve_utils";
@@ -16,6 +16,7 @@ import {
   ONE_MONTH_IN_SECONDS,
 } from "../cli/utils";
 import { handleRpcError } from "../utils/rpc-error-handler";
+import { NetworkContext } from "network-config";
 
 validateEnvVars();
 
@@ -40,6 +41,7 @@ const web3Interface = await getWeb3Interface();
 
 export async function profileSetup(
   args: ProfileCliParams,
+  networkContext: NetworkContext,
   isUpdate: boolean = false,
   exitAfterTx: boolean = true,
   skipApproval: boolean = false
@@ -53,13 +55,15 @@ export async function profileSetup(
     curseFee = BigNumber.from(0),
   } = args;
 
+  const { archaeologistFacet, networkName } = networkContext;
+
   const diggingFeePerSecond = diggingFee!.div(ONE_MONTH_IN_SECONDS);
 
   let freeBondDeposit = ethers.constants.Zero;
 
   if (freeBond && freeBond.gt(ethers.constants.Zero)) {
     if (!skipApproval) {
-      await requestApproval();
+      await requestApproval(networkContext);
     }
 
     freeBondDeposit = freeBond;
@@ -76,7 +80,7 @@ export async function profileSetup(
   try {
     const txType = isUpdate ? "Updating" : "Registering";
     const tx = isUpdate
-      ? await web3Interface.archaeologistFacet.updateArchaeologist(
+      ? await archaeologistFacet.updateArchaeologist(
           fullPeerString,
           diggingFeePerSecond,
           rewrapInterval!,
@@ -84,7 +88,7 @@ export async function profileSetup(
           maxResTime!,
           curseFee
         )
-      : await web3Interface.archaeologistFacet.registerArchaeologist(
+      : await archaeologistFacet.registerArchaeologist(
           fullPeerString,
           diggingFeePerSecond,
           rewrapInterval!,
@@ -99,15 +103,15 @@ export async function profileSetup(
 
     archLogger.notice(isUpdate ? "PROFILE UPDATED!" : "\nPROFILE REGISTERED!");
 
-    const profile = await getOnchainProfile();
+    const profile = await getOnchainProfile(networkContext);
     inMemoryStore.profile = profile;
-    logProfile(profile);
+    logProfile(networkName, profile);
 
     if (exitAfterTx) {
-      exit(0);
+      exit(SUCCESS);
     }
   } catch (error) {
-    await handleRpcError(error);
+    await handleRpcError(error, networkContext);
     exit(RPC_EXCEPTION);
   }
 }

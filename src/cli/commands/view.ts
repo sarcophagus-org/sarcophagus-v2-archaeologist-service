@@ -1,7 +1,7 @@
 import { Command, CommandOptions } from "./command";
 import {
   CursedArchaeologist,
-  getEthBalance,
+  getNetworkTokenBalance,
   getOnchainProfile,
   getRewards,
   getSarcoBalance,
@@ -20,12 +20,14 @@ import { SubgraphData } from "../../utils/graphql";
 import { validateEnvVars } from "../../utils/validateEnv";
 import { exit } from "process";
 import { SUCCESS } from "../../utils/exit-codes";
+import { NetworkContext } from "network-config";
 
 export class View implements Command {
   name = "view";
   aliases = [];
   description = "View archaeologist data";
   args = viewOptionDefinitions;
+  networkContext: NetworkContext | undefined;
 
   async exportToCsv(name: string, content: any) {
     try {
@@ -38,6 +40,16 @@ export class View implements Command {
     }
   }
 
+  validateArgs(options: CommandOptions) {
+    const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
+    if (multipleChains && !options.network) {
+      archLogger.warn(
+        "Missing network option. Use --network to specify a network to run this command on."
+      );
+      return;
+    }
+  }
+
   async run(options: CommandOptions): Promise<void> {
     validateEnvVars();
 
@@ -46,17 +58,12 @@ export class View implements Command {
       return;
     }
 
-    const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
-    if (multipleChains && !options.network) {
-      archLogger.warn(
-        "Missing network option. Use --network to specify a network to run this command on."
-      );
-      return;
-    }
+
+
+    this.networkContext = (await getWeb3Interface()).getNetworkContext(options.network);
 
     if (options.sarcophagusDetails) {
-      const web3Interface = await getWeb3Interface();
-      const { viewStateFacet, ethWallet } = web3Interface.getNetworkContext(options.network);
+      const { viewStateFacet, ethWallet } = this.networkContext;
 
       const sarcoId = options.sarcophagusDetails;
       const subgraphSarco = await SubgraphData.getSarcophagus(sarcoId);
@@ -136,8 +143,8 @@ export class View implements Command {
     }
 
     if (options.profile) {
-      const profile = await getOnchainProfile();
-      const formattedProfile = logProfile(profile);
+      const profile = await getOnchainProfile(this.networkContext);
+      const formattedProfile = logProfile(this.networkContext.networkName, profile);
 
       if (options.export) {
         this.exportToCsv(
@@ -150,12 +157,17 @@ export class View implements Command {
     }
 
     if (options.balance) {
-      const sarcoBalance = await getSarcoBalance();
-      const ethBalance = await getEthBalance();
-      const web3Interface = await getWeb3Interface();
-      const { ethWallet } = web3Interface.getNetworkContext(options.network);
+      const sarcoBalance = await getSarcoBalance(this.networkContext);
+      const ethBalance = await getNetworkTokenBalance(this.networkContext);
+      const { ethWallet, networkName, networkConfig } = this.networkContext;
       logCallout(() => {
-        logBalances(sarcoBalance, ethBalance, ethWallet.address);
+        logBalances(
+          networkName, 
+          networkConfig.tokenSymbol,
+          sarcoBalance,
+          ethBalance, 
+          ethWallet.address
+        );
       });
 
       if (options.export) {
@@ -167,7 +179,7 @@ export class View implements Command {
     }
 
     if (options.freeBond) {
-      const profile = await getOnchainProfile();
+      const profile = await getOnchainProfile(this.networkContext);
       logCallout(() => {
         archLogger.info("Your free bond:");
         archLogger.notice(ethers.utils.formatEther(profile.freeBond) + " SARCO");
@@ -175,7 +187,7 @@ export class View implements Command {
     }
 
     if (options.cursedBond) {
-      const profile = await getOnchainProfile();
+      const profile = await getOnchainProfile(this.networkContext);
       logCallout(() => {
         archLogger.info("Your cursed bond:");
         archLogger.notice(ethers.utils.formatEther(profile.cursedBond) + " SARCO");
@@ -183,7 +195,7 @@ export class View implements Command {
     }
 
     if (options.rewards) {
-      const rewards = await getRewards();
+      const rewards = await getRewards(this.networkContext);
       logCallout(() => {
         archLogger.info("Rewards available:");
         archLogger.notice(ethers.utils.formatEther(rewards) + " SARCO");

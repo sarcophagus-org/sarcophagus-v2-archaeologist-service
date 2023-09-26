@@ -1,8 +1,8 @@
 import { BigNumber } from "ethers";
-import { getWeb3Interface } from "../scripts/web3-interface";
 import { fetchSarcophagiAndSchedulePublish } from "./blockchain/refresh-data";
 import { SubgraphData } from "./graphql";
 import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { NetworkContext } from "network-config";
 
 export interface OnchainProfile {
   exists: boolean;
@@ -72,14 +72,13 @@ export const inMemoryStore: InMemoryStore = {
   sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
 };
 
-export async function fetchProfileAndSchedulePublish(network?: SarcoSupportedNetwork) {
-  inMemoryStore.profile = await getOnchainProfile(network);
-  inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublish();
+export async function fetchProfileAndSchedulePublish(networkContext: NetworkContext) {
+  inMemoryStore.profile = await getOnchainProfile(networkContext);
+  inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublish(networkContext.chainId as SarcoSupportedNetwork);
 }
 
-export async function getOnchainProfile(network?: SarcoSupportedNetwork): Promise<OnchainProfile> {
-  const web3Interface = await getWeb3Interface();
-  const { viewStateFacet, ethWallet } = web3Interface.getNetworkContext(network);
+export async function getOnchainProfile(networkContext: NetworkContext): Promise<OnchainProfile> {
+  const { viewStateFacet, ethWallet } = networkContext;
 
   try {
     return {
@@ -95,38 +94,32 @@ export async function getOnchainProfile(network?: SarcoSupportedNetwork): Promis
   }
 }
 
-export async function getRewards(network?: SarcoSupportedNetwork): Promise<BigNumber> {
-  const web3Interface = await getWeb3Interface();
-  const { viewStateFacet, ethWallet } = web3Interface.getNetworkContext(network);
+export async function getRewards(networkContext: NetworkContext): Promise<BigNumber> {
+  const { viewStateFacet, ethWallet } = networkContext;
   return viewStateFacet.getRewards(ethWallet.address);
 }
 
-export async function getSarcoBalance(network?: SarcoSupportedNetwork): Promise<BigNumber> {
-  const web3Interface = await getWeb3Interface();
-  const { sarcoToken, ethWallet } = web3Interface.getNetworkContext(network);
+export async function getSarcoBalance(networkContext: NetworkContext): Promise<BigNumber> {
+  const { sarcoToken, ethWallet } = networkContext;
   return sarcoToken.balanceOf(ethWallet.address);
 }
 
-export async function getGracePeriod(network?: SarcoSupportedNetwork): Promise<BigNumber> {
-  const web3Interface = await getWeb3Interface();
-  const { viewStateFacet } = web3Interface.getNetworkContext(network);
+export async function getGracePeriod(networkContext: NetworkContext): Promise<BigNumber> {
+  const { viewStateFacet } = networkContext;
   return viewStateFacet.getGracePeriod();
 }
 
-export async function getEthBalance(network?: SarcoSupportedNetwork): Promise<BigNumber> {
-  const web3Interface = await getWeb3Interface();
-  const { ethWallet } = web3Interface.getNetworkContext(network);
+export async function getNetworkTokenBalance(networkContext: NetworkContext): Promise<BigNumber> {
+  const { ethWallet } = networkContext;
   return ethWallet.getBalance();
 }
 
-export async function getFreeBondBalance(network?: SarcoSupportedNetwork): Promise<BigNumber> {
-  const web3Interface = await getWeb3Interface();
-  const { viewStateFacet, ethWallet } = web3Interface.getNetworkContext(network);
+export async function getFreeBondBalance(networkContext: NetworkContext): Promise<BigNumber> {
+  const { viewStateFacet, ethWallet } = networkContext;
   return viewStateFacet.getFreeBond(ethWallet.address);
 }
 
-export async function getSarcophagiIds(network?: SarcoSupportedNetwork): Promise<string[]> {
-  const web3Interface = await getWeb3Interface();
-  const { ethWallet } = web3Interface.getNetworkContext(network);
+export async function getSarcophagiIds(networkContext: NetworkContext): Promise<string[]> {
+  const { ethWallet } = networkContext;
   return SubgraphData.getSarcophagiIds(ethWallet.address.toLowerCase());
 }

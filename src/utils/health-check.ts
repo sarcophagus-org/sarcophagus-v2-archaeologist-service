@@ -5,7 +5,7 @@ import { archLogger } from "../logger/chalk-theme";
 import { NO_ONCHAIN_PROFILE, RPC_EXCEPTION } from "./exit-codes";
 import { logCallout } from "../logger/formatter";
 import {
-  getEthBalance,
+  getNetworkTokenBalance,
   getFreeBondBalance,
   getOnchainProfile,
   getSarcoBalance,
@@ -19,22 +19,31 @@ import {
   logProfile,
 } from "../cli/utils";
 import { getBlockTimestamp } from "./blockchain/helpers";
+import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { NetworkContext } from "network-config";
 
 /**
  * Runs on service startup
  * @param peerId -- libp2p peer ID that will be validated with arch profile if provided
  */
-export async function healthCheck(peerId?: string) {
+export async function healthCheck(network: SarcoSupportedNetwork, peerId?: string) {
   const web3Interface = await getWeb3Interface();
+  const networkContext = web3Interface.getNetworkContext(network);
 
   try {
-    const sarcoBalance = await getSarcoBalance();
-    warnIfSarcoBalanceIsLow(sarcoBalance);
+    const sarcoBalance = await getSarcoBalance(networkContext);
+    warnIfSarcoBalanceIsLow(networkContext, sarcoBalance);
+    
+    const { networkTokenBalance } = await warnIfEthBalanceIsLow(networkContext);
 
-    const { ethBalance } = await warnIfEthBalanceIsLow();
-
-    const profile = await fetchProfileOrExit(() =>
-      logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address)
+    const profile = await fetchProfileOrExit(networkContext, () =>
+      logBalances(
+        networkContext.networkName, 
+        networkContext.networkConfig.tokenSymbol, 
+        sarcoBalance, 
+        networkTokenBalance, 
+        networkContext.ethWallet.address
+      )
     );
 
     // Validate local peerId matches the one on the profile
@@ -45,7 +54,7 @@ export async function healthCheck(peerId?: string) {
       ) {
         logCallout(async () => {
           await archLogger.error(
-            "There is a problem with your archaeologist profile. Peer ID on profile does not match local Peer Id!\n" +
+            `There is a problem with your ${networkContext.networkName} archaeologist profile. Peer ID on profile does not match local Peer Id!\n` +
               "Your archaeologist will not appear in the embalmer webapp\n",
             {
               logTimestamp: true,
@@ -71,11 +80,17 @@ export async function healthCheck(peerId?: string) {
       );
     }
 
-    const freeBondBalance = await getFreeBondBalance();
-    logProfile(profile);
+    const freeBondBalance = await getFreeBondBalance(networkContext);
+    logProfile(networkContext.networkName, profile);
 
     logCallout(async () => {
-      logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address);
+      logBalances(
+        networkContext.networkName, 
+        networkContext.networkConfig.tokenSymbol, 
+        sarcoBalance, 
+        networkTokenBalance, 
+        networkContext.ethWallet.address
+      );
       warnIfFreeBondIsLessThanMinDiggingFee(
         freeBondBalance,
         profile.minimumDiggingFeePerSecond,
@@ -83,7 +98,7 @@ export async function healthCheck(peerId?: string) {
       );
     });
   } catch (e) {
-    await archLogger.error(`Health Check error: ${e.toString()}`, {
+    await archLogger.error(`Health Check error [${networkContext.networkName}]: ${e.toString()}`, {
       sendNotification: true,
       logTimestamp: true,
     });
@@ -91,12 +106,12 @@ export async function healthCheck(peerId?: string) {
   }
 }
 
-const fetchProfileOrExit = async (logBalances: Function): Promise<OnchainProfile> => {
-  const profile = await getOnchainProfile();
+const fetchProfileOrExit = async (networkContext: NetworkContext, logBalances: Function): Promise<OnchainProfile> => {
+  const profile = await getOnchainProfile(networkContext);
   if (!profile.exists) {
     logCallout(() => {
       logBalances();
-      logNotRegistered();
+      logNotRegistered(networkContext.networkName);
     });
 
     exit(NO_ONCHAIN_PROFILE);
@@ -122,25 +137,28 @@ const warnIfFreeBondIsLessThanMinDiggingFee = (
 };
 
 export const warnIfEthBalanceIsLow = async (
+  networkContext: NetworkContext,
   sendNotification?: boolean
-): Promise<{ ethBalance: BigNumber }> => {
-  const ethBalance = await getEthBalance();
-  if (ethBalance.lte(ethers.utils.parseEther("0.05"))) {
+): Promise<{ networkTokenBalance: BigNumber }> => {
+  const networkTokenBalance = await getNetworkTokenBalance(networkContext);
+
+  if (networkTokenBalance.lte(ethers.utils.parseEther("0.05"))) {
     await archLogger.error(
-      `\nYou have very little ETH in your account: ${ethers.utils.formatEther(
-        ethBalance
-      )} ETH.\nYou may not have enough gas for any transactions!\n`,
+      `\nYou have very little balance in your ${networkContext.networkName} account: ${ethers.utils.formatEther(
+        networkTokenBalance
+      )} ${networkContext.networkConfig.tokenSymbol}.\n
+      You may not have enough gas for any transactions!\n`,
       { sendNotification, logTimestamp: true }
     );
   }
 
-  return { ethBalance };
+  return { networkTokenBalance };
 };
 
-const warnIfSarcoBalanceIsLow = (sarcoBalance: BigNumber): void => {
+const warnIfSarcoBalanceIsLow = (networkContext: NetworkContext, sarcoBalance: BigNumber): void => {
   if (sarcoBalance.lte(ethers.utils.parseEther("1"))) {
     archLogger.warn(
-      `\nYou have very little SARCO in your account: ${ethers.utils.formatEther(
+      `\nYou have very little SARCO in your ${networkContext.networkName} account: ${ethers.utils.formatEther(
         sarcoBalance
       )} SARCO\n`,
       true

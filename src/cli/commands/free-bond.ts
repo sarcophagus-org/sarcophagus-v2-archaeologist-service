@@ -7,6 +7,9 @@ import { depositFreeBond, withdrawFreeBond } from "../../utils/blockchain/profil
 import { exit } from "process";
 import { SUCCESS } from "../../utils/exit-codes";
 import { getFreeBondBalance } from "../../utils/onchain-data";
+import { NetworkContext } from "network-config";
+import { logValidationErrorAndExit } from "cli/utils";
+import { getWeb3Interface } from "scripts/web3-interface";
 
 export class FreeBond implements Command {
   name = "free-bond";
@@ -14,6 +17,7 @@ export class FreeBond implements Command {
   description = "Manage your archaeologist on-chain free bond.";
   args = freeBondDefinitions;
   shouldBeRegistered: boolean;
+  networkContext: NetworkContext
 
   constructor() {
     this.shouldBeRegistered = true;
@@ -31,27 +35,26 @@ export class FreeBond implements Command {
       Object.keys(options).forEach(key => delete options[key]);
       return;
     }
+
+    const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
+    if (multipleChains && !options.network) {
+      logValidationErrorAndExit("Missing network option. Use --network to specify a network to run this command on.");
+    }
   }
 
   async run(options: CommandOptions): Promise<void> {
-    const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
-    if (multipleChains && !options.network) {
-      archLogger.warn(
-        "Missing network option. Use --network to specify a network to run this command on."
-      );
-      return;
-    }
+    this.networkContext = (await getWeb3Interface()).getNetworkContext(options.network);
 
     if (options.withdrawAll) {
-      await withdrawFreeBond(await getFreeBondBalance());
+      await withdrawFreeBond(await getFreeBondBalance(this.networkContext));
     } else if (options.withdraw) {
       await withdrawFreeBond(options.withdraw);
     } else if (options.deposit) {
-      if (!(await hasAllowance(options.deposit, options.network))) {
-        await requestApproval(options.network);
+      if (!(await hasAllowance(options.deposit, this.networkContext))) {
+        await requestApproval(this.networkContext);
       }
 
-      await depositFreeBond(options.deposit, options.network);
+      await depositFreeBond(options.deposit, this.networkContext);
     } else {
       archLogger.warn("Use:\n");
       archLogger.info("cli help free-bond");

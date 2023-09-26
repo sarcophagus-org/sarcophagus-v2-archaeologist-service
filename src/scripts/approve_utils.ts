@@ -1,16 +1,14 @@
 import "dotenv/config";
 import inquirer from "inquirer";
-import { getWeb3Interface } from "./web3-interface";
 import { BigNumber } from "ethers";
 import { archLogger } from "../logger/chalk-theme";
 import { runApprove } from "../utils/blockchain/approve";
 import { DENIED_APPROVAL } from "../utils/exit-codes";
 import { exit } from "process";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { NetworkContext } from "network-config";
 
-export const hasAllowance = async (amt: BigNumber, network?: SarcoSupportedNetwork) => {
-  const web3Interface = await getWeb3Interface();
-  const { sarcoToken, ethWallet, networkConfig } = web3Interface.getNetworkContext(network);
+export const hasAllowance = async (amt: BigNumber, networkContext: NetworkContext) => {
+  const { sarcoToken, ethWallet, networkConfig } = networkContext;
 
   const allowance = await sarcoToken.allowance(
     ethWallet.address,
@@ -23,7 +21,7 @@ export const hasAllowance = async (amt: BigNumber, network?: SarcoSupportedNetwo
 /**
  * Request approval from user to spend SARCO. Will terminate the process if the user rejects the request.
  */
-export const requestApproval = async (network?: SarcoSupportedNetwork) => {
+export const requestApproval = async (networkContext: NetworkContext) => {
   const approvalAnswer = await inquirer.prompt([
     {
       type: "confirm",
@@ -40,5 +38,5 @@ export const requestApproval = async (network?: SarcoSupportedNetwork) => {
     exit(DENIED_APPROVAL);
   }
 
-  await runApprove(network);
+  await runApprove(networkContext);
 };

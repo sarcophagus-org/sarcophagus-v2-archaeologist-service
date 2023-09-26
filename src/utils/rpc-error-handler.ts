@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { archLogger } from "../logger/chalk-theme";
 import { warnIfEthBalanceIsLow } from "./health-check";
+import { NetworkContext } from "network-config";
 
 const alreadyUnwrapped = (e: string) => e.includes("ArchaeologistAlreadyUnwrapped");
 const notEnoughFreeBond = (e: string) => e.includes("NotEnoughFreeBond");
@@ -18,7 +19,7 @@ const incorrectProof = (e: string) => e.includes("AccuseIncorrectProof");
 /**
  * Parses the text in RPC errors' `.reason` field and outputs more readable error messages
  * */
-export async function handleRpcError(e: any) {
+export async function handleRpcError(e: any, networkContext: NetworkContext) {
   const { reason, errorArgs, errorName } = e;
 
   const errorString: string = reason || errorName || "";
@@ -113,5 +114,5 @@ export async function handleRpcError(e: any) {
   }
 
   await archLogger.error(`\n${e}`, { logTimestamp: true });
-  await warnIfEthBalanceIsLow(true);
+  await warnIfEthBalanceIsLow(networkContext, true);
 }

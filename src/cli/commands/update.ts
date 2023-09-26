@@ -17,6 +17,9 @@ import {
   validateRewrapInterval,
 } from "../shared/profile-validations";
 import { NO_ONCHAIN_PROFILE, SUCCESS } from "../../utils/exit-codes";
+import { getWeb3Interface } from "scripts/web3-interface";
+import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { NetworkContext } from "network-config";
 
 export class Update implements Command {
   name = "update";
@@ -24,12 +27,13 @@ export class Update implements Command {
   description = "Updates your archaeologist profile on-chain.";
   args = profileOptionDefinitions;
   profile: OnchainProfile | undefined;
+  networkContext: NetworkContext | undefined;
 
   async setProfileOrExit() {
-    const profile = await getOnchainProfile();
+    const profile = await getOnchainProfile(this.networkContext!);
 
     if (!profile.exists) {
-      logNotRegistered();
+      logNotRegistered(this.networkContext!.networkName);
       exit(NO_ONCHAIN_PROFILE);
     }
 
@@ -40,7 +44,7 @@ export class Update implements Command {
     validateEnvVars();
     await this.setProfileOrExit();
 
-    archLogger.notice("Updating your Archaeologist profile...");
+    archLogger.notice(`Updating your ${this.networkContext!.networkName} Archaeologist profile...`);
 
     // If update arg doesn't exist on args provided, use existing profile value
     if (!updateArgs.diggingFee) {
@@ -59,7 +63,7 @@ export class Update implements Command {
       updateArgs.curseFee = this.profile!.curseFee;
     }
 
-    await profileSetup(updateArgs, true);
+    await profileSetup(updateArgs, this.networkContext!, true);
   }
 
   validateArgs(options: CommandOptions) {
@@ -77,21 +81,20 @@ export class Update implements Command {
     if (isFreeBondProvidedAndZero(options.freeBond)) {
       delete options.freeBond;
     }
-  }
 
-  async run(options: CommandOptions): Promise<void> {
     const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
     if (multipleChains && !options.network) {
-      archLogger.warn(
-        "Missing network option. Use --network to specify a network to run this command on."
-      );
-      return;
+      logValidationErrorAndExit("Missing network option. Use --network to specify a network to run this command on.");
     }
+  }
+  
+  async run(options: CommandOptions): Promise<void> {
+    this.networkContext = (await getWeb3Interface()).getNetworkContext(options.network);
 
     if (options.view) {
       // output profile
-      const profile = await getOnchainProfile();
-      logProfile(profile);
+      const profile = await getOnchainProfile(this.networkContext);
+      logProfile(this.networkContext.networkName, profile);
     } else if (options.domain) {
       await this.updateArchaeologist({});
     } else {

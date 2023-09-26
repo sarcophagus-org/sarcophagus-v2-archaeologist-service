@@ -2,20 +2,18 @@ import { BigNumber } from "ethers";
 import { archLogger } from "../../logger/chalk-theme";
 import { exit } from "process";
 import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
-import { getWeb3Interface } from "../../scripts/web3-interface";
 import { RPC_EXCEPTION } from "../../utils/exit-codes";
 import { retryFn } from "./helpers";
 import { handleRpcError } from "../../utils/rpc-error-handler";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { NetworkContext } from "network-config";
 
-export const depositFreeBond = async (amt: BigNumber, network?: SarcoSupportedNetwork) => {
-  const web3Interface = await getWeb3Interface();
-  const { archaeologistFacet } = web3Interface.getNetworkContext(network);
+export const depositFreeBond = async (amt: BigNumber, networkContext: NetworkContext) => {
+  const { archaeologistFacet } = networkContext;
 
   archLogger.notice("Depositing free bond...");
 
-  if (!(await hasAllowance(amt))) {
-    await requestApproval();
+  if (!(await hasAllowance(amt, networkContext))) {
+    await requestApproval(networkContext);
   }
 
   setInterval(() => process.stdout.write("."), 1000);
@@ -25,14 +23,13 @@ export const depositFreeBond = async (amt: BigNumber, network?: SarcoSupportedNe
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
-    await handleRpcError(error);
+    await handleRpcError(error, networkContext);
     exit(RPC_EXCEPTION);
   }
 };
 
-export const withdrawFreeBond = async (amt: BigNumber, network?: SarcoSupportedNetwork) => {
-  const web3Interface = await getWeb3Interface();
-  const { archaeologistFacet } = web3Interface.getNetworkContext(network);
+export const withdrawFreeBond = async (amt: BigNumber, networkContext: NetworkContext) => {
+  const { archaeologistFacet } = networkContext;
 
   archLogger.notice("Withdrawing free bond...");
   setInterval(() => process.stdout.write("."), 1000);
@@ -42,14 +39,13 @@ export const withdrawFreeBond = async (amt: BigNumber, network?: SarcoSupportedN
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
-    await handleRpcError(error);
+    await handleRpcError(error, networkContext);
     exit(RPC_EXCEPTION);
   }
 };
 
-export const withdrawRewards = async (network?: SarcoSupportedNetwork) => {
-  const web3Interface = await getWeb3Interface();
-  const { archaeologistFacet } = web3Interface.getNetworkContext(network);
+export const withdrawRewards = async (networkContext: NetworkContext) => {
+  const { archaeologistFacet } = networkContext;
 
   archLogger.notice("Withdrawing your rewards...");
   setInterval(() => process.stdout.write("."), 1000);
@@ -59,7 +55,7 @@ export const withdrawRewards = async (network?: SarcoSupportedNetwork) => {
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
-    await handleRpcError(error);
+    await handleRpcError(error, networkContext);
     exit(RPC_EXCEPTION);
   }
 };

@@ -8,8 +8,8 @@ import { ethers } from "ethers";
 import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 export async function publishPrivateKey(sarcoId: string, network: SarcoSupportedNetwork) {
-  const web3Interface = await getWeb3Interface();
-  const { viewStateFacet, ethWallet, archaeologistFacet, keyFinder } = web3Interface.getNetworkContext(network);
+  const networkContext = (await getWeb3Interface()).getNetworkContext(network);
+  const { viewStateFacet, ethWallet, archaeologistFacet, keyFinder } = networkContext;
 
   archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`, true);
   inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
@@ -44,11 +44,11 @@ export async function publishPrivateKey(sarcoId: string, network: SarcoSupported
     archLogger.debug(`Cumulative Gas used: ${cummulativeGasUsed.toString()} ETH`);
   } catch (e) {
     await archLogger.error(`Unwrap failed: ${e}`, { sendNotification: true, logTimestamp: true });
-    handleRpcError(e);
+    handleRpcError(e, networkContext);
   } finally {
     inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished =
       inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.filter(id => id !== sarcoId);
 
-    await warnIfEthBalanceIsLow(true);
+    await warnIfEthBalanceIsLow(networkContext, true);
   }
 }
