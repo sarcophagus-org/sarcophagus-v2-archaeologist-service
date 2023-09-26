@@ -13,6 +13,8 @@ import { SarcophagusValidationError, StreamCommsError } from "../utils/error-cod
 import type { Stream } from "@libp2p/interface-connection";
 import { signPacked } from "../utils/signature";
 import { getBlockTimestamp } from "../utils/blockchain/helpers";
+import { NetworkContext } from "network-config";
+import { MAINNET_CHAIN_ID, SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 // If current block timestamp is further than the creation time passed to the arch
 // by this amount, then the arch will throw an error
@@ -115,10 +117,10 @@ export class Archaeologist {
     archLogger.error(`Error: ${error.message}`, { logTimestamp: true });
   }
 
-  async setupSarcophagusNegotiationStream() {
+  async setupSarcophagusNegotiationStreams() {
     const errorMessagePrefix = `Archaeologist ${this.peerId.toString()} declined to sign: `;
 
-    this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
+    const _handleNegotiationSignatureStream = async (networkContext: NetworkContext, { stream }: { stream: Stream }) => {
       try {
         await pipe(stream, async source => {
           for await (const data of source) {
@@ -199,24 +201,22 @@ export class Archaeologist {
                */
               if (
                 timestamp >
-                (await getBlockTimestamp()) * 1000 + CREATION_TIMESTAMP_DRIFT_ALLOWED_MS
+                (await getBlockTimestamp(networkContext)) * 1000 + CREATION_TIMESTAMP_DRIFT_ALLOWED_MS
               ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.INVALID_TIMESTAMP,
                   message: `${errorMessagePrefix} \n Timestamp received is in the future.  
                   \n Got: ${timestamp}
-                  \n Latest block timestamp value: ${await getBlockTimestamp()}`,
+                  \n Latest block timestamp value: ${await getBlockTimestamp(networkContext)}`,
                 });
                 return;
               }
 
-              const web3Interface = await getWeb3Interface();
-
-              const publicKey = await web3Interface.keyFinder.getNextPublicKey();
+              const publicKey = await networkContext.keyFinder.getNextPublicKey();
 
               // sign sarcophagus parameters to demonstrate agreement
               const signature = await signPacked(
-                web3Interface.ethWallet,
+                networkContext.ethWallet,
                 ["bytes", "uint256", "uint256", "uint256", "uint256", "uint256"],
                 [
                   publicKey,
@@ -243,6 +243,19 @@ export class Archaeologist {
           sendNotification: true,
         });
       }
+    };
+
+    // Set up separate streams for each chain id
+    const web3Interface = getWeb3Interface();
+    process.env.CHAIN_IDS!.split(",").map(idStr => Number.parseInt(idStr.trim()) ).forEach(async chainId => {
+      this.node.handle([`${NEGOTIATION_SIGNATURE_STREAM}-${chainId}`], async ({ stream }) => {
+        _handleNegotiationSignatureStream((await web3Interface).getNetworkContext(chainId as SarcoSupportedNetwork), { stream });
+      });
+    });
+
+    // Backwards compatibility for old nodes on mainnet
+    this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
+      _handleNegotiationSignatureStream((await web3Interface).getNetworkContext(MAINNET_CHAIN_ID) , { stream });
     });
   }
 }

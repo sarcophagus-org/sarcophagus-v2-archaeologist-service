@@ -58,7 +58,7 @@ export async function startService(opts: {
   // TODO -- delay starting the node until the creation window has passed?
   // Consider only doing this if arch as at least one sarcophagus
   await arch.initLibp2pNode();
-  arch.setupSarcophagusNegotiationStream();
+  arch.setupSarcophagusNegotiationStreams();
 
   // Restart node on 20 min interval in attempt to avoid websocket issues
   setInterval(async () => arch.restartNode(), RESTART_INTERVAL);
