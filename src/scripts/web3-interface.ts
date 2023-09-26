@@ -43,9 +43,8 @@ export const getWeb3Interface = async (isTest: boolean = false): Promise<Web3Int
           networkOrChainId === undefined
             ? web3Interface?.networkContexts[0]
             : web3Interface!.networkContexts.find(
-                n =>
-                  `${n.chainId}` === networkOrChainId ||
-                  n.networkName.toLowerCase() === `${networkOrChainId}`.toLowerCase()
+                n => (typeof networkOrChainId === "number" && n.chainId === networkOrChainId) || 
+                (typeof networkOrChainId === "string" && n.networkName.toLowerCase() === networkOrChainId.toLowerCase())
               );
 
         if (!networkContext) {
