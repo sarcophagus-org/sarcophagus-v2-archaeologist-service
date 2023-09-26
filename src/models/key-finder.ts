@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import { getWeb3Interface } from "../scripts/web3-interface";
 import { getSarcophagiIds } from "../utils/onchain-data";
 
 // TODO -- update to more appropriate derivation path that isn't BIP44

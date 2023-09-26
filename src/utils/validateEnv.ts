@@ -31,18 +31,18 @@ const _tryReadEnv = (
   }
 };
 
-const _validateProviderUrl = (urlString: string | undefined, network: string) => {
+const _validateProviderUrl = (urlString: string | undefined, networkName: string) => {
   if (urlString === undefined) return; // Nothing to validate as provider url is not set.
 
   let url: URL;
   try {
     url = new URL(urlString);
   } catch (_) {
-    throw new Error(`Invalid ${network} provider url: ${urlString}}`);
+    throw new Error(`Invalid ${networkName} provider url: ${urlString}}`);
   }
 
   if (url.protocol !== "wss:") {
-    throw new Error(`Invalid ${network} provider protocol: ${url.protocol}`);
+    throw new Error(`Invalid ${networkName} provider protocol: ${url.protocol}`);
   }
 };
 

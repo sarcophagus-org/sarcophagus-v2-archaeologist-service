@@ -6,8 +6,9 @@ import { archLogger } from "../logger/chalk-theme";
 import { cancelSheduledPublish, schedulePublishPrivateKeyWithBuffer } from "./scheduler";
 import { getBlockTimestamp, getDateFromTimestamp } from "./blockchain/helpers";
 import { ethers } from "ethers";
+import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
-function getCreateSarcoHandler() {
+function getCreateSarcoHandler(network: SarcoSupportedNetwork) {
   return async (
     sarcoId,
     sarcoName,
@@ -21,7 +22,8 @@ function getCreateSarcoHandler() {
     event
   ) => {
     const web3Interface = await getWeb3Interface();
-    const archAddress = web3Interface.ethWallet.address;
+    const { ethWallet, viewStateFacet } = web3Interface.getNetworkContext(network);
+    const archAddress = ethWallet.address;
 
     const isCursed = (cursedArchaeologists as string[]).includes(archAddress);
     if (!isCursed) return;
@@ -31,15 +33,16 @@ function getCreateSarcoHandler() {
     const scheduledResurrectionTime = schedulePublishPrivateKeyWithBuffer(
       currentBlockTimestampSec,
       sarcoId,
-      resurrectionTime.toNumber()
+      resurrectionTime.toNumber(),
+      network,
     );
 
-    const archaeologist = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(
+    const archaeologist = await viewStateFacet.getSarcophagusArchaeologist(
       sarcoId,
-      web3Interface.ethWallet.address
+      ethWallet.address
     );
 
-    const block = await web3Interface.ethWallet.provider.getBlock(event.blockNumber);
+    const block = await ethWallet.provider.getBlock(event.blockNumber);
     const creationDate = getDateFromTimestamp(block.timestamp);
 
     inMemoryStore.sarcophagi.push({
@@ -52,17 +55,17 @@ function getCreateSarcoHandler() {
   };
 }
 
-function getRewrapHandler() {
+function getRewrapHandler(network: SarcoSupportedNetwork) {
   return async (sarcoId: string, newResurrectionTime: number) => {
     const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
     const currentBlockTimestampSec = await getBlockTimestamp();
-    schedulePublishPrivateKeyWithBuffer(currentBlockTimestampSec, sarcoId, newResurrectionTime);
+    schedulePublishPrivateKeyWithBuffer(currentBlockTimestampSec, sarcoId, newResurrectionTime, network);
   };
 }
 
-function getCleanHandler() {
+function getCleanHandler(network: SarcoSupportedNetwork) {
   return (sarcoId: string) => {
     const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
@@ -73,7 +76,7 @@ function getCleanHandler() {
   };
 }
 
-function getBuryHandler() {
+function getBuryHandler(network: SarcoSupportedNetwork) {
   return (sarcoId: string) => {
     const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
@@ -84,7 +87,7 @@ function getBuryHandler() {
   };
 }
 
-function getAccuseHandler() {
+function getAccuseHandler(network: SarcoSupportedNetwork) {
   return async (sarcoId: string) => {
     const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
@@ -94,7 +97,9 @@ function getAccuseHandler() {
     // Check if sarcophagus is compromised, if so, remove from inMemoryStore
     // add to deadSarcophagusIds, and cancel scheduled publish
     const web3Interface = await getWeb3Interface();
-    const sarcoFromContract = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
+    const { viewStateFacet } = web3Interface.getNetworkContext(network);
+
+    const sarcoFromContract = await viewStateFacet.getSarcophagus(sarcoId);
     if (sarcoFromContract.isCompromised) {
       inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
       inMemoryStore.deadSarcophagusIds.push(sarcoId);
@@ -103,44 +108,45 @@ function getAccuseHandler() {
   };
 }
 
-export async function setupEventListeners() {
+export async function setupEventListeners(network: SarcoSupportedNetwork) {
   try {
     const web3Interface = await getWeb3Interface();
+    const { ethWallet, embalmerFacet, thirdPartyFacet } = web3Interface.getNetworkContext(network);
 
     const filters = {
-      createSarco: web3Interface.embalmerFacet.filters.CreateSarcophagus(),
-      rewrap: web3Interface.embalmerFacet.filters.RewrapSarcophagus(),
-      clean: web3Interface.thirdPartyFacet.filters.Clean(),
-      bury: web3Interface.embalmerFacet.filters.BurySarcophagus(),
-      accuse: web3Interface.thirdPartyFacet.filters.AccuseArchaeologist(),
+      createSarco: embalmerFacet.filters.CreateSarcophagus(),
+      rewrap: embalmerFacet.filters.RewrapSarcophagus(),
+      clean: thirdPartyFacet.filters.Clean(),
+      bury: embalmerFacet.filters.BurySarcophagus(),
+      accuse: thirdPartyFacet.filters.AccuseArchaeologist(),
     };
 
     const handlers = {
-      createSarco: getCreateSarcoHandler(),
-      rewrap: getRewrapHandler(),
-      clean: getCleanHandler(),
-      bury: getBuryHandler(),
-      accuse: getAccuseHandler(),
+      createSarco: getCreateSarcoHandler(network),
+      rewrap: getRewrapHandler(network),
+      clean: getCleanHandler(network),
+      bury: getBuryHandler(network),
+      accuse: getAccuseHandler(network),
     };
 
-    web3Interface.embalmerFacet.on(filters.createSarco, handlers.createSarco);
-    web3Interface.embalmerFacet.on(filters.rewrap, handlers.rewrap);
-    web3Interface.embalmerFacet.on(filters.clean, handlers.clean);
-    web3Interface.embalmerFacet.on(filters.bury, handlers.bury);
-    web3Interface.embalmerFacet.on(filters.accuse, handlers.accuse);
+    embalmerFacet.on(filters.createSarco, handlers.createSarco);
+    embalmerFacet.on(filters.rewrap, handlers.rewrap);
+    embalmerFacet.on(filters.clean, handlers.clean);
+    embalmerFacet.on(filters.bury, handlers.bury);
+    embalmerFacet.on(filters.accuse, handlers.accuse);
 
-    web3Interface.ethWallet.provider.on("error", async e => {
+    ethWallet.provider.on("error", async e => {
       archLogger.error(`Provider connection error: ${e}. Reconnecting...`);
       await destroyWeb3Interface();
-      setupEventListeners();
+      setupEventListeners(network);
     });
 
-    (web3Interface.ethWallet.provider as ethers.providers.WebSocketProvider)._websocket.on(
+    (ethWallet.provider as ethers.providers.WebSocketProvider)._websocket.on(
       "close",
       async e => {
         archLogger.info(`Provider WS connection closed: ${e}. Reconnecting...`);
         await destroyWeb3Interface();
-        setupEventListeners();
+        setupEventListeners(network);
       }
     );
   } catch (e) {

@@ -5,24 +5,27 @@ import { inMemoryStore } from "../onchain-data";
 import { retryFn } from "./helpers";
 import { warnIfEthBalanceIsLow } from "../health-check";
 import { ethers } from "ethers";
+import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
-export async function publishPrivateKey(sarcoId: string) {
+export async function publishPrivateKey(sarcoId: string, network: SarcoSupportedNetwork) {
   const web3Interface = await getWeb3Interface();
+  const { viewStateFacet, ethWallet, archaeologistFacet, keyFinder } = web3Interface.getNetworkContext(network);
+
   archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`, true);
   inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
 
   try {
-    const myCursedArch = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(
+    const myCursedArch = await viewStateFacet.getSarcophagusArchaeologist(
       sarcoId,
-      web3Interface.ethWallet.address
+      ethWallet.address
     );
 
-    const privateKey = web3Interface.keyFinder.derivePrivateKeyFromPublicKey(
+    const privateKey = keyFinder.derivePrivateKeyFromPublicKey(
       myCursedArch.publicKey
     );
 
     const callPublishPrivateKeyOnArchFacet = (): Promise<any> => {
-      return web3Interface.archaeologistFacet.publishPrivateKey(sarcoId, privateKey);
+      return archaeologistFacet.publishPrivateKey(sarcoId, privateKey);
     };
 
     const tx = await retryFn(callPublishPrivateKeyOnArchFacet, 0, true, `$unwrap ${sarcoId}`);

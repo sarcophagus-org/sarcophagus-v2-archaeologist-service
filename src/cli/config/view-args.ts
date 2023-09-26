@@ -1,5 +1,11 @@
 export const viewOptionDefinitions = [
   {
+    name: "network",
+    alias: "n",
+    type: String,
+    description: "Network to run this command on",
+  },
+  {
     name: "profile",
     alias: "p",
     type: Boolean,

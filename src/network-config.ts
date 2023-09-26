@@ -25,8 +25,9 @@ import {
   POLYGON_MUMBAI_CHAIN_ID,
   SEPOLIA_CHAIN_ID,
   hardhatNetworkConfig,
-} from "@sarcophagus-org/sarcophagus-v2-sdk/dist/networkConfig";
+} from "@sarcophagus-org/sarcophagus-v2-sdk";
 import { ethers } from "ethers";
+import { KeyFinder } from "models/key-finder";
 import { ArchaeologistFacetX } from "scripts/web3-interface/archaeologist-facet-x";
 
 export interface NetworkContext {
@@ -39,6 +40,8 @@ export interface NetworkContext {
   embalmerFacet: EmbalmerFacet;
   thirdPartyFacet: ThirdPartyFacet;
   viewStateFacet: ViewStateFacet;
+  keyFinder: KeyFinder;
+  encryptionHdWallet: ethers.utils.HDNode;
 }
 
 const chainIdsToProviderUrl = new Map([
@@ -48,6 +51,15 @@ const chainIdsToProviderUrl = new Map([
   [BASE_GOERLI_CHAIN_ID, process.env.BASE_GOERLI_PROVIDER_URL],
   [POLYGON_MUMBAI_CHAIN_ID, process.env.POLYGON_MUMBAI_PROVIDER_URL],
   [HARDHAT_CHAIN_ID, process.env.HARDHAT_PROVIDER_URL],
+]);
+
+const chainIdsToEncryptionMnemonic = new Map([
+  [MAINNET_CHAIN_ID, process.env.MAINNET_ENCRYPTION_MNEMONIC],
+  [GOERLI_CHAIN_ID, process.env.GOERLI_ENCRYPTION_MNEMONIC],
+  [SEPOLIA_CHAIN_ID, process.env.SEPOLIA_ENCRYPTION_MNEMONIC],
+  [BASE_GOERLI_CHAIN_ID, process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC],
+  [POLYGON_MUMBAI_CHAIN_ID, process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC],
+  [HARDHAT_CHAIN_ID, process.env.HARDHAT_ENCRYPTION_MNEMONIC],
 ]);
 
 type NetworkConfigReturningFunction = (providerUrl: string) => SarcoNetworkConfig;
@@ -101,6 +113,15 @@ const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkCo
   // Cannot confirm rpcProvider is valid until an actual network call is attempted
   sarcoToken.balanceOf(ethWallet.address);
 
+  const encryptionMnemonic: string | undefined = chainIdsToEncryptionMnemonic[chainId];
+
+  if (!encryptionMnemonic) {
+    throw Error(`No Encryption Mnemonic for Chain ID: ${chainId}`);
+  }
+
+  const encryptionHdWallet = ethers.utils.HDNode.fromMnemonic(encryptionMnemonic);
+  const keyFinder = new KeyFinder(encryptionHdWallet);
+
   return {
     archaeologistFacet: new ArchaeologistFacetX(archaeologistFacet),
     chainId,
@@ -111,6 +132,8 @@ const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkCo
     thirdPartyFacet,
     viewStateFacet,
     sarcoToken,
+    keyFinder,
+    encryptionHdWallet,
   };
 };
 

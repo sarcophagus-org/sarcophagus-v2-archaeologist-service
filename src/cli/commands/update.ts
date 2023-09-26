@@ -80,6 +80,14 @@ export class Update implements Command {
   }
 
   async run(options: CommandOptions): Promise<void> {
+    const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
+    if (multipleChains && !options.network) {
+      archLogger.warn(
+        "Missing network option. Use --network to specify a network to run this command on."
+      );
+      return;
+    }
+
     if (options.view) {
       // output profile
       const profile = await getOnchainProfile();

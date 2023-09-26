@@ -34,16 +34,24 @@ export class FreeBond implements Command {
   }
 
   async run(options: CommandOptions): Promise<void> {
+    const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
+    if (multipleChains && !options.network) {
+      archLogger.warn(
+        "Missing network option. Use --network to specify a network to run this command on."
+      );
+      return;
+    }
+
     if (options.withdrawAll) {
       await withdrawFreeBond(await getFreeBondBalance());
     } else if (options.withdraw) {
       await withdrawFreeBond(options.withdraw);
     } else if (options.deposit) {
-      if (!(await hasAllowance(options.deposit))) {
-        await requestApproval();
+      if (!(await hasAllowance(options.deposit, options.network))) {
+        await requestApproval(options.network);
       }
 
-      await depositFreeBond(options.deposit);
+      await depositFreeBond(options.deposit, options.network);
     } else {
       archLogger.warn("Use:\n");
       archLogger.info("cli help free-bond");

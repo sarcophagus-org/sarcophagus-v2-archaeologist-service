@@ -2,6 +2,7 @@ import scheduler from "node-schedule";
 import { archLogger } from "../logger/chalk-theme";
 import { publishPrivateKey } from "./blockchain/publish-private-key";
 import { inMemoryStore } from "./onchain-data";
+import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 const scheduledPublishPrivateKey: Record<string, scheduler.Job | undefined> = {};
 const sarcoIdToResurrectionTime: Record<string, number> = {};
@@ -9,7 +10,8 @@ const sarcoIdToResurrectionTime: Record<string, number> = {};
 function schedulePublishPrivateKey(
   sarcoId: string,
   resurrectionTime: Date,
-  exactResurrectionTime: number
+  exactResurrectionTime: number,
+  network: SarcoSupportedNetwork,
 ) {
   // If sarcophagus is being unwrapped, dont schedule job
   const sarcoIndex = inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.findIndex(
@@ -43,7 +45,7 @@ function schedulePublishPrivateKey(
   // Cancel existing schedules, so no duplicate jobs will be created.
   scheduledPublishPrivateKey[sarcoId]?.cancel();
   scheduledPublishPrivateKey[sarcoId] = scheduler.scheduleJob(resurrectionTime, async () => {
-    await publishPrivateKey(sarcoId);
+    await publishPrivateKey(sarcoId, network);
   });
 }
 
@@ -54,7 +56,8 @@ export function cancelSheduledPublish(sarcoId: string) {
 export function schedulePublishPrivateKeyWithBuffer(
   currentBlockTimestampSec: number,
   sarcoId: string,
-  resurrectionTimeSec: number
+  resurrectionTimeSec: number,
+  network: SarcoSupportedNetwork,
 ): Date {
   // Account for out of sync system clocks
   // Scheduler will use the system clock which may not be in sync with block.timestamp
@@ -82,7 +85,7 @@ export function schedulePublishPrivateKeyWithBuffer(
 
   archLogger.debug(`resurrection time with buffer: ${scheduledResurrectionTime}`);
 
-  schedulePublishPrivateKey(sarcoId, scheduledResurrectionTime, resurrectionTimeSec);
+  schedulePublishPrivateKey(sarcoId, scheduledResurrectionTime, resurrectionTimeSec, network);
 
   return scheduledResurrectionTime;
 }

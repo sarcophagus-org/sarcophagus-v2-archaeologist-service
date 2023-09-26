@@ -46,8 +46,18 @@ export class View implements Command {
       return;
     }
 
+    const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
+    if (multipleChains && !options.network) {
+      archLogger.warn(
+        "Missing network option. Use --network to specify a network to run this command on."
+      );
+      return;
+    }
+
     if (options.sarcophagusDetails) {
-      const { viewStateFacet, ethWallet } = await getWeb3Interface();
+      const web3Interface = await getWeb3Interface();
+      const { viewStateFacet, ethWallet } = web3Interface.getNetworkContext(options.network);
+
       const sarcoId = options.sarcophagusDetails;
       const subgraphSarco = await SubgraphData.getSarcophagus(sarcoId);
 
@@ -143,8 +153,9 @@ export class View implements Command {
       const sarcoBalance = await getSarcoBalance();
       const ethBalance = await getEthBalance();
       const web3Interface = await getWeb3Interface();
+      const { ethWallet } = web3Interface.getNetworkContext(options.network);
       logCallout(() => {
-        logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address);
+        logBalances(sarcoBalance, ethBalance, ethWallet.address);
       });
 
       if (options.export) {

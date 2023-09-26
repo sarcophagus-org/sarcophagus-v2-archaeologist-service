@@ -6,9 +6,11 @@ import { getWeb3Interface } from "../../scripts/web3-interface";
 import { RPC_EXCEPTION } from "../../utils/exit-codes";
 import { retryFn } from "./helpers";
 import { handleRpcError } from "../../utils/rpc-error-handler";
+import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
-export const depositFreeBond = async (amt: BigNumber) => {
+export const depositFreeBond = async (amt: BigNumber, network?: SarcoSupportedNetwork) => {
   const web3Interface = await getWeb3Interface();
+  const { archaeologistFacet } = web3Interface.getNetworkContext(network);
 
   archLogger.notice("Depositing free bond...");
 
@@ -19,7 +21,7 @@ export const depositFreeBond = async (amt: BigNumber) => {
   setInterval(() => process.stdout.write("."), 1000);
 
   try {
-    const tx = await retryFn(() => web3Interface.archaeologistFacet.depositFreeBond(amt));
+    const tx = await retryFn(() => archaeologistFacet.depositFreeBond(amt));
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
@@ -28,14 +30,15 @@ export const depositFreeBond = async (amt: BigNumber) => {
   }
 };
 
-export const withdrawFreeBond = async (amt: BigNumber) => {
+export const withdrawFreeBond = async (amt: BigNumber, network?: SarcoSupportedNetwork) => {
   const web3Interface = await getWeb3Interface();
+  const { archaeologistFacet } = web3Interface.getNetworkContext(network);
 
   archLogger.notice("Withdrawing free bond...");
   setInterval(() => process.stdout.write("."), 1000);
 
   try {
-    const tx = await retryFn(() => web3Interface.archaeologistFacet.withdrawFreeBond(amt));
+    const tx = await retryFn(() => archaeologistFacet.withdrawFreeBond(amt));
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {
@@ -44,13 +47,15 @@ export const withdrawFreeBond = async (amt: BigNumber) => {
   }
 };
 
-export const withdrawRewards = async () => {
+export const withdrawRewards = async (network?: SarcoSupportedNetwork) => {
   const web3Interface = await getWeb3Interface();
+  const { archaeologistFacet } = web3Interface.getNetworkContext(network);
+
   archLogger.notice("Withdrawing your rewards...");
   setInterval(() => process.stdout.write("."), 1000);
 
   try {
-    const tx = await retryFn(() => web3Interface.archaeologistFacet.withdrawReward());
+    const tx = await retryFn(() => archaeologistFacet.withdrawReward());
     await tx.wait();
     archLogger.notice("Success!");
   } catch (error) {

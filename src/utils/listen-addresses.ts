@@ -3,15 +3,14 @@ import { archLogger } from "../logger/chalk-theme";
 
 export const genListenAddresses = (
   servers: string[],
-  chainId: number,
   peerId?: string,
   isLocal?: boolean,
   domain?: string
 ): string[] => {
-  return domain ? wssListenAddress(chainId) : ssListenAddresses(isLocal === true, servers, peerId);
+  return domain ? wssListenAddress() : ssListenAddresses(isLocal === true, servers, peerId);
 };
 
-export const wssListenAddress = (chainId: number): string[] => {
+export const wssListenAddress = (): string[] => {
   archLogger.debug("using websockets");
   return [`/ip4/127.0.0.1/tcp/9000/wss`];
 };

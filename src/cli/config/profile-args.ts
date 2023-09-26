@@ -2,6 +2,12 @@ import { parseEther } from "ethers/lib/utils";
 
 export const profileOptionDefinitions = [
   {
+    name: "network",
+    alias: "n",
+    type: String,
+    description: "Network to run this command on",
+  },
+  {
     name: "guided",
     alias: "g",
     type: Boolean,

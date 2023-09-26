@@ -2,6 +2,7 @@ import { BigNumber } from "ethers";
 import { getWeb3Interface } from "../scripts/web3-interface";
 import { fetchSarcophagiAndSchedulePublish } from "./blockchain/refresh-data";
 import { SubgraphData } from "./graphql";
+import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 export interface OnchainProfile {
   exists: boolean;
@@ -71,18 +72,20 @@ export const inMemoryStore: InMemoryStore = {
   sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
 };
 
-export async function fetchProfileAndSchedulePublish() {
-  inMemoryStore.profile = await getOnchainProfile();
+export async function fetchProfileAndSchedulePublish(network?: SarcoSupportedNetwork) {
+  inMemoryStore.profile = await getOnchainProfile(network);
   inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublish();
 }
 
-export async function getOnchainProfile(): Promise<OnchainProfile> {
+export async function getOnchainProfile(network?: SarcoSupportedNetwork): Promise<OnchainProfile> {
   const web3Interface = await getWeb3Interface();
+  const { viewStateFacet, ethWallet } = web3Interface.getNetworkContext(network);
+
   try {
     return {
       exists: true,
-      ...(await web3Interface.viewStateFacet.getArchaeologistProfile(
-        web3Interface.ethWallet.address
+      ...(await viewStateFacet.getArchaeologistProfile(
+        ethWallet.address
       )),
     };
   } catch (e) {
@@ -92,43 +95,38 @@ export async function getOnchainProfile(): Promise<OnchainProfile> {
   }
 }
 
-export async function getRewards(): Promise<BigNumber> {
+export async function getRewards(network?: SarcoSupportedNetwork): Promise<BigNumber> {
   const web3Interface = await getWeb3Interface();
-  return web3Interface.viewStateFacet.getRewards(web3Interface.ethWallet.address);
+  const { viewStateFacet, ethWallet } = web3Interface.getNetworkContext(network);
+  return viewStateFacet.getRewards(ethWallet.address);
 }
 
-export async function getSarcoBalance(): Promise<BigNumber> {
+export async function getSarcoBalance(network?: SarcoSupportedNetwork): Promise<BigNumber> {
   const web3Interface = await getWeb3Interface();
-  return web3Interface.sarcoToken.balanceOf(web3Interface.ethWallet.address);
+  const { sarcoToken, ethWallet } = web3Interface.getNetworkContext(network);
+  return sarcoToken.balanceOf(ethWallet.address);
 }
 
-export async function getGracePeriod(): Promise<BigNumber> {
+export async function getGracePeriod(network?: SarcoSupportedNetwork): Promise<BigNumber> {
   const web3Interface = await getWeb3Interface();
-  return web3Interface.viewStateFacet.getGracePeriod();
+  const { viewStateFacet } = web3Interface.getNetworkContext(network);
+  return viewStateFacet.getGracePeriod();
 }
 
-export async function getEthBalance(): Promise<BigNumber> {
+export async function getEthBalance(network?: SarcoSupportedNetwork): Promise<BigNumber> {
   const web3Interface = await getWeb3Interface();
-  return web3Interface.ethWallet.getBalance();
+  const { ethWallet } = web3Interface.getNetworkContext(network);
+  return ethWallet.getBalance();
 }
 
-export async function getFreeBondBalance(): Promise<BigNumber> {
+export async function getFreeBondBalance(network?: SarcoSupportedNetwork): Promise<BigNumber> {
   const web3Interface = await getWeb3Interface();
-  return web3Interface.viewStateFacet.getFreeBond(web3Interface.ethWallet.address);
+  const { viewStateFacet, ethWallet } = web3Interface.getNetworkContext(network);
+  return viewStateFacet.getFreeBond(ethWallet.address);
 }
 
-export async function getSarcophagiIds(): Promise<string[]> {
+export async function getSarcophagiIds(network?: SarcoSupportedNetwork): Promise<string[]> {
   const web3Interface = await getWeb3Interface();
-  return SubgraphData.getSarcophagiIds(web3Interface.ethWallet.address.toLowerCase());
-}
-
-export enum SarcophagusState {
-  DoesNotExist,
-  Active,
-  Resurrecting,
-  Resurrected,
-  Buried,
-  Cleaned,
-  Accused,
-  Failed,
+  const { ethWallet } = web3Interface.getNetworkContext(network);
+  return SubgraphData.getSarcophagiIds(ethWallet.address.toLowerCase());
 }

@@ -4,11 +4,11 @@ import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "../utils/exit-codes";
 import { NetworkContext, getNetworkContextsByChainIds } from "../network-config";
 import { KeyFinder } from "../models/key-finder";
+import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 export interface Web3Interface {
-  encryptionHdWallet: ethers.utils.HDNode;
-  keyFinder: KeyFinder;
   networkContexts: NetworkContext[];
+  getNetworkContext: (network: SarcoSupportedNetwork | undefined) => NetworkContext;
 }
 
 let web3Interface: Web3Interface | undefined;
@@ -36,14 +36,24 @@ export const getWeb3Interface = async (isTest: boolean = false): Promise<Web3Int
       : [];
     const networkContexts = getNetworkContextsByChainIds(chainIds, isTest);
 
-    const encryptionHdWallet = ethers.utils.HDNode.fromMnemonic(process.env.ENCRYPTION_MNEMONIC!);
-
-    const keyFinder = new KeyFinder(encryptionHdWallet);
-
     web3Interface = {
-      encryptionHdWallet,
-      keyFinder,
       networkContexts,
+      getNetworkContext: networkOrChainId => {
+        const networkContext =
+          networkOrChainId === undefined
+            ? web3Interface?.networkContexts[0]
+            : web3Interface!.networkContexts.find(
+                n =>
+                  `${n.chainId}` === networkOrChainId ||
+                  n.networkName.toLowerCase() === `${networkOrChainId}`.toLowerCase()
+              );
+
+        if (!networkContext) {
+          throw Error(`No Network Context found for Chain ID or Network Name: ${networkOrChainId}`);
+        }
+
+        return networkContext;
+      },
     };
 
     return web3Interface;
