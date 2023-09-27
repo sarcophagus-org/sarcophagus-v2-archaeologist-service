@@ -5,7 +5,7 @@ import { hasAllowance } from "../../scripts/approve_utils";
 import { RPC_EXCEPTION } from "../../utils/exit-codes";
 import { retryFn } from "./helpers";
 import { handleRpcError } from "../../utils/rpc-error-handler";
-import { NetworkContext } from "network-config";
+import { NetworkContext } from "../../network-config";
 
 /**
  * Approves Sarcophagus contracts' spending SARCO on the connected account's behalf up to `MaxUint256` tokens.

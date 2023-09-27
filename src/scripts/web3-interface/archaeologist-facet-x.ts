@@ -1,7 +1,7 @@
 import { ArchaeologistFacet } from "@sarcophagus-org/sarcophagus-v2-contracts";
 import { BytesLike, ethers } from "ethers";
 import { handleRpcError } from "../../utils/rpc-error-handler";
-import { getWeb3Interface } from "scripts/web3-interface";
+import { getWeb3Interface } from "../../scripts/web3-interface";
 import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 export class ArchaeologistFacetX {

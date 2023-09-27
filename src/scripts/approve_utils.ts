@@ -5,7 +5,7 @@ import { archLogger } from "../logger/chalk-theme";
 import { runApprove } from "../utils/blockchain/approve";
 import { DENIED_APPROVAL } from "../utils/exit-codes";
 import { exit } from "process";
-import { NetworkContext } from "network-config";
+import { NetworkContext } from "../network-config";
 
 export const hasAllowance = async (amt: BigNumber, networkContext: NetworkContext) => {
   const { sarcoToken, ethWallet, networkConfig } = networkContext;

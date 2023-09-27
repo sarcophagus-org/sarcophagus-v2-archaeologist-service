@@ -20,7 +20,7 @@ import {
 } from "../cli/utils";
 import { getBlockTimestamp } from "./blockchain/helpers";
 import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
-import { NetworkContext } from "network-config";
+import { NetworkContext } from "../network-config";
 
 /**
  * Runs on service startup

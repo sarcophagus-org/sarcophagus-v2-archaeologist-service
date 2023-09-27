@@ -16,7 +16,7 @@ import {
   ONE_MONTH_IN_SECONDS,
 } from "../cli/utils";
 import { handleRpcError } from "../utils/rpc-error-handler";
-import { NetworkContext } from "network-config";
+import { NetworkContext } from "../network-config";
 
 validateEnvVars();
 

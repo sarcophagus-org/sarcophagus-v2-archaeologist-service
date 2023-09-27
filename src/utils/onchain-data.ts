@@ -2,7 +2,7 @@ import { BigNumber } from "ethers";
 import { fetchSarcophagiAndSchedulePublish } from "./blockchain/refresh-data";
 import { SubgraphData } from "./graphql";
 import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
-import { NetworkContext } from "network-config";
+import { NetworkContext } from "../network-config";
 
 export interface OnchainProfile {
   exists: boolean;

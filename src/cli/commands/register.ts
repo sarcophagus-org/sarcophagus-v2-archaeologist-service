@@ -12,8 +12,8 @@ import {
   validateRewrapInterval,
 } from "../shared/profile-validations";
 import { registerPrompt } from "../prompts/register-prompt";
-import { NetworkContext } from "network-config";
-import { getWeb3Interface } from "scripts/web3-interface";
+import { NetworkContext } from "../../network-config";
+import { getWeb3Interface } from "../../scripts/web3-interface";
 
 export class Register implements Command {
   name = "register";

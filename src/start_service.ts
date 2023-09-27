@@ -8,7 +8,7 @@ import { SIGNAL_SERVER_LIST } from "./models/node-config";
 import { archLogger } from "./logger/chalk-theme";
 import { setupEventListeners } from "./utils/contract-event-listeners";
 import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
-import { getWeb3Interface } from "scripts/web3-interface";
+import { getWeb3Interface } from "./scripts/web3-interface";
 
 const RESTART_INTERVAL = 1_200_000; // 2O Minutes
 const CONTRACT_DATA_REFETCH_INTERVAL = process.env.REFETCH_INTERVAL

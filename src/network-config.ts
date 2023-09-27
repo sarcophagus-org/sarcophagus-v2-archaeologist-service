@@ -27,8 +27,8 @@ import {
   hardhatNetworkConfig,
 } from "@sarcophagus-org/sarcophagus-v2-sdk";
 import { ethers } from "ethers";
-import { KeyFinder } from "models/key-finder";
-import { ArchaeologistFacetX } from "scripts/web3-interface/archaeologist-facet-x";
+import { KeyFinder } from "./models/key-finder";
+import { ArchaeologistFacetX } from "./scripts/web3-interface/archaeologist-facet-x";
 
 export interface NetworkContext {
   chainId: number;

@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { archLogger } from "../logger/chalk-theme";
 import { warnIfEthBalanceIsLow } from "./health-check";
-import { NetworkContext } from "network-config";
+import { NetworkContext } from "../network-config";
 
 const alreadyUnwrapped = (e: string) => e.includes("ArchaeologistAlreadyUnwrapped");
 const notEnoughFreeBond = (e: string) => e.includes("NotEnoughFreeBond");

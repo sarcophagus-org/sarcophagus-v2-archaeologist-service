@@ -1,4 +1,4 @@
-import { NetworkContext } from "network-config";
+import { NetworkContext } from "../../network-config";
 import { archLogger } from "../../logger/chalk-theme";
 
 const MAX_RETRIES = 2;

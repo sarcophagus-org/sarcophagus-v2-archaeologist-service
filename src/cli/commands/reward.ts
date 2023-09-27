@@ -2,11 +2,11 @@ import { Command, CommandOptions } from "./command";
 import { getWeb3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
 import { RPC_EXCEPTION, SUCCESS } from "../../utils/exit-codes";
-import { NetworkContext } from "network-config";
-import { logValidationErrorAndExit } from "cli/utils";
-import { archLogger } from "logger/chalk-theme";
-import { handleRpcError } from "utils/rpc-error-handler";
-import { retryFn } from "utils/blockchain/helpers";
+import { NetworkContext } from "../../network-config";
+import { logValidationErrorAndExit } from "../../cli/utils";
+import { archLogger } from "../../logger/chalk-theme";
+import { handleRpcError } from "../../utils/rpc-error-handler";
+import { retryFn } from "../../utils/blockchain/helpers";
 
 export class Reward implements Command {
   name = "claim";

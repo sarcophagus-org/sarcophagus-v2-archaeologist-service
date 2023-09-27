@@ -6,12 +6,12 @@ import { hasAllowance, requestApproval } from "../../scripts/approve_utils";
 import { exit } from "process";
 import { RPC_EXCEPTION, SUCCESS } from "../../utils/exit-codes";
 import { getFreeBondBalance } from "../../utils/onchain-data";
-import { NetworkContext } from "network-config";
-import { logValidationErrorAndExit } from "cli/utils";
-import { getWeb3Interface } from "scripts/web3-interface";
+import { NetworkContext } from "../../network-config";
+import { logValidationErrorAndExit } from "../../cli/utils";
+import { getWeb3Interface } from "../../scripts/web3-interface";
 import { BigNumber } from "ethers";
-import { retryFn } from "utils/blockchain/helpers";
-import { handleRpcError } from "utils/rpc-error-handler";
+import { retryFn } from "../../utils/blockchain/helpers";
+import { handleRpcError } from "../../utils/rpc-error-handler";
 
 export class FreeBond implements Command {
   name = "free-bond";

@@ -17,9 +17,8 @@ import {
   validateRewrapInterval,
 } from "../shared/profile-validations";
 import { NO_ONCHAIN_PROFILE, SUCCESS } from "../../utils/exit-codes";
-import { getWeb3Interface } from "scripts/web3-interface";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
-import { NetworkContext } from "network-config";
+import { getWeb3Interface } from "../../scripts/web3-interface";
+import { NetworkContext } from "../../network-config";
 
 export class Update implements Command {
   name = "update";

@@ -11,8 +11,8 @@ import { FreeBond } from "./commands/free-bond";
 import { getOnchainProfile } from "../utils/onchain-data";
 import { exit } from "process";
 import { Reward } from "./commands/reward";
-import { NetworkContext } from "network-config";
-import { getWeb3Interface } from "scripts/web3-interface";
+import { NetworkContext } from "../network-config";
+import { getWeb3Interface } from "../scripts/web3-interface";
 
 export class ArchaeologistCli {
   commands: Map<string, Command> = new Map();

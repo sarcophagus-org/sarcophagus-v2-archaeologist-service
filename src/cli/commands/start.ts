@@ -6,8 +6,8 @@ import { parseEther } from "ethers/lib/utils";
 import { startOptionDefinitions } from "../config/start-args";
 import { randomTestArchVals } from "../../utils/random-arch-gen";
 import { startService } from "../../start_service";
-import { NetworkContext } from "network-config";
-import { getWeb3Interface } from "scripts/web3-interface";
+import { NetworkContext } from "../../network-config";
+import { getWeb3Interface } from "../../scripts/web3-interface";
 
 export class Start implements Command {
   name = "start";

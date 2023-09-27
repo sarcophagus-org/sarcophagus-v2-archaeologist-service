@@ -1,4 +1,4 @@
-import { NetworkContext } from "network-config";
+import { NetworkContext } from "../network-config";
 import { getBlockTimestamp, getDateFromTimestamp } from "./blockchain/helpers";
 import { getGracePeriod, SarcophagusDataSimple } from "./onchain-data";
 import fetch from "node-fetch";

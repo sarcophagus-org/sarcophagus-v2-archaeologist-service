@@ -7,7 +7,7 @@ import { runApprove } from "../../utils/blockchain/approve";
 import { ONE_DAY_IN_SECONDS, ONE_MONTH_IN_SECONDS } from "../utils";
 import { getBlockTimestamp, getDateFromTimestamp } from "../../utils/blockchain/helpers";
 import { getSarcoBalance } from "../../utils/onchain-data";
-import { NetworkContext } from "network-config";
+import { NetworkContext } from "../../network-config";
 
 const DEFAULT_DIGGING_FEES_MONTHLY = "10";
 const DEFAULT_CURSE_FEE = "300";

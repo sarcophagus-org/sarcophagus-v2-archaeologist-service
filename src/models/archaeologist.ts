@@ -13,7 +13,7 @@ import { SarcophagusValidationError, StreamCommsError } from "../utils/error-cod
 import type { Stream } from "@libp2p/interface-connection";
 import { signPacked } from "../utils/signature";
 import { getBlockTimestamp } from "../utils/blockchain/helpers";
-import { NetworkContext } from "network-config";
+import { NetworkContext } from "../network-config";
 import { MAINNET_CHAIN_ID, SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 // If current block timestamp is further than the creation time passed to the arch

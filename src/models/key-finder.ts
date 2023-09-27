@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { getSarcophagiIds } from "../utils/onchain-data";
-import { getWeb3Interface } from "scripts/web3-interface";
+import { getWeb3Interface } from "../scripts/web3-interface";
 import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 // TODO -- update to more appropriate derivation path that isn't BIP44

@@ -20,7 +20,7 @@ import { SubgraphData } from "../../utils/graphql";
 import { validateEnvVars } from "../../utils/validateEnv";
 import { exit } from "process";
 import { SUCCESS } from "../../utils/exit-codes";
-import { NetworkContext } from "network-config";
+import { NetworkContext } from "../../network-config";
 
 export class View implements Command {
   name = "view";
