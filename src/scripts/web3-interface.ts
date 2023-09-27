@@ -3,7 +3,6 @@ import { exit } from "process";
 import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "../utils/exit-codes";
 import { NetworkContext, getNetworkContextsByChainIds } from "../network-config";
-import { KeyFinder } from "../models/key-finder";
 import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 export interface Web3Interface {
@@ -31,9 +30,7 @@ export const getWeb3Interface = async (isTest: boolean = false): Promise<Web3Int
   }
 
   try {
-    const chainIds = process.env.CHAIN_IDS
-      ? process.env.CHAIN_IDS.split(",").map(chaidIdStr => Number(chaidIdStr.trim()))
-      : [];
+    const chainIds = process.env.CHAIN_IDS!.split(",").map(chainIdStr => Number(chainIdStr.trim()))
     const networkContexts = getNetworkContextsByChainIds(chainIds, isTest);
 
     web3Interface = {
