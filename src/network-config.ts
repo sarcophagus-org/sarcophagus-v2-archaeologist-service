@@ -120,10 +120,10 @@ const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkCo
   }
 
   const encryptionHdWallet = ethers.utils.HDNode.fromMnemonic(encryptionMnemonic);
-  const keyFinder = new KeyFinder(encryptionHdWallet);
+  const keyFinder = new KeyFinder(encryptionHdWallet, chainId);
 
   return {
-    archaeologistFacet: new ArchaeologistFacetX(archaeologistFacet),
+    archaeologistFacet: new ArchaeologistFacetX(archaeologistFacet, chainId),
     chainId,
     ethWallet,
     embalmerFacet,

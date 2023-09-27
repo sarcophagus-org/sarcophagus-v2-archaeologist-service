@@ -1,12 +1,16 @@
 import { ArchaeologistFacet } from "@sarcophagus-org/sarcophagus-v2-contracts";
 import { BytesLike, ethers } from "ethers";
 import { handleRpcError } from "../../utils/rpc-error-handler";
+import { getWeb3Interface } from "scripts/web3-interface";
+import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 export class ArchaeologistFacetX {
   archaeologistFacet: ArchaeologistFacet;
+  chainId: number;
 
-  constructor(facet: ArchaeologistFacet) {
+  constructor(facet: ArchaeologistFacet, chainId: number) {
     this.archaeologistFacet = facet;
+    this.chainId = chainId;
   }
 
   public get contract(): ArchaeologistFacet {
@@ -109,7 +113,9 @@ export class ArchaeologistFacetX {
       await callStatic();
     } catch (e) {
       // Only processes error, does not terminate process
-      handleRpcError(e);
+      const web3interface = await getWeb3Interface();
+      const networkContext = web3interface.getNetworkContext(this.chainId as SarcoSupportedNetwork);
+      handleRpcError(e, networkContext);
     }
 
     // `contractCall` will fail if `callStatic` above failed. Should be handled externally.

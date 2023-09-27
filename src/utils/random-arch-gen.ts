@@ -22,7 +22,6 @@ export const randomTestArchVals = async (opts: { existingPeerId?; isLocal?: bool
 
   const listenAddresses = genListenAddresses(
     isLocal ? [localStarServer] : SIGNAL_SERVER_LIST,
-    (await getWeb3Interface()).networkConfig.chainId,
     peerIdJson.id,
     isLocal
   );
