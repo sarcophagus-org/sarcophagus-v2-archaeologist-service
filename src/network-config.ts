@@ -128,7 +128,7 @@ const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkCo
     ethWallet,
     embalmerFacet,
     networkConfig,
-    networkName: networkConfig.networkName,
+    networkName: networkConfig.networkShortName,
     thirdPartyFacet,
     viewStateFacet,
     sarcoToken,
