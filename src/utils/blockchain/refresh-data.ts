@@ -32,7 +32,9 @@ export async function fetchSarcophagiAndSchedulePublish(
   const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
 
   (await SubgraphData.getSarcophagi(networkContext))
-    .filter(s => !(inMemoryStore.get(networkContext.chainId)?.deadSarcophagusIds ?? []).includes(s.id))
+    .filter(
+      s => !(inMemoryStore.get(networkContext.chainId)?.deadSarcophagusIds ?? []).includes(s.id)
+    )
     .map(async sarco => {
       const { id: sarcoId, creationDate } = sarco;
 

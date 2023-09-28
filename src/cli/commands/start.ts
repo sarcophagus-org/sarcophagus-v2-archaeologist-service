@@ -56,8 +56,6 @@ export class Start implements Command {
     }
   }
 
-  // config webapp
-  // checkout filtered logging
   async run(options: CommandOptions): Promise<void> {
     const networkContexts: NetworkContext[] = [];
 
