@@ -20,7 +20,7 @@ export class Register implements Command {
   aliases = ["r"];
   description =
     "Registers your archaeologist on-chain. You cannot accept curses without first being registered.";
-  args = profileOptionDefinitions;
+  args = profileOptionDefinitions.filter(obj => obj.alias !== "u");
   networkContext: NetworkContext
 
   async exitIfArchaeologistProfileExists() {

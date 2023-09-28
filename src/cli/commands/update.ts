@@ -24,7 +24,7 @@ export class Update implements Command {
   name = "update";
   aliases = ["u"];
   description = "Updates your archaeologist profile on-chain.";
-  args = profileOptionDefinitions;
+  args = profileOptionDefinitions.filter(obj => obj.alias !== "g");
   profile: OnchainProfile | undefined;
   networkContext: NetworkContext | undefined;
 
