@@ -46,17 +46,16 @@ export interface NetworkContext {
 
 
 type NetworkConfigReturningFunction = (providerUrl: string) => SarcoNetworkConfig;
+const chainIdsToNetworkConfigReturningFunction = new Map<number, NetworkConfigReturningFunction>([
+  [MAINNET_CHAIN_ID, providerUrl => mainnetNetworkConfig(providerUrl)],
+  [GOERLI_CHAIN_ID, providerUrl => goerliNetworkConfig(providerUrl)],
+  [SEPOLIA_CHAIN_ID, providerUrl => sepoliaNetworkConfig(providerUrl)],
+  [POLYGON_MUMBAI_CHAIN_ID, providerUrl => polygonMumbaiNetworkConfig(providerUrl)],
+  [BASE_GOERLI_CHAIN_ID, providerUrl => baseGoerliNetworkConfig(providerUrl)],
+  [HARDHAT_CHAIN_ID, _ => hardhatNetworkConfig()],
+]);
 
 const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkContext => {
-  const chainIdsToNetworkConfigReturningFunction = new Map<number, NetworkConfigReturningFunction>([
-    [MAINNET_CHAIN_ID, providerUrl => mainnetNetworkConfig(providerUrl)],
-    [GOERLI_CHAIN_ID, providerUrl => goerliNetworkConfig(providerUrl)],
-    [SEPOLIA_CHAIN_ID, providerUrl => sepoliaNetworkConfig(providerUrl)],
-    [POLYGON_MUMBAI_CHAIN_ID, providerUrl => polygonMumbaiNetworkConfig(providerUrl)],
-    [BASE_GOERLI_CHAIN_ID, providerUrl => baseGoerliNetworkConfig(providerUrl)],
-    [HARDHAT_CHAIN_ID, _ => hardhatNetworkConfig()],
-  ]);
-
   if (!chainIdsToNetworkConfigReturningFunction.has(chainId)) {
     throw Error(`Unsupported Chain ID: ${chainId}`);
   }
