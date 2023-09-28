@@ -65,15 +65,19 @@ interface InMemoryStore {
   gracePeriod?: BigNumber;
 }
 
-export const inMemoryStore: InMemoryStore = {
-  sarcophagi: [],
-  deadSarcophagusIds: [],
-  sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
-};
+export const inMemoryStore: Map<number, InMemoryStore> = new Map([]);
 
 export async function fetchProfileAndSchedulePublish(networkContext: NetworkContext) {
-  inMemoryStore.profile = await getOnchainProfile(networkContext);
-  inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublish(networkContext);
+  let networkProfile = inMemoryStore.get(networkContext.chainId) || {
+      sarcophagi: [],
+      deadSarcophagusIds: [],
+      sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
+    };
+
+  networkProfile.profile = await getOnchainProfile(networkContext);
+  networkProfile.sarcophagi = await fetchSarcophagiAndSchedulePublish(networkContext);
+
+  inMemoryStore.set(networkContext.chainId, networkProfile);
 }
 
 export async function getOnchainProfile(networkContext: NetworkContext): Promise<OnchainProfile> {

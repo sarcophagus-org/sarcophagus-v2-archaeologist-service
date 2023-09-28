@@ -10,7 +10,7 @@ export async function publishPrivateKey(sarcoId: string, networkContext: Network
   const { viewStateFacet, ethWallet, archaeologistFacet, keyFinder } = networkContext;
 
   archLogger.notice(`[${networkContext.networkName}] Unwrapping sarcophagus ${sarcoId}`, true);
-  inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
+  inMemoryStore.get(networkContext.chainId)!.sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
 
   try {
     const myCursedArch = await viewStateFacet.getSarcophagusArchaeologist(
@@ -32,8 +32,8 @@ export async function publishPrivateKey(sarcoId: string, networkContext: Network
       receipt.effectiveGasPrice.mul(receipt.cumulativeGasUsed)
     );
 
-    inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
-    inMemoryStore.deadSarcophagusIds.push(sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.sarcophagi = inMemoryStore.get(networkContext.chainId)!.sarcophagi.filter(s => s.id !== sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.push(sarcoId);
 
     archLogger.notice(`[${networkContext.networkName}] Unwrapped ${sarcoId} successfully!`, true);
     archLogger.debug(`[${networkContext.networkName}] Gas used: ${gasUsed.toString()} ETH`);
@@ -48,8 +48,8 @@ export async function publishPrivateKey(sarcoId: string, networkContext: Network
     });
     handleRpcError(e, networkContext);
   } finally {
-    inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished =
-      inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.filter(id => id !== sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.sarcoIdsInProcessOfHavingPrivateKeyPublished =
+      inMemoryStore.get(networkContext.chainId)!.sarcoIdsInProcessOfHavingPrivateKeyPublished.filter(id => id !== sarcoId);
 
     await warnIfEthBalanceIsLow(networkContext, true);
   }

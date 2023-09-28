@@ -104,7 +104,7 @@ export async function profileSetup(
     archLogger.notice(isUpdate ? "PROFILE UPDATED!" : "\nPROFILE REGISTERED!");
 
     const profile = await getOnchainProfile(networkContext);
-    inMemoryStore.profile = profile;
+    inMemoryStore.get(networkContext.chainId)!.profile = profile;
     logProfile(networkName, profile);
 
     if (exitAfterTx) {

@@ -7,14 +7,13 @@ import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../logger/chalk-theme";
 import { BigNumber, ethers } from "ethers";
 import { getWeb3Interface } from "../scripts/web3-interface";
-import { NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
 import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
 import type { Stream } from "@libp2p/interface-connection";
 import { signPacked } from "../utils/signature";
 import { getBlockTimestamp } from "../utils/blockchain/helpers";
 import { NetworkContext } from "../network-config";
-import { MAINNET_CHAIN_ID, SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { MAINNET_CHAIN_ID, SarcoSupportedNetwork, NEGOTIATION_SIGNATURE_STREAM } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 // If current block timestamp is further than the creation time passed to the arch
 // by this amount, then the arch will throw an error
@@ -145,12 +144,12 @@ export class Archaeologist {
               /**
                * Validate maxRewrapInterval supplied is in line with our maxRewrapInterval
                */
-              if (maximumRewrapIntervalBN.gt(inMemoryStore.profile!.maximumRewrapInterval)) {
+              if (maximumRewrapIntervalBN.gt(inMemoryStore.get(networkContext.chainId)!.profile!.maximumRewrapInterval)) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE,
                   message: `${errorMessagePrefix} \n Maximum rewrap interval too large.  
                   \n Got: ${maximumRewrapIntervalBN.toString()}
-                  \n Maximum allowed: ${inMemoryStore.profile!.maximumRewrapInterval.toString()}`,
+                  \n Maximum allowed: ${inMemoryStore.get(networkContext.chainId)!.profile!.maximumRewrapInterval.toString()}`,
                 });
                 return;
               }
@@ -159,12 +158,12 @@ export class Archaeologist {
                * Validate maximumResurrectionTime supplied is within our maximumResurrectionTime
                */
 
-              if (maximumResurrectionTimeBN.gt(inMemoryStore.profile!.maximumResurrectionTime)) {
+              if (maximumResurrectionTimeBN.gt(inMemoryStore.get(networkContext.chainId)!.profile!.maximumResurrectionTime)) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.MAX_RESURRECTION_TIME_TOO_LARGE,
                   message: `${errorMessagePrefix} \n Maximum resurrection time is too large.  
                   \n Got: ${maximumResurrectionTimeBN.toString()}
-                  \n Maximum allowed: ${inMemoryStore.profile!.maximumResurrectionTime.toString()}`,
+                  \n Maximum allowed: ${inMemoryStore.get(networkContext.chainId)!.profile!.maximumResurrectionTime.toString()}`,
                 });
                 return;
               }
@@ -175,13 +174,13 @@ export class Archaeologist {
               if (
                 ethers.utils
                   .parseEther(diggingFeePerSecond)
-                  .lt(inMemoryStore.profile!.minimumDiggingFeePerSecond)
+                  .lt(inMemoryStore.get(networkContext.chainId)!.profile!.minimumDiggingFeePerSecond)
               ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.DIGGING_FEE_TOO_LOW,
                   message: `${errorMessagePrefix} \n Digging fee per second sent is too low.  
                   \n Got: ${diggingFeePerSecond.toString()}
-                  \n Minimum needed: ${inMemoryStore.profile!.minimumDiggingFeePerSecond.toString()}`,
+                  \n Minimum needed: ${inMemoryStore.get(networkContext.chainId)!.profile!.minimumDiggingFeePerSecond.toString()}`,
                 });
                 return;
               }
@@ -189,12 +188,12 @@ export class Archaeologist {
               /**
                * Validate supplied curse fee matches archaeologist's required curse fee
                */
-              if (ethers.utils.parseEther(curseFee).lt(inMemoryStore.profile!.curseFee)) {
+              if (ethers.utils.parseEther(curseFee).lt(inMemoryStore.get(networkContext.chainId)!.profile!.curseFee)) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.CURSE_FEE_TOO_LOW,
                   message: `${errorMessagePrefix} \n Curse fee sent is too low.  
                   \n Got: ${curseFee.toString()}
-                  \n Minimum needed: ${inMemoryStore.profile!.curseFee.toString()}`,
+                  \n Minimum needed: ${inMemoryStore.get(networkContext.chainId)!.profile!.curseFee.toString()}`,
                 });
                 return;
               }

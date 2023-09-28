@@ -44,7 +44,7 @@ function getCreateSarcoHandler(networkContext: NetworkContext) {
     const block = await ethWallet.provider.getBlock(event.blockNumber);
     const creationDate = getDateFromTimestamp(block.timestamp);
 
-    inMemoryStore.sarcophagi.push({
+    inMemoryStore.get(networkContext.chainId)!.sarcophagi.push({
       id: sarcoId,
       resurrectionTime: scheduledResurrectionTime,
       perSecondFee: archaeologist.diggingFeePerSecond,
@@ -56,7 +56,7 @@ function getCreateSarcoHandler(networkContext: NetworkContext) {
 
 function getRewrapHandler(networkContext: NetworkContext) {
   return async (sarcoId: string, newResurrectionTime: number) => {
-    const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
+    const isCursed = inMemoryStore.get(networkContext.chainId)!.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
     const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
@@ -71,29 +71,29 @@ function getRewrapHandler(networkContext: NetworkContext) {
 
 function getCleanHandler(networkContext: NetworkContext) {
   return (sarcoId: string) => {
-    const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
+    const isCursed = inMemoryStore.get(networkContext.chainId)!.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
     archLogger.info(`Sarcophagus cleaned: ${sarcoId}`);
-    inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
-    inMemoryStore.deadSarcophagusIds.push(sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.sarcophagi = inMemoryStore.get(networkContext.chainId)!.sarcophagi.filter(s => s.id !== sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.push(sarcoId);
   };
 }
 
 function getBuryHandler(networkContext: NetworkContext) {
   return (sarcoId: string) => {
-    const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
+    const isCursed = inMemoryStore.get(networkContext.chainId)!.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
     archLogger.info(`[${networkContext.networkName}] Sarcophagus buried: ${sarcoId}`);
-    inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
-    inMemoryStore.deadSarcophagusIds.push(sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.sarcophagi = inMemoryStore.get(networkContext.chainId)!.sarcophagi.filter(s => s.id !== sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.push(sarcoId);
   };
 }
 
 function getAccuseHandler(networkContext: NetworkContext) {
   return async (sarcoId: string) => {
-    const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
+    const isCursed = inMemoryStore.get(networkContext.chainId)!.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
     archLogger.info(`[${networkContext.networkName}] Sarcophagus accused: ${sarcoId}`);
@@ -104,8 +104,8 @@ function getAccuseHandler(networkContext: NetworkContext) {
 
     const sarcoFromContract = await viewStateFacet.getSarcophagus(sarcoId);
     if (sarcoFromContract.isCompromised) {
-      inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
-      inMemoryStore.deadSarcophagusIds.push(sarcoId);
+      inMemoryStore.get(networkContext.chainId)!.sarcophagi = inMemoryStore.get(networkContext.chainId)!.sarcophagi.filter(s => s.id !== sarcoId);
+      inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.push(sarcoId);
       cancelSheduledPublish(sarcoId);
     }
   };

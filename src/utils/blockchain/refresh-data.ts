@@ -28,13 +28,13 @@ export async function fetchSarcophagiAndSchedulePublish(
 ): Promise<SarcophagusData[]> {
   const { viewStateFacet, ethWallet } = networkContext;
 
-  inMemoryStore.gracePeriod = inMemoryStore.gracePeriod || (await getGracePeriod(networkContext));
+  inMemoryStore.get(networkContext.chainId)!.gracePeriod = inMemoryStore.get(networkContext.chainId)!.gracePeriod || (await getGracePeriod(networkContext));
 
   const sarcophagi: SarcophagusData[] = [];
   const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
 
   (await SubgraphData.getSarcophagi(networkContext))
-    .filter(s => !inMemoryStore.deadSarcophagusIds.includes(s.id))
+    .filter(s => !inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.includes(s.id))
     .map(async sarco => {
       const { id: sarcoId, creationDate } = sarco;
 
@@ -43,14 +43,14 @@ export async function fetchSarcophagiAndSchedulePublish(
 
         // If sarcophagus is buried, cleaned or compromised, don't schedule an unwrap
         if (isSarcoInactive(sarcoFromContract)) {
-          inMemoryStore.deadSarcophagusIds.push(sarcoId);
+          inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.push(sarcoId);
           return;
         }
 
         // If the current time is past the grace period, don't schedule an unwrap
         const tooLateToUnwrap =
           currentBlockTimestampSec >
-          endOfGracePeriod(sarcoFromContract, inMemoryStore.gracePeriod!);
+          endOfGracePeriod(sarcoFromContract, inMemoryStore.get(networkContext.chainId)!.gracePeriod!);
 
         if (tooLateToUnwrap) {
           archLogger.debug(
@@ -62,7 +62,7 @@ export async function fetchSarcophagiAndSchedulePublish(
           );
 
           // Dont attempt to unwrap this sarcophagus on next sync
-          inMemoryStore.deadSarcophagusIds.push(sarcoId);
+          inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.push(sarcoId);
           return;
         }
 
@@ -88,7 +88,7 @@ export async function fetchSarcophagiAndSchedulePublish(
           });
         } else {
           // Save inactive ones in memory to save RPC calls on next re-sync
-          inMemoryStore.deadSarcophagusIds.push(sarcoId);
+          inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.push(sarcoId);
         }
       } catch (e) {
         await handleRpcError(e, networkContext);
