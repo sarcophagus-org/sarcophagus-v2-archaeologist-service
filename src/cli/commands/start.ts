@@ -50,7 +50,9 @@ export class Start implements Command {
   validateArgs(options: CommandOptions) {
     const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
     if (multipleChains && !options.network) {
-      archLogger.warn("=======================================================================\n\nStarting on all networks! Use --network to specify a network to run on.\n\n=======================================================================\n\n");
+      archLogger.warn(
+        "=======================================================================\n\nStarting on all networks! Use --network to specify a network to run on.\n\n=======================================================================\n\n"
+      );
     }
   }
 
@@ -58,8 +60,8 @@ export class Start implements Command {
   // checkout filtered logging
   async run(options: CommandOptions): Promise<void> {
     const networkContexts: NetworkContext[] = [];
-    
-    if (!options.network  || options.network === "all") {
+
+    if (!options.network || options.network === "all") {
       // The user either has only one configured network, or has selected to run on all networks
       const chainIds = process.env
         .CHAIN_IDS!.split(",")

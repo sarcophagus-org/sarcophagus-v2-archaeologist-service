@@ -28,7 +28,9 @@ export async function fetchSarcophagiAndSchedulePublish(
 ): Promise<SarcophagusData[]> {
   const { viewStateFacet, ethWallet } = networkContext;
 
-  inMemoryStore.get(networkContext.chainId)!.gracePeriod = inMemoryStore.get(networkContext.chainId)!.gracePeriod || (await getGracePeriod(networkContext));
+  inMemoryStore.get(networkContext.chainId)!.gracePeriod =
+    inMemoryStore.get(networkContext.chainId)!.gracePeriod ||
+    (await getGracePeriod(networkContext));
 
   const sarcophagi: SarcophagusData[] = [];
   const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
@@ -50,7 +52,10 @@ export async function fetchSarcophagiAndSchedulePublish(
         // If the current time is past the grace period, don't schedule an unwrap
         const tooLateToUnwrap =
           currentBlockTimestampSec >
-          endOfGracePeriod(sarcoFromContract, inMemoryStore.get(networkContext.chainId)!.gracePeriod!);
+          endOfGracePeriod(
+            sarcoFromContract,
+            inMemoryStore.get(networkContext.chainId)!.gracePeriod!
+          );
 
         if (tooLateToUnwrap) {
           archLogger.debug(

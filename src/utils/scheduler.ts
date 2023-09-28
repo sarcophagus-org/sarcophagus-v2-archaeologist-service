@@ -14,9 +14,9 @@ function schedulePublishPrivateKey(
   networkContext: NetworkContext
 ) {
   // If sarcophagus is being unwrapped, dont schedule job
-  const sarcoIndex = inMemoryStore.get(networkContext.chainId)!.sarcoIdsInProcessOfHavingPrivateKeyPublished.findIndex(
-    id => id === sarcoId
-  );
+  const sarcoIndex = inMemoryStore
+    .get(networkContext.chainId)!
+    .sarcoIdsInProcessOfHavingPrivateKeyPublished.findIndex(id => id === sarcoId);
 
   if (sarcoIndex !== -1) {
     return;

@@ -69,10 +69,10 @@ export const inMemoryStore: Map<number, InMemoryStore> = new Map([]);
 
 export async function fetchProfileAndSchedulePublish(networkContext: NetworkContext) {
   let networkProfile = inMemoryStore.get(networkContext.chainId) || {
-      sarcophagi: [],
-      deadSarcophagusIds: [],
-      sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
-    };
+    sarcophagi: [],
+    deadSarcophagusIds: [],
+    sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
+  };
 
   networkProfile.profile = await getOnchainProfile(networkContext);
   networkProfile.sarcophagi = await fetchSarcophagiAndSchedulePublish(networkContext);
