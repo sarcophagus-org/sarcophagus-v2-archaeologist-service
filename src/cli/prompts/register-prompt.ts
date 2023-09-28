@@ -215,7 +215,10 @@ const maxResTimeMonthsQuestion = [
 //////////////////////////////////////////////////////////////
 const separator = () => console.log("\n\n");
 
-const approveAndRegister = async (profileParams: ProfileCliParams, networkContext: NetworkContext) => {
+const approveAndRegister = async (
+  profileParams: ProfileCliParams,
+  networkContext: NetworkContext
+) => {
   // Execute approval if necessary
   const alreadyHasAllowance = await hasAllowance(profileParams.freeBond!, networkContext);
 

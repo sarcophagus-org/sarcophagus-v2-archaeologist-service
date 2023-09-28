@@ -21,7 +21,7 @@ export class Register implements Command {
   description =
     "Registers your archaeologist on-chain. You cannot accept curses without first being registered.";
   args = profileOptionDefinitions.filter(obj => obj.alias !== "u");
-  networkContext: NetworkContext
+  networkContext: NetworkContext;
 
   async exitIfArchaeologistProfileExists() {
     const profile = await getOnchainProfile(this.networkContext);
@@ -43,7 +43,9 @@ export class Register implements Command {
   validateArgs(options: CommandOptions) {
     const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
     if (multipleChains && !options.network) {
-      logValidationErrorAndExit("Missing network option. Use --network to specify a network to run this command on.");
+      logValidationErrorAndExit(
+        "Missing network option. Use --network to specify a network to run this command on."
+      );
     }
 
     if (options.view || options.guided) {

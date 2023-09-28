@@ -120,7 +120,10 @@ export class Archaeologist {
   async setupSarcophagusNegotiationStreams() {
     const errorMessagePrefix = `Archaeologist ${this.peerId.toString()} declined to sign: `;
 
-    const _handleNegotiationSignatureStream = async (networkContext: NetworkContext, { stream }: { stream: Stream }) => {
+    const _handleNegotiationSignatureStream = async (
+      networkContext: NetworkContext,
+      { stream }: { stream: Stream }
+    ) => {
       try {
         await pipe(stream, async source => {
           for await (const data of source) {
@@ -201,7 +204,8 @@ export class Archaeologist {
                */
               if (
                 timestamp >
-                (await getBlockTimestamp(networkContext)) * 1000 + CREATION_TIMESTAMP_DRIFT_ALLOWED_MS
+                (await getBlockTimestamp(networkContext)) * 1000 +
+                  CREATION_TIMESTAMP_DRIFT_ALLOWED_MS
               ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.INVALID_TIMESTAMP,
@@ -247,15 +251,23 @@ export class Archaeologist {
 
     // Set up separate streams for each chain id
     const web3Interface = getWeb3Interface();
-    process.env.CHAIN_IDS!.split(",").map(idStr => Number.parseInt(idStr.trim())).forEach(async chainId => {
-      this.node.handle([`${NEGOTIATION_SIGNATURE_STREAM}-${chainId}`], async ({ stream }) => {
-        _handleNegotiationSignatureStream((await web3Interface).getNetworkContext(chainId as SarcoSupportedNetwork), { stream });
+    process.env
+      .CHAIN_IDS!.split(",")
+      .map(idStr => Number.parseInt(idStr.trim()))
+      .forEach(async chainId => {
+        this.node.handle([`${NEGOTIATION_SIGNATURE_STREAM}-${chainId}`], async ({ stream }) => {
+          _handleNegotiationSignatureStream(
+            (await web3Interface).getNetworkContext(chainId as SarcoSupportedNetwork),
+            { stream }
+          );
+        });
       });
-    });
 
     // Backwards compatibility for old nodes on mainnet
     this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
-      _handleNegotiationSignatureStream((await web3Interface).getNetworkContext(MAINNET_CHAIN_ID) , { stream });
+      _handleNegotiationSignatureStream((await web3Interface).getNetworkContext(MAINNET_CHAIN_ID), {
+        stream,
+      });
     });
   }
 }

@@ -96,7 +96,6 @@ export function validateEnvVars() {
     callback: envVar => _validateProviderUrl(envVar, "polygonMumbai"),
   });
 
-
   _tryReadEnv("MAINNET_ENCRYPTION_MNEMONIC", process.env.MAINNET_ENCRYPTION_MNEMONIC, {
     required: false,
     callback: envVar => _validateEncryptionMnemonic(envVar, "mainnet"),
@@ -113,10 +112,14 @@ export function validateEnvVars() {
     required: false,
     callback: envVar => _validateEncryptionMnemonic(envVar, "baseGoerli"),
   });
-  _tryReadEnv("POLYGON_MUMBAI_ENCRYPTION_MNEMONIC", process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC, {
-    required: false,
-    callback: envVar => _validateEncryptionMnemonic(envVar, "polygonMumbai"),
-  });
+  _tryReadEnv(
+    "POLYGON_MUMBAI_ENCRYPTION_MNEMONIC",
+    process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC,
+    {
+      required: false,
+      callback: envVar => _validateEncryptionMnemonic(envVar, "polygonMumbai"),
+    }
+  );
 
   _tryReadEnv("ETH_PRIVATE_KEY", process.env.ETH_PRIVATE_KEY, { required: true });
 

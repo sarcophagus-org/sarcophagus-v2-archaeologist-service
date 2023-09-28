@@ -11,7 +11,7 @@ function schedulePublishPrivateKey(
   sarcoId: string,
   resurrectionTime: Date,
   exactResurrectionTime: number,
-  networkContext: NetworkContext,
+  networkContext: NetworkContext
 ) {
   // If sarcophagus is being unwrapped, dont schedule job
   const sarcoIndex = inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.findIndex(
@@ -57,7 +57,7 @@ export function schedulePublishPrivateKeyWithBuffer(
   currentBlockTimestampSec: number,
   sarcoId: string,
   resurrectionTimeSec: number,
-  networkContext: NetworkContext,
+  networkContext: NetworkContext
 ): Date {
   // Account for out of sync system clocks
   // Scheduler will use the system clock which may not be in sync with block.timestamp
@@ -85,7 +85,12 @@ export function schedulePublishPrivateKeyWithBuffer(
 
   archLogger.debug(`resurrection time with buffer: ${scheduledResurrectionTime}`);
 
-  schedulePublishPrivateKey(sarcoId, scheduledResurrectionTime, resurrectionTimeSec, networkContext);
+  schedulePublishPrivateKey(
+    sarcoId,
+    scheduledResurrectionTime,
+    resurrectionTimeSec,
+    networkContext
+  );
 
   return scheduledResurrectionTime;
 }

@@ -27,7 +27,9 @@ export async function startMultipleLocal(numOfArchsToGenerate: number) {
           peerId,
           listenAddresses,
           isTest: true,
-          networkContexts: [(await getWeb3Interface()).getNetworkContext(HARDHAT_CHAIN_ID as SarcoSupportedNetwork)],
+          networkContexts: [
+            (await getWeb3Interface()).getNetworkContext(HARDHAT_CHAIN_ID as SarcoSupportedNetwork),
+          ],
         })
       )
     );

@@ -58,8 +58,6 @@ export class View implements Command {
       return;
     }
 
-
-
     this.networkContext = (await getWeb3Interface()).getNetworkContext(options.network);
 
     if (options.sarcophagusDetails) {
@@ -113,7 +111,10 @@ export class View implements Command {
       }
 
       if (options.activeCurses) {
-        logSarcos("Current Sarcophagi", await SubgraphData.getActiveSarcophagi(this.networkContext));
+        logSarcos(
+          "Current Sarcophagi",
+          await SubgraphData.getActiveSarcophagi(this.networkContext)
+        );
       }
 
       if (options.inactiveCurses || options.activeCurses) return;
@@ -162,10 +163,10 @@ export class View implements Command {
       const { ethWallet, networkName, networkConfig } = this.networkContext;
       logCallout(() => {
         logBalances(
-          networkName, 
+          networkName,
           networkConfig.tokenSymbol,
           sarcoBalance,
-          ethBalance, 
+          ethBalance,
           ethWallet.address
         );
       });

@@ -82,7 +82,9 @@ export class ArchaeologistCli {
       const profile = await getOnchainProfile(networkContext);
 
       if (!profile.exists) {
-        archLogger.error(`Archaeologist is not registered on ${networkContext.networkName} yet! Please run\n`);
+        archLogger.error(
+          `Archaeologist is not registered on ${networkContext.networkName} yet! Please run\n`
+        );
         archLogger.info("cli help register\n");
         archLogger.error("for help on registering a profile\n");
         exit(0);

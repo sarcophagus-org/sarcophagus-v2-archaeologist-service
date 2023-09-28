@@ -14,33 +14,34 @@ export class Reward implements Command {
   description = "Claim all rewards you have earned";
   shouldBeRegistered: boolean;
   args = [];
-  networkContext: NetworkContext
+  networkContext: NetworkContext;
 
   constructor() {
     this.shouldBeRegistered = true;
   }
 
-  async withdrawRewards () {
-  const { archaeologistFacet } = this.networkContext;
+  async withdrawRewards() {
+    const { archaeologistFacet } = this.networkContext;
 
-  archLogger.notice("Withdrawing your rewards...");
-  setInterval(() => process.stdout.write("."), 1000);
+    archLogger.notice("Withdrawing your rewards...");
+    setInterval(() => process.stdout.write("."), 1000);
 
-  try {
-    const tx = await retryFn(() => archaeologistFacet.withdrawReward());
-    await tx.wait();
-    archLogger.notice("Success!");
-  } catch (error) {
-    await handleRpcError(error, this.networkContext);
-    exit(RPC_EXCEPTION);
+    try {
+      const tx = await retryFn(() => archaeologistFacet.withdrawReward());
+      await tx.wait();
+      archLogger.notice("Success!");
+    } catch (error) {
+      await handleRpcError(error, this.networkContext);
+      exit(RPC_EXCEPTION);
+    }
   }
-}
-
 
   validateArgs(options: CommandOptions) {
     const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
     if (multipleChains && !options.network) {
-      logValidationErrorAndExit("Missing network option. Use --network to specify a network to run this command on.");
+      logValidationErrorAndExit(
+        "Missing network option. Use --network to specify a network to run this command on."
+      );
     }
   }
 

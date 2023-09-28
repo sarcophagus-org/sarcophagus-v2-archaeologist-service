@@ -13,7 +13,9 @@ import { NetworkContext } from "../../network-config";
 export const runApprove = async (networkContext: NetworkContext) => {
   const { sarcoToken, networkConfig } = networkContext;
 
-  archLogger.notice(`Approving Sarcophagus contracts to spend ${networkContext.networkName.toUpperCase()} SARCO on your behalf...`);
+  archLogger.notice(
+    `Approving Sarcophagus contracts to spend ${networkContext.networkName.toUpperCase()} SARCO on your behalf...`
+  );
   archLogger.info("Please wait for TX to confirm");
 
   if (await hasAllowance(ethers.constants.MaxUint256, networkContext)) {
@@ -23,10 +25,7 @@ export const runApprove = async (networkContext: NetworkContext) => {
   const interval = setInterval(() => process.stdout.write("."), 1000);
 
   const approveFn = () =>
-    sarcoToken.approve(
-      networkConfig.diamondDeployAddress,
-      ethers.constants.MaxUint256
-    );
+    sarcoToken.approve(networkConfig.diamondDeployAddress, ethers.constants.MaxUint256);
 
   try {
     const tx = await retryFn(approveFn);

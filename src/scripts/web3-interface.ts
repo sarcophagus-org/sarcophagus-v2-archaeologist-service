@@ -30,7 +30,9 @@ export const getWeb3Interface = async (isTest: boolean = false): Promise<Web3Int
   }
 
   try {
-    const chainIds = process.env.CHAIN_IDS!.split(",").map(chainIdStr => Number.parseInt(chainIdStr.trim()))
+    const chainIds = process.env
+      .CHAIN_IDS!.split(",")
+      .map(chainIdStr => Number.parseInt(chainIdStr.trim()));
     const networkContexts = getNetworkContextsByChainIds(chainIds, isTest);
 
     web3Interface = {
@@ -40,8 +42,10 @@ export const getWeb3Interface = async (isTest: boolean = false): Promise<Web3Int
           networkOrChainId === undefined
             ? web3Interface?.networkContexts[0]
             : web3Interface!.networkContexts.find(
-                n => (typeof networkOrChainId === "number" && n.chainId === networkOrChainId) || 
-                (typeof networkOrChainId === "string" && n.networkName.toLowerCase() === networkOrChainId.toLowerCase())
+                n =>
+                  (typeof networkOrChainId === "number" && n.chainId === networkOrChainId) ||
+                  (typeof networkOrChainId === "string" &&
+                    n.networkName.toLowerCase() === networkOrChainId.toLowerCase())
               );
 
         if (!networkContext) {

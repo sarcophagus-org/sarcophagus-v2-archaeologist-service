@@ -28,15 +28,15 @@ export async function healthCheck(networkContext: NetworkContext, peerId?: strin
   try {
     const sarcoBalance = await getSarcoBalance(networkContext);
     warnIfSarcoBalanceIsLow(networkContext, sarcoBalance);
-    
+
     const { networkTokenBalance } = await warnIfEthBalanceIsLow(networkContext);
 
     const profile = await fetchProfileOrExit(networkContext, () =>
       logBalances(
-        networkContext.networkName, 
-        networkContext.networkConfig.tokenSymbol, 
-        sarcoBalance, 
-        networkTokenBalance, 
+        networkContext.networkName,
+        networkContext.networkConfig.tokenSymbol,
+        sarcoBalance,
+        networkTokenBalance,
         networkContext.ethWallet.address
       )
     );
@@ -67,7 +67,8 @@ export async function healthCheck(networkContext: NetworkContext, peerId?: strin
       }
     }
 
-    const syncDifferenceSec = Math.abs((await getBlockTimestamp(networkContext)) * 1000 - Date.now()) / 1000;
+    const syncDifferenceSec =
+      Math.abs((await getBlockTimestamp(networkContext)) * 1000 - Date.now()) / 1000;
     if (syncDifferenceSec >= 1800) {
       archLogger.warn(
         `Warning: your system clock is out of sync with universal UTC time by roughly: ${syncDifferenceSec} seconds`,
@@ -80,10 +81,10 @@ export async function healthCheck(networkContext: NetworkContext, peerId?: strin
 
     logCallout(async () => {
       logBalances(
-        networkContext.networkName, 
-        networkContext.networkConfig.tokenSymbol, 
-        sarcoBalance, 
-        networkTokenBalance, 
+        networkContext.networkName,
+        networkContext.networkConfig.tokenSymbol,
+        sarcoBalance,
+        networkTokenBalance,
         networkContext.ethWallet.address
       );
       warnIfFreeBondIsLessThanMinDiggingFee(
@@ -101,7 +102,10 @@ export async function healthCheck(networkContext: NetworkContext, peerId?: strin
   }
 }
 
-const fetchProfileOrExit = async (networkContext: NetworkContext, logBalances: Function): Promise<OnchainProfile> => {
+const fetchProfileOrExit = async (
+  networkContext: NetworkContext,
+  logBalances: Function
+): Promise<OnchainProfile> => {
   const profile = await getOnchainProfile(networkContext);
   if (!profile.exists) {
     logCallout(() => {
@@ -139,9 +143,11 @@ export const warnIfEthBalanceIsLow = async (
 
   if (networkTokenBalance.lte(ethers.utils.parseEther("0.05"))) {
     await archLogger.error(
-      `\nYou have very little balance in your ${networkContext.networkName} account: ${ethers.utils.formatEther(
-        networkTokenBalance
-      )} ${networkContext.networkConfig.tokenSymbol}.\n
+      `\nYou have very little balance in your ${
+        networkContext.networkName
+      } account: ${ethers.utils.formatEther(networkTokenBalance)} ${
+        networkContext.networkConfig.tokenSymbol
+      }.\n
       You may not have enough gas for any transactions!\n`,
       { sendNotification, logTimestamp: true }
     );
@@ -153,9 +159,9 @@ export const warnIfEthBalanceIsLow = async (
 const warnIfSarcoBalanceIsLow = (networkContext: NetworkContext, sarcoBalance: BigNumber): void => {
   if (sarcoBalance.lte(ethers.utils.parseEther("1"))) {
     archLogger.warn(
-      `\nYou have very little SARCO in your ${networkContext.networkName} account: ${ethers.utils.formatEther(
-        sarcoBalance
-      )} SARCO\n`,
+      `\nYou have very little SARCO in your ${
+        networkContext.networkName
+      } account: ${ethers.utils.formatEther(sarcoBalance)} SARCO\n`,
       true
     );
   }

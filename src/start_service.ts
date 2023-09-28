@@ -41,12 +41,12 @@ export async function startService(opts: {
   });
 
   opts.networkContexts.forEach(async networkContext => {
-     await healthCheck(networkContext, peerId.toString());
+    await healthCheck(networkContext, peerId.toString());
 
     // refetch every so often
     // TODO: restore this. It's commented out for testing. (TODO TODO: Is this still a thing?)
     // setInterval(() => fetchProfileAndSchedulePublish(), CONTRACT_DATA_REFETCH_INTERVAL);
-    
+
     fetchProfileAndSchedulePublish(networkContext);
     setupEventListeners(networkContext);
     setInterval(async () => warnIfEthBalanceIsLow(networkContext), RESTART_INTERVAL);

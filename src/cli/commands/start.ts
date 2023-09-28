@@ -38,7 +38,10 @@ export class Start implements Command {
     });
   }
 
-  async registerOrUpdateArchaeologist(profileParams: ProfileCliParams, networkContext: NetworkContext) {
+  async registerOrUpdateArchaeologist(
+    profileParams: ProfileCliParams,
+    networkContext: NetworkContext
+  ) {
     const profile = await getOnchainProfile(networkContext);
     await profileSetup(profileParams, networkContext, profile.exists, false);
   }
@@ -46,16 +49,20 @@ export class Start implements Command {
   validateArgs(options: CommandOptions) {
     const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
     if (multipleChains && !options.network) {
-      logValidationErrorAndExit("Missing network option. Use --network to specify a network to run this command on.");
+      logValidationErrorAndExit(
+        "Missing network option. Use --network to specify a network to run this command on."
+      );
     }
   }
 
   async run(options: CommandOptions): Promise<void> {
     const networkContexts: NetworkContext[] = [];
 
-    if (!options.network || options.network === "all")  {
+    if (!options.network || options.network === "all") {
       // The user either has only one configured network, or has selected to run on all networks
-      const chainIds = process.env.CHAIN_IDS!.split(",").map(idStr => Number(idStr.trim())) as SarcoSupportedNetwork[];
+      const chainIds = process.env
+        .CHAIN_IDS!.split(",")
+        .map(idStr => Number(idStr.trim())) as SarcoSupportedNetwork[];
       chainIds.forEach(async chainId => {
         networkContexts.push((await getWeb3Interface()).getNetworkContext(chainId));
       });
@@ -63,13 +70,12 @@ export class Start implements Command {
       networkContexts.push((await getWeb3Interface()).getNetworkContext(options.network));
     }
 
-
     if (options.randomProfile) {
       networkContexts.forEach(networkContext => this.registerAndStartRandomArch(networkContext));
     } else {
       await startService({
         nodeName: "arch",
-        networkContexts
+        networkContexts,
       });
     }
   }

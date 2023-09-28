@@ -23,7 +23,9 @@ const endOfGracePeriod = (sarcophagus: any, gracePeriod: BigNumber): number => {
   return sarcophagus.resurrectionTime.toNumber() + gracePeriod.toNumber();
 };
 
-export async function fetchSarcophagiAndSchedulePublish(networkContext: NetworkContext): Promise<SarcophagusData[]> {
+export async function fetchSarcophagiAndSchedulePublish(
+  networkContext: NetworkContext
+): Promise<SarcophagusData[]> {
   const { viewStateFacet, ethWallet } = networkContext;
 
   inMemoryStore.gracePeriod = inMemoryStore.gracePeriod || (await getGracePeriod(networkContext));
@@ -72,7 +74,7 @@ export async function fetchSarcophagiAndSchedulePublish(networkContext: NetworkC
             currentBlockTimestampSec,
             sarcoId,
             sarcoFromContract.resurrectionTime.toNumber(),
-            networkContext,
+            networkContext
           );
 
           sarcophagi.push({

@@ -51,7 +51,9 @@ export const logProfile = (networkName: string, profile: OnchainProfile): {} => 
 
   logCallout(() => {
     if (!profile.exists) {
-      archLogger.error(`This archaeologist is not yet registered on ${networkName}, please run: \n`);
+      archLogger.error(
+        `This archaeologist is not yet registered on ${networkName}, please run: \n`
+      );
       archLogger.error("cli help register");
     } else {
       console.log(`ARCHAEOLOGIST PROFILE (${networkName.toUpperCase()}): \n`);

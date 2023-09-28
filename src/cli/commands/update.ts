@@ -83,10 +83,12 @@ export class Update implements Command {
 
     const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
     if (multipleChains && !options.network) {
-      logValidationErrorAndExit("Missing network option. Use --network to specify a network to run this command on.");
+      logValidationErrorAndExit(
+        "Missing network option. Use --network to specify a network to run this command on."
+      );
     }
   }
-  
+
   async run(options: CommandOptions): Promise<void> {
     this.networkContext = (await getWeb3Interface()).getNetworkContext(options.network);
 

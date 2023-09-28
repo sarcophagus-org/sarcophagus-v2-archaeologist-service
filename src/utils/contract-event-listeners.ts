@@ -33,7 +33,7 @@ function getCreateSarcoHandler(networkContext: NetworkContext) {
       currentBlockTimestampSec,
       sarcoId,
       resurrectionTime.toNumber(),
-      networkContext,
+      networkContext
     );
 
     const archaeologist = await viewStateFacet.getSarcophagusArchaeologist(
@@ -59,9 +59,13 @@ function getRewrapHandler(networkContext: NetworkContext) {
     const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
-    
     const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
-    schedulePublishPrivateKeyWithBuffer(currentBlockTimestampSec, sarcoId, newResurrectionTime, networkContext);
+    schedulePublishPrivateKeyWithBuffer(
+      currentBlockTimestampSec,
+      sarcoId,
+      newResurrectionTime,
+      networkContext
+    );
   };
 }
 
@@ -138,14 +142,11 @@ export async function setupEventListeners(networkContext: NetworkContext) {
       setupEventListeners(networkContext);
     });
 
-    (ethWallet.provider as ethers.providers.WebSocketProvider)._websocket.on(
-      "close",
-      async e => {
-        archLogger.info(`Provider WS connection closed: ${e}. Reconnecting...`);
-        await destroyWeb3Interface();
-        setupEventListeners(networkContext);
-      }
-    );
+    (ethWallet.provider as ethers.providers.WebSocketProvider)._websocket.on("close", async e => {
+      archLogger.info(`Provider WS connection closed: ${e}. Reconnecting...`);
+      await destroyWeb3Interface();
+      setupEventListeners(networkContext);
+    });
   } catch (e) {
     console.error(e);
     exit(RPC_EXCEPTION);

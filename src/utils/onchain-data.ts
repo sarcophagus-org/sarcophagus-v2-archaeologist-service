@@ -82,9 +82,7 @@ export async function getOnchainProfile(networkContext: NetworkContext): Promise
   try {
     return {
       exists: true,
-      ...(await viewStateFacet.getArchaeologistProfile(
-        ethWallet.address
-      )),
+      ...(await viewStateFacet.getArchaeologistProfile(ethWallet.address)),
     };
   } catch (e) {
     if (e.errorName === "ArchaeologistProfileExistsShouldBe" && e.errorArgs.includes(true)) {

@@ -18,9 +18,7 @@ export async function publishPrivateKey(sarcoId: string, networkContext: Network
       ethWallet.address
     );
 
-    const privateKey = keyFinder.derivePrivateKeyFromPublicKey(
-      myCursedArch.publicKey
-    );
+    const privateKey = keyFinder.derivePrivateKeyFromPublicKey(myCursedArch.publicKey);
 
     const callPublishPrivateKeyOnArchFacet = (): Promise<any> => {
       return archaeologistFacet.publishPrivateKey(sarcoId, privateKey);

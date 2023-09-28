@@ -44,7 +44,6 @@ export interface NetworkContext {
   encryptionHdWallet: ethers.utils.HDNode;
 }
 
-
 type NetworkConfigReturningFunction = (providerUrl: string) => SarcoNetworkConfig;
 const chainIdsToNetworkConfigReturningFunction = new Map<number, NetworkConfigReturningFunction>([
   [MAINNET_CHAIN_ID, providerUrl => mainnetNetworkConfig(providerUrl)],
@@ -103,7 +102,6 @@ const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkCo
   // Cannot confirm rpcProvider is valid until an actual network call is attempted
   sarcoToken.balanceOf(ethWallet.address);
 
-  
   const chainIdsToEncryptionMnemonic = new Map([
     [MAINNET_CHAIN_ID, process.env.MAINNET_ENCRYPTION_MNEMONIC],
     [GOERLI_CHAIN_ID, process.env.GOERLI_ENCRYPTION_MNEMONIC],

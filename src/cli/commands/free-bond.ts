@@ -19,7 +19,7 @@ export class FreeBond implements Command {
   description = "Manage your archaeologist on-chain free bond.";
   args = freeBondDefinitions;
   shouldBeRegistered: boolean;
-  networkContext: NetworkContext
+  networkContext: NetworkContext;
 
   constructor() {
     this.shouldBeRegistered = true;
@@ -34,11 +34,13 @@ export class FreeBond implements Command {
 
     const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
     if (multipleChains && !options.network) {
-      logValidationErrorAndExit("Missing network option. Use --network to specify a network to run this command on.");
+      logValidationErrorAndExit(
+        "Missing network option. Use --network to specify a network to run this command on."
+      );
     }
   }
 
-  async depositFreeBond (amt: BigNumber) {
+  async depositFreeBond(amt: BigNumber) {
     const { archaeologistFacet } = this.networkContext;
 
     archLogger.notice("Depositing free bond...");
@@ -57,9 +59,9 @@ export class FreeBond implements Command {
       await handleRpcError(error, this.networkContext);
       exit(RPC_EXCEPTION);
     }
-  };
+  }
 
-  async withdrawFreeBond (amt: BigNumber) {
+  async withdrawFreeBond(amt: BigNumber) {
     const { archaeologistFacet } = this.networkContext;
 
     archLogger.notice("Withdrawing free bond...");
@@ -73,7 +75,7 @@ export class FreeBond implements Command {
       await handleRpcError(error, this.networkContext);
       exit(RPC_EXCEPTION);
     }
-  };
+  }
 
   async run(options: CommandOptions): Promise<void> {
     this.networkContext = (await getWeb3Interface()).getNetworkContext(options.network);

@@ -119,7 +119,9 @@ export async function runTests() {
    **/
 
   // Withdraw all free bond
-  const freeBond = await networkContext.viewStateFacet.getFreeBond(networkContext.ethWallet.address);
+  const freeBond = await networkContext.viewStateFacet.getFreeBond(
+    networkContext.ethWallet.address
+  );
   await networkContext.archaeologistFacet.withdrawFreeBond(freeBond);
   archLogger.warn("\n\n Shows notice if there's no free bond");
   await testSuite.expectOutput(noFreeBondNotice, opts);
