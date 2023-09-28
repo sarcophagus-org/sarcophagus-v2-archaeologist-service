@@ -41,7 +41,6 @@ export async function startService(opts: {
   });
 
   opts.networkContexts.forEach(async networkContext => {
-    console.log("networkContext", networkContext.chainId);
      await healthCheck(networkContext, peerId.toString());
 
     // refetch every so often

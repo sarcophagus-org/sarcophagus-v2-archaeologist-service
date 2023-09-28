@@ -61,7 +61,6 @@ const diggingFeeQuestion = [
       `Enter SARCO Amount (per month):`,
     validate(value) {
       if (value) {
-        console.log("validating with", value);
         try {
           parseEther(value.toString());
         } catch (error) {
@@ -101,7 +100,6 @@ const curseFeeQuestion = [
       `Enter SARCO Amount:`,
     validate(value) {
       if (value) {
-        console.log("validating with", value);
         try {
           parseEther(value.toString());
         } catch (error) {
