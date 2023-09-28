@@ -28,15 +28,11 @@ export async function fetchSarcophagiAndSchedulePublish(
 ): Promise<SarcophagusData[]> {
   const { viewStateFacet, ethWallet } = networkContext;
 
-  inMemoryStore.get(networkContext.chainId)!.gracePeriod =
-    inMemoryStore.get(networkContext.chainId)!.gracePeriod ||
-    (await getGracePeriod(networkContext));
-
   const sarcophagi: SarcophagusData[] = [];
   const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
 
   (await SubgraphData.getSarcophagi(networkContext))
-    .filter(s => !inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.includes(s.id))
+    .filter(s => !(inMemoryStore.get(networkContext.chainId)?.deadSarcophagusIds ?? []).includes(s.id))
     .map(async sarco => {
       const { id: sarcoId, creationDate } = sarco;
 

@@ -74,6 +74,9 @@ export async function fetchProfileAndSchedulePublish(networkContext: NetworkCont
     sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
   };
 
+  if (!inMemoryStore.get(networkContext.chainId)?.gracePeriod) {
+    networkProfile.gracePeriod = await getGracePeriod(networkContext);
+  }
   networkProfile.profile = await getOnchainProfile(networkContext);
   networkProfile.sarcophagi = await fetchSarcophagiAndSchedulePublish(networkContext);
 
