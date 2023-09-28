@@ -54,7 +54,9 @@ export async function fetchSarcophagiAndSchedulePublish(
 
         if (tooLateToUnwrap) {
           archLogger.debug(
-            `Too late to unwrap: ${sarcoId} with resurrection time: ${sarcoFromContract.resurrectionTime.toNumber()} -- current time is ${
+            `[${
+              networkContext.networkName
+            }] Too late to unwrap: ${sarcoId} with resurrection time: ${sarcoFromContract.resurrectionTime.toNumber()} -- current time is ${
               Date.now() / 1000
             }`
           );

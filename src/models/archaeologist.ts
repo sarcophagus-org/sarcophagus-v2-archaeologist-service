@@ -245,6 +245,7 @@ export class Archaeologist {
         await archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`, {
           logTimestamp: true,
           sendNotification: true,
+          networkContext,
         });
       }
     };

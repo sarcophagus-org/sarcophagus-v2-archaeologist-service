@@ -57,8 +57,14 @@ export async function healthCheck(networkContext: NetworkContext, peerId?: strin
             }
           );
           archLogger.error("Please update your profile \n", { logTimestamp: true });
-          archLogger.warn(`Local Peer ID: ${process.env.DOMAIN}:${peerId}`, true);
-          archLogger.warn(`Profile Peer ID: ${profile.peerId}`, true);
+          archLogger.warn(
+            `[${networkContext.networkName}] Local Peer ID: ${process.env.DOMAIN}:${peerId}`,
+            true
+          );
+          archLogger.warn(
+            `[${networkContext.networkName}] Profile Peer ID: ${profile.peerId}`,
+            true
+          );
         });
 
         // TODO -- consider quitting and forcing user to update their profile
@@ -90,14 +96,20 @@ export async function healthCheck(networkContext: NetworkContext, peerId?: strin
       warnIfFreeBondIsLessThanMinDiggingFee(
         freeBondBalance,
         profile.minimumDiggingFeePerSecond,
-        profile.curseFee
+        profile.curseFee,
+        networkContext
       );
     });
   } catch (e) {
-    await archLogger.error(`Health Check error [${networkContext.networkName}]: ${e.toString()}`, {
-      sendNotification: true,
-      logTimestamp: true,
-    });
+    await archLogger.error(
+      `[${networkContext.networkName}] Health Check error [${
+        networkContext.networkName
+      }]: ${e.toString()}`,
+      {
+        sendNotification: true,
+        logTimestamp: true,
+      }
+    );
     exit(RPC_EXCEPTION);
   }
 }
@@ -122,13 +134,14 @@ const fetchProfileOrExit = async (
 const warnIfFreeBondIsLessThanMinDiggingFee = (
   freeBondBal: BigNumber,
   curseFee: BigNumber,
-  diggingFeePerSecond: BigNumber
+  diggingFeePerSecond: BigNumber,
+  networkContext: NetworkContext
 ): void => {
   const diggingFeePerMonth = diggingFeePerSecond.mul(ONE_MONTH_IN_SECONDS).add(curseFee);
 
   if (freeBondBal.lt(diggingFeePerMonth)) {
     archLogger.warn(
-      `\n   Your free bond is less than you can lock for a new Sarcophagus lasting a month. You may not be able to accept new jobs!`,
+      `\n   [${networkContext.networkName}] Your free bond is less than you can lock for a new Sarcophagus lasting a month. You may not be able to accept new jobs!`,
       true
     );
     archLogger.warn(`   Run: \`cli update -f <amount>\` to deposit some SARCO\n`, true);
@@ -143,13 +156,13 @@ export const warnIfEthBalanceIsLow = async (
 
   if (networkTokenBalance.lte(ethers.utils.parseEther("0.05"))) {
     await archLogger.error(
-      `\nYou have very little balance in your ${
+      `\n[${
         networkContext.networkName
-      } account: ${ethers.utils.formatEther(networkTokenBalance)} ${
-        networkContext.networkConfig.tokenSymbol
-      }.\n
+      }] You have very little balance in your account: ${ethers.utils.formatEther(
+        networkTokenBalance
+      )} ${networkContext.networkConfig.tokenSymbol}.\n
       You may not have enough gas for any transactions!\n`,
-      { sendNotification, logTimestamp: true }
+      { sendNotification, logTimestamp: true, networkContext }
     );
   }
 
@@ -159,7 +172,7 @@ export const warnIfEthBalanceIsLow = async (
 const warnIfSarcoBalanceIsLow = (networkContext: NetworkContext, sarcoBalance: BigNumber): void => {
   if (sarcoBalance.lte(ethers.utils.parseEther("1"))) {
     archLogger.warn(
-      `\nYou have very little SARCO in your ${
+      `\n[${networkContext.networkName}] You have very little SARCO in your ${
         networkContext.networkName
       } account: ${ethers.utils.formatEther(sarcoBalance)} SARCO\n`,
       true

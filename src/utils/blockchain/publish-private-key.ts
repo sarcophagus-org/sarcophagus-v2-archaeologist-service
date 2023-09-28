@@ -9,7 +9,7 @@ import { NetworkContext } from "../../network-config";
 export async function publishPrivateKey(sarcoId: string, networkContext: NetworkContext) {
   const { viewStateFacet, ethWallet, archaeologistFacet, keyFinder } = networkContext;
 
-  archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`, true);
+  archLogger.notice(`[${networkContext.networkName}] Unwrapping sarcophagus ${sarcoId}`, true);
   inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
 
   try {
@@ -35,11 +35,17 @@ export async function publishPrivateKey(sarcoId: string, networkContext: Network
     inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
     inMemoryStore.deadSarcophagusIds.push(sarcoId);
 
-    archLogger.notice(`Unwrapped ${sarcoId} successfully!`, true);
-    archLogger.debug(`Gas used: ${gasUsed.toString()} ETH`);
-    archLogger.debug(`Cumulative Gas used: ${cummulativeGasUsed.toString()} ETH`);
+    archLogger.notice(`[${networkContext.networkName}] Unwrapped ${sarcoId} successfully!`, true);
+    archLogger.debug(`[${networkContext.networkName}] Gas used: ${gasUsed.toString()} ETH`);
+    archLogger.debug(
+      `[${networkContext.networkName}] Cumulative Gas used: ${cummulativeGasUsed.toString()} ETH`
+    );
   } catch (e) {
-    await archLogger.error(`Unwrap failed: ${e}`, { sendNotification: true, logTimestamp: true });
+    await archLogger.error(`[${networkContext.networkName}] Unwrap failed: ${e}`, {
+      sendNotification: true,
+      logTimestamp: true,
+      networkContext,
+    });
     handleRpcError(e, networkContext);
   } finally {
     inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished =

@@ -39,7 +39,7 @@ export const getBlockTimestamp = async (networkContext: NetworkContext): Promise
     return block.timestamp;
   } catch (error) {
     // Not a good fallback, may want to institute a retry or failure (or notification)
-    archLogger.warn(`Error retrieving block time: ${error}`, true);
+    archLogger.warn(`[${networkContext.networkName}] Error retrieving block time: ${error}`, true);
     return Math.trunc(Date.now() / 1000);
   }
 };

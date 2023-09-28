@@ -85,7 +85,7 @@ function getBuryHandler(networkContext: NetworkContext) {
     const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
-    archLogger.info(`Sarcophagus buried: ${sarcoId}`);
+    archLogger.info(`[${networkContext.networkName}] Sarcophagus buried: ${sarcoId}`);
     inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
     inMemoryStore.deadSarcophagusIds.push(sarcoId);
   };
@@ -96,7 +96,7 @@ function getAccuseHandler(networkContext: NetworkContext) {
     const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
-    archLogger.info(`Sarcophagus accused: ${sarcoId}`);
+    archLogger.info(`[${networkContext.networkName}] Sarcophagus accused: ${sarcoId}`);
 
     // Check if sarcophagus is compromised, if so, remove from inMemoryStore
     // add to deadSarcophagusIds, and cancel scheduled publish
@@ -137,13 +137,17 @@ export async function setupEventListeners(networkContext: NetworkContext) {
     embalmerFacet.on(filters.accuse, handlers.accuse);
 
     ethWallet.provider.on("error", async e => {
-      archLogger.error(`Provider connection error: ${e}. Reconnecting...`);
+      archLogger.error(
+        `[${networkContext.networkName}] Provider connection error: ${e}. Reconnecting...`
+      );
       await destroyWeb3Interface();
       setupEventListeners(networkContext);
     });
 
     (ethWallet.provider as ethers.providers.WebSocketProvider)._websocket.on("close", async e => {
-      archLogger.info(`Provider WS connection closed: ${e}. Reconnecting...`);
+      archLogger.info(
+        `[${networkContext.networkName}] Provider WS connection closed: ${e}. Reconnecting...`
+      );
       await destroyWeb3Interface();
       setupEventListeners(networkContext);
     });
