@@ -44,23 +44,6 @@ export interface NetworkContext {
   encryptionHdWallet: ethers.utils.HDNode;
 }
 
-const chainIdsToProviderUrl = new Map([
-  [MAINNET_CHAIN_ID, process.env.MAINNET_PROVIDER_URL],
-  [GOERLI_CHAIN_ID, process.env.GOERLI_PROVIDER_URL],
-  [SEPOLIA_CHAIN_ID, process.env.SEPOLIA_PROVIDER_URL],
-  [BASE_GOERLI_CHAIN_ID, process.env.BASE_GOERLI_PROVIDER_URL],
-  [POLYGON_MUMBAI_CHAIN_ID, process.env.POLYGON_MUMBAI_PROVIDER_URL],
-  [HARDHAT_CHAIN_ID, process.env.HARDHAT_PROVIDER_URL],
-]);
-
-const chainIdsToEncryptionMnemonic = new Map([
-  [MAINNET_CHAIN_ID, process.env.MAINNET_ENCRYPTION_MNEMONIC],
-  [GOERLI_CHAIN_ID, process.env.GOERLI_ENCRYPTION_MNEMONIC],
-  [SEPOLIA_CHAIN_ID, process.env.SEPOLIA_ENCRYPTION_MNEMONIC],
-  [BASE_GOERLI_CHAIN_ID, process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC],
-  [POLYGON_MUMBAI_CHAIN_ID, process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC],
-  [HARDHAT_CHAIN_ID, process.env.HARDHAT_ENCRYPTION_MNEMONIC],
-]);
 
 type NetworkConfigReturningFunction = (providerUrl: string) => SarcoNetworkConfig;
 
@@ -78,14 +61,22 @@ const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkCo
     throw Error(`Unsupported Chain ID: ${chainId}`);
   }
 
-  const providerUrl: string | undefined = chainIdsToProviderUrl[chainId];
+  const chainIdsToProviderUrl = new Map([
+    [MAINNET_CHAIN_ID, process.env.MAINNET_PROVIDER_URL],
+    [GOERLI_CHAIN_ID, process.env.GOERLI_PROVIDER_URL],
+    [SEPOLIA_CHAIN_ID, process.env.SEPOLIA_PROVIDER_URL],
+    [BASE_GOERLI_CHAIN_ID, process.env.BASE_GOERLI_PROVIDER_URL],
+    [POLYGON_MUMBAI_CHAIN_ID, process.env.POLYGON_MUMBAI_PROVIDER_URL],
+    [HARDHAT_CHAIN_ID, process.env.HARDHAT_PROVIDER_URL],
+  ]);
+  const providerUrl: string | undefined = chainIdsToProviderUrl.get(chainId);
 
   if (!providerUrl) {
     throw Error(`No Provider URL for Chain ID: ${chainId}`);
   }
 
-  const networkConfig: SarcoNetworkConfig =
-    chainIdsToNetworkConfigReturningFunction[chainId](providerUrl);
+  const getNetworkConfig = chainIdsToNetworkConfigReturningFunction.get(chainId)!;
+  const networkConfig = getNetworkConfig(providerUrl);
 
   const rpcProvider = new ethers.providers.WebSocketProvider(providerUrl);
   const ethWallet = isTest
@@ -113,7 +104,16 @@ const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkCo
   // Cannot confirm rpcProvider is valid until an actual network call is attempted
   sarcoToken.balanceOf(ethWallet.address);
 
-  const encryptionMnemonic: string | undefined = chainIdsToEncryptionMnemonic[chainId];
+  
+  const chainIdsToEncryptionMnemonic = new Map([
+    [MAINNET_CHAIN_ID, process.env.MAINNET_ENCRYPTION_MNEMONIC],
+    [GOERLI_CHAIN_ID, process.env.GOERLI_ENCRYPTION_MNEMONIC],
+    [SEPOLIA_CHAIN_ID, process.env.SEPOLIA_ENCRYPTION_MNEMONIC],
+    [BASE_GOERLI_CHAIN_ID, process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC],
+    [POLYGON_MUMBAI_CHAIN_ID, process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC],
+    [HARDHAT_CHAIN_ID, process.env.HARDHAT_ENCRYPTION_MNEMONIC],
+  ]);
+  const encryptionMnemonic: string | undefined = chainIdsToEncryptionMnemonic.get(chainId);
 
   if (!encryptionMnemonic) {
     throw Error(`No Encryption Mnemonic for Chain ID: ${chainId}`);
