@@ -1,4 +1,3 @@
-import { getWeb3Interface } from "../../scripts/web3-interface";
 import { schedulePublishPrivateKeyWithBuffer } from "../scheduler";
 import { getGracePeriod, inMemoryStore, SarcophagusData } from "../onchain-data";
 import { BigNumber, ethers } from "ethers";
@@ -6,7 +5,7 @@ import { handleRpcError } from "../rpc-error-handler";
 import { getBlockTimestamp } from "./helpers";
 import { archLogger } from "../../logger/chalk-theme";
 import { SubgraphData } from "../graphql";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { NetworkContext } from "../../network-config";
 
 const archStillNeedsToPublishPrivateKey = (archaeologist: any): boolean => {
   return archaeologist.privateKey === ethers.constants.HashZero;
@@ -24,8 +23,7 @@ const endOfGracePeriod = (sarcophagus: any, gracePeriod: BigNumber): number => {
   return sarcophagus.resurrectionTime.toNumber() + gracePeriod.toNumber();
 };
 
-export async function fetchSarcophagiAndSchedulePublish(network: SarcoSupportedNetwork): Promise<SarcophagusData[]> {
-  const networkContext = (await getWeb3Interface()).getNetworkContext(network);
+export async function fetchSarcophagiAndSchedulePublish(networkContext: NetworkContext): Promise<SarcophagusData[]> {
   const { viewStateFacet, ethWallet } = networkContext;
 
   inMemoryStore.gracePeriod = inMemoryStore.gracePeriod || (await getGracePeriod(networkContext));
@@ -33,7 +31,7 @@ export async function fetchSarcophagiAndSchedulePublish(network: SarcoSupportedN
   const sarcophagi: SarcophagusData[] = [];
   const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
 
-  (await SubgraphData.getSarcophagi(this.networkContext))
+  (await SubgraphData.getSarcophagi(networkContext))
     .filter(s => !inMemoryStore.deadSarcophagusIds.includes(s.id))
     .map(async sarco => {
       const { id: sarcoId, creationDate } = sarco;

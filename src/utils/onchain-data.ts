@@ -1,7 +1,6 @@
 import { BigNumber } from "ethers";
 import { fetchSarcophagiAndSchedulePublish } from "./blockchain/refresh-data";
 import { SubgraphData } from "./graphql";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 import { NetworkContext } from "../network-config";
 
 export interface OnchainProfile {
@@ -74,7 +73,7 @@ export const inMemoryStore: InMemoryStore = {
 
 export async function fetchProfileAndSchedulePublish(networkContext: NetworkContext) {
   inMemoryStore.profile = await getOnchainProfile(networkContext);
-  inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublish(networkContext.chainId as SarcoSupportedNetwork);
+  inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublish(networkContext);
 }
 
 export async function getOnchainProfile(networkContext: NetworkContext): Promise<OnchainProfile> {
