@@ -8,13 +8,13 @@ import { randomTestArchVals } from "../../utils/random-arch-gen";
 import { startService } from "../../start_service";
 import { NetworkContext } from "../../network-config";
 import { getWeb3Interface } from "../../scripts/web3-interface";
+import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 export class Start implements Command {
   name = "start";
   aliases = [];
   description = "Starts the archaeologist service";
   args = startOptionDefinitions;
-  networkContext: NetworkContext;
 
   defaultProfileParams: ProfileCliParams = {
     diggingFee: parseEther("100"),
@@ -24,22 +24,23 @@ export class Start implements Command {
     curseFee: parseEther("10"),
   };
 
-  async registerAndStartRandomArch() {
+  async registerAndStartRandomArch(networkContext: NetworkContext) {
     const { peerId, listenAddresses } = await randomTestArchVals({});
 
     this.defaultProfileParams.peerId = peerId.toString();
-    await this.registerOrUpdateArchaeologist(this.defaultProfileParams);
+    await this.registerOrUpdateArchaeologist(this.defaultProfileParams, networkContext);
 
     await startService({
       nodeName: `random arch`,
       peerId,
       listenAddresses,
+      networkContexts: [networkContext],
     });
   }
 
-  async registerOrUpdateArchaeologist(profileParams: ProfileCliParams) {
-    const profile = await getOnchainProfile(this.networkContext);
-    await profileSetup(profileParams, this.networkContext, profile.exists, false);
+  async registerOrUpdateArchaeologist(profileParams: ProfileCliParams, networkContext: NetworkContext) {
+    const profile = await getOnchainProfile(networkContext);
+    await profileSetup(profileParams, networkContext, profile.exists, false);
   }
 
   validateArgs(options: CommandOptions) {
@@ -50,13 +51,25 @@ export class Start implements Command {
   }
 
   async run(options: CommandOptions): Promise<void> {
-    this.networkContext = (await getWeb3Interface()).getNetworkContext(options.network);
+    const networkContexts: NetworkContext[] = [];
+
+    if (!options.network || options.network === "all")  {
+      // The user either has only one configured network, or has selected to run on all networks
+      const chainIds = process.env.CHAIN_IDS!.split(",").map(idStr => Number(idStr.trim())) as SarcoSupportedNetwork[];
+      chainIds.forEach(async chainId => {
+        networkContexts.push((await getWeb3Interface()).getNetworkContext(chainId));
+      });
+    } else {
+      networkContexts.push((await getWeb3Interface()).getNetworkContext(options.network));
+    }
+
 
     if (options.randomProfile) {
-      await this.registerAndStartRandomArch();
+      networkContexts.forEach(networkContext => this.registerAndStartRandomArch(networkContext));
     } else {
       await startService({
         nodeName: "arch",
+        networkContexts
       });
     }
   }

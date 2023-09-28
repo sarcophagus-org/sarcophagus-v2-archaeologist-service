@@ -1,14 +1,12 @@
-import { getWeb3Interface } from "../../scripts/web3-interface";
 import { archLogger } from "../../logger/chalk-theme";
 import { handleRpcError } from "../rpc-error-handler";
 import { inMemoryStore } from "../onchain-data";
 import { retryFn } from "./helpers";
 import { warnIfEthBalanceIsLow } from "../health-check";
 import { ethers } from "ethers";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { NetworkContext } from "../../network-config";
 
-export async function publishPrivateKey(sarcoId: string, network: SarcoSupportedNetwork) {
-  const networkContext = (await getWeb3Interface()).getNetworkContext(network);
+export async function publishPrivateKey(sarcoId: string, networkContext: NetworkContext) {
   const { viewStateFacet, ethWallet, archaeologistFacet, keyFinder } = networkContext;
 
   archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`, true);

@@ -74,7 +74,7 @@ export async function fetchSarcophagiAndSchedulePublish(network: SarcoSupportedN
             currentBlockTimestampSec,
             sarcoId,
             sarcoFromContract.resurrectionTime.toNumber(),
-            network,
+            networkContext,
           );
 
           sarcophagi.push({

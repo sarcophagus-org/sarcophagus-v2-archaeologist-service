@@ -2,7 +2,7 @@ import scheduler from "node-schedule";
 import { archLogger } from "../logger/chalk-theme";
 import { publishPrivateKey } from "./blockchain/publish-private-key";
 import { inMemoryStore } from "./onchain-data";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { NetworkContext } from "../network-config";
 
 const scheduledPublishPrivateKey: Record<string, scheduler.Job | undefined> = {};
 const sarcoIdToResurrectionTime: Record<string, number> = {};
@@ -11,7 +11,7 @@ function schedulePublishPrivateKey(
   sarcoId: string,
   resurrectionTime: Date,
   exactResurrectionTime: number,
-  network: SarcoSupportedNetwork,
+  networkContext: NetworkContext,
 ) {
   // If sarcophagus is being unwrapped, dont schedule job
   const sarcoIndex = inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.findIndex(
@@ -45,7 +45,7 @@ function schedulePublishPrivateKey(
   // Cancel existing schedules, so no duplicate jobs will be created.
   scheduledPublishPrivateKey[sarcoId]?.cancel();
   scheduledPublishPrivateKey[sarcoId] = scheduler.scheduleJob(resurrectionTime, async () => {
-    await publishPrivateKey(sarcoId, network);
+    await publishPrivateKey(sarcoId, networkContext);
   });
 }
 
@@ -57,7 +57,7 @@ export function schedulePublishPrivateKeyWithBuffer(
   currentBlockTimestampSec: number,
   sarcoId: string,
   resurrectionTimeSec: number,
-  network: SarcoSupportedNetwork,
+  networkContext: NetworkContext,
 ): Date {
   // Account for out of sync system clocks
   // Scheduler will use the system clock which may not be in sync with block.timestamp
@@ -85,7 +85,7 @@ export function schedulePublishPrivateKeyWithBuffer(
 
   archLogger.debug(`resurrection time with buffer: ${scheduledResurrectionTime}`);
 
-  schedulePublishPrivateKey(sarcoId, scheduledResurrectionTime, resurrectionTimeSec, network);
+  schedulePublishPrivateKey(sarcoId, scheduledResurrectionTime, resurrectionTimeSec, networkContext);
 
   return scheduledResurrectionTime;
 }

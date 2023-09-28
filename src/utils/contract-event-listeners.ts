@@ -1,14 +1,14 @@
 import { exit } from "process";
-import { destroyWeb3Interface, getWeb3Interface } from "../scripts/web3-interface";
+import { destroyWeb3Interface } from "../scripts/web3-interface";
 import { RPC_EXCEPTION } from "./exit-codes";
 import { inMemoryStore } from "./onchain-data";
 import { archLogger } from "../logger/chalk-theme";
 import { cancelSheduledPublish, schedulePublishPrivateKeyWithBuffer } from "./scheduler";
 import { getBlockTimestamp, getDateFromTimestamp } from "./blockchain/helpers";
 import { ethers } from "ethers";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { NetworkContext } from "../network-config";
 
-function getCreateSarcoHandler(network: SarcoSupportedNetwork) {
+function getCreateSarcoHandler(networkContext: NetworkContext) {
   return async (
     sarcoId,
     sarcoName,
@@ -21,21 +21,19 @@ function getCreateSarcoHandler(network: SarcoSupportedNetwork) {
     arweaveTxId,
     event
   ) => {
-    const web3Interface = await getWeb3Interface();
-    const { ethWallet, viewStateFacet } = web3Interface.getNetworkContext(network);
+    const { viewStateFacet, ethWallet } = networkContext;
     const archAddress = ethWallet.address;
 
     const isCursed = (cursedArchaeologists as string[]).includes(archAddress);
     if (!isCursed) return;
 
-    const networkContext = (await getWeb3Interface()).getNetworkContext(network);
     const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
 
     const scheduledResurrectionTime = schedulePublishPrivateKeyWithBuffer(
       currentBlockTimestampSec,
       sarcoId,
       resurrectionTime.toNumber(),
-      network,
+      networkContext,
     );
 
     const archaeologist = await viewStateFacet.getSarcophagusArchaeologist(
@@ -56,19 +54,18 @@ function getCreateSarcoHandler(network: SarcoSupportedNetwork) {
   };
 }
 
-function getRewrapHandler(network: SarcoSupportedNetwork) {
+function getRewrapHandler(networkContext: NetworkContext) {
   return async (sarcoId: string, newResurrectionTime: number) => {
     const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
     
-    const networkContext = (await getWeb3Interface()).getNetworkContext(network);
     const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
-    schedulePublishPrivateKeyWithBuffer(currentBlockTimestampSec, sarcoId, newResurrectionTime, network);
+    schedulePublishPrivateKeyWithBuffer(currentBlockTimestampSec, sarcoId, newResurrectionTime, networkContext);
   };
 }
 
-function getCleanHandler(network: SarcoSupportedNetwork) {
+function getCleanHandler(networkContext: NetworkContext) {
   return (sarcoId: string) => {
     const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
@@ -79,7 +76,7 @@ function getCleanHandler(network: SarcoSupportedNetwork) {
   };
 }
 
-function getBuryHandler(network: SarcoSupportedNetwork) {
+function getBuryHandler(networkContext: NetworkContext) {
   return (sarcoId: string) => {
     const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
@@ -90,7 +87,7 @@ function getBuryHandler(network: SarcoSupportedNetwork) {
   };
 }
 
-function getAccuseHandler(network: SarcoSupportedNetwork) {
+function getAccuseHandler(networkContext: NetworkContext) {
   return async (sarcoId: string) => {
     const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
@@ -99,8 +96,7 @@ function getAccuseHandler(network: SarcoSupportedNetwork) {
 
     // Check if sarcophagus is compromised, if so, remove from inMemoryStore
     // add to deadSarcophagusIds, and cancel scheduled publish
-    const web3Interface = await getWeb3Interface();
-    const { viewStateFacet } = web3Interface.getNetworkContext(network);
+    const { viewStateFacet } = networkContext;
 
     const sarcoFromContract = await viewStateFacet.getSarcophagus(sarcoId);
     if (sarcoFromContract.isCompromised) {
@@ -111,11 +107,9 @@ function getAccuseHandler(network: SarcoSupportedNetwork) {
   };
 }
 
-export async function setupEventListeners(network: SarcoSupportedNetwork) {
+export async function setupEventListeners(networkContext: NetworkContext) {
   try {
-    const web3Interface = await getWeb3Interface();
-    const { ethWallet, embalmerFacet, thirdPartyFacet } = web3Interface.getNetworkContext(network);
-
+    const { embalmerFacet, thirdPartyFacet, ethWallet } = networkContext;
     const filters = {
       createSarco: embalmerFacet.filters.CreateSarcophagus(),
       rewrap: embalmerFacet.filters.RewrapSarcophagus(),
@@ -125,11 +119,11 @@ export async function setupEventListeners(network: SarcoSupportedNetwork) {
     };
 
     const handlers = {
-      createSarco: getCreateSarcoHandler(network),
-      rewrap: getRewrapHandler(network),
-      clean: getCleanHandler(network),
-      bury: getBuryHandler(network),
-      accuse: getAccuseHandler(network),
+      createSarco: getCreateSarcoHandler(networkContext),
+      rewrap: getRewrapHandler(networkContext),
+      clean: getCleanHandler(networkContext),
+      bury: getBuryHandler(networkContext),
+      accuse: getAccuseHandler(networkContext),
     };
 
     embalmerFacet.on(filters.createSarco, handlers.createSarco);
@@ -141,7 +135,7 @@ export async function setupEventListeners(network: SarcoSupportedNetwork) {
     ethWallet.provider.on("error", async e => {
       archLogger.error(`Provider connection error: ${e}. Reconnecting...`);
       await destroyWeb3Interface();
-      setupEventListeners(network);
+      setupEventListeners(networkContext);
     });
 
     (ethWallet.provider as ethers.providers.WebSocketProvider)._websocket.on(
@@ -149,7 +143,7 @@ export async function setupEventListeners(network: SarcoSupportedNetwork) {
       async e => {
         archLogger.info(`Provider WS connection closed: ${e}. Reconnecting...`);
         await destroyWeb3Interface();
-        setupEventListeners(network);
+        setupEventListeners(networkContext);
       }
     );
   } catch (e) {

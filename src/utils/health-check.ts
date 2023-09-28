@@ -1,6 +1,5 @@
 import { BigNumber, ethers } from "ethers";
 import { exit } from "process";
-import { getWeb3Interface } from "../scripts/web3-interface";
 import { archLogger } from "../logger/chalk-theme";
 import { NO_ONCHAIN_PROFILE, RPC_EXCEPTION } from "./exit-codes";
 import { logCallout } from "../logger/formatter";
@@ -19,17 +18,13 @@ import {
   logProfile,
 } from "../cli/utils";
 import { getBlockTimestamp } from "./blockchain/helpers";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 import { NetworkContext } from "../network-config";
 
 /**
  * Runs on service startup
  * @param peerId -- libp2p peer ID that will be validated with arch profile if provided
  */
-export async function healthCheck(network: SarcoSupportedNetwork, peerId?: string) {
-  const web3Interface = await getWeb3Interface();
-  const networkContext = web3Interface.getNetworkContext(network);
-
+export async function healthCheck(networkContext: NetworkContext, peerId?: string) {
   try {
     const sarcoBalance = await getSarcoBalance(networkContext);
     warnIfSarcoBalanceIsLow(networkContext, sarcoBalance);

@@ -7,8 +7,7 @@ import { loadPeerIdFromFile } from "./utils";
 import { SIGNAL_SERVER_LIST } from "./models/node-config";
 import { archLogger } from "./logger/chalk-theme";
 import { setupEventListeners } from "./utils/contract-event-listeners";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
-import { getWeb3Interface } from "./scripts/web3-interface";
+import { NetworkContext } from "./network-config";
 
 const RESTART_INTERVAL = 1_200_000; // 2O Minutes
 const CONTRACT_DATA_REFETCH_INTERVAL = process.env.REFETCH_INTERVAL
@@ -20,6 +19,7 @@ export async function startService(opts: {
   listenAddresses?: string[];
   peerId?: any;
   bootstrapList?: string[];
+  networkContexts: NetworkContext[];
   isTest?: boolean;
 }) {
   validateEnvVars();
@@ -40,18 +40,16 @@ export async function startService(opts: {
         : undefined,
   });
 
-  
-  const chainIds = process.env.CHAIN_IDS!.split(",").map(idStr => Number(idStr.trim())) as SarcoSupportedNetwork[];  
-  
-  chainIds.forEach(async chainId => {
-    await healthCheck(chainId, peerId.toString());
+  opts.networkContexts.forEach(async networkContext => {
+    console.log("networkContext", networkContext.chainId);
+     await healthCheck(networkContext, peerId.toString());
 
     // refetch every so often
     // TODO: restore this. It's commented out for testing. (TODO TODO: Is this still a thing?)
     // setInterval(() => fetchProfileAndSchedulePublish(), CONTRACT_DATA_REFETCH_INTERVAL);
-    const networkContext = (await getWeb3Interface()).getNetworkContext(chainId);
+    
     fetchProfileAndSchedulePublish(networkContext);
-    setupEventListeners(chainId);
+    setupEventListeners(networkContext);
     setInterval(async () => warnIfEthBalanceIsLow(networkContext), RESTART_INTERVAL);
   });
 
