@@ -9,6 +9,7 @@ import { startService } from "../../start_service";
 import { NetworkContext } from "../../network-config";
 import { getWeb3Interface } from "../../scripts/web3-interface";
 import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { archLogger } from "../../logger/chalk-theme";
 
 export class Start implements Command {
   name = "start";
@@ -49,16 +50,16 @@ export class Start implements Command {
   validateArgs(options: CommandOptions) {
     const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
     if (multipleChains && !options.network) {
-      logValidationErrorAndExit(
-        "Missing network option. Use --network to specify a network to run this command on."
-      );
+      archLogger.warn("=======================================================================\n\nStarting on all networks! Use --network to specify a network to run on.\n\n=======================================================================\n\n");
     }
   }
 
+  // config webapp
+  // checkout filtered logging
   async run(options: CommandOptions): Promise<void> {
     const networkContexts: NetworkContext[] = [];
-
-    if (!options.network || options.network === "all") {
+    
+    if (!options.network  || options.network === "all") {
       // The user either has only one configured network, or has selected to run on all networks
       const chainIds = process.env
         .CHAIN_IDS!.split(",")
