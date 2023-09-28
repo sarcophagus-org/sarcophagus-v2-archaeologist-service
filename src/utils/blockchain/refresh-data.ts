@@ -1,5 +1,5 @@
 import { schedulePublishPrivateKeyWithBuffer } from "../scheduler";
-import { getGracePeriod, inMemoryStore, SarcophagusData } from "../onchain-data";
+import { inMemoryStore, SarcophagusData } from "../onchain-data";
 import { BigNumber, ethers } from "ethers";
 import { handleRpcError } from "../rpc-error-handler";
 import { getBlockTimestamp } from "./helpers";

@@ -4,6 +4,7 @@ import { mplex } from "@libp2p/mplex";
 import { bootstrap } from "@libp2p/bootstrap";
 import { Libp2pOptions } from "libp2p";
 import { webSockets } from "@libp2p/websockets";
+import { DHT_PROTOCOL_PREFIX } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 interface NodeConfigParams {
   bootstrapList?: string[];
@@ -13,7 +14,6 @@ interface NodeConfigParams {
 
 // protocol names used to set up communication with embalmer node nodes
 export const SIGNAL_SERVER_LIST = ["sig.encryptafile.com"];
-const DHT_PROTOCOL_PREFIX = "/archaeologist-service";
 
 const dht = kadDHT({
   protocolPrefix: DHT_PROTOCOL_PREFIX,
