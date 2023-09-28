@@ -30,7 +30,7 @@ export const getWeb3Interface = async (isTest: boolean = false): Promise<Web3Int
   }
 
   try {
-    const chainIds = process.env.CHAIN_IDS!.split(",").map(chainIdStr => Number(chainIdStr.trim()))
+    const chainIds = process.env.CHAIN_IDS!.split(",").map(chainIdStr => Number.parseInt(chainIdStr.trim()))
     const networkContexts = getNetworkContextsByChainIds(chainIds, isTest);
 
     web3Interface = {
@@ -55,9 +55,6 @@ export const getWeb3Interface = async (isTest: boolean = false): Promise<Web3Int
     return web3Interface;
   } catch (e) {
     await archLogger.error(e, { logTimestamp: true, sendNotification: true });
-    archLogger.error("Confirm PROVIDER_URL in .env is a valid RPC Provider URL", {
-      logTimestamp: true,
-    });
     exit(BAD_ENV);
   }
 };

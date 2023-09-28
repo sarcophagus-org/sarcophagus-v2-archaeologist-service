@@ -247,7 +247,7 @@ export class Archaeologist {
 
     // Set up separate streams for each chain id
     const web3Interface = getWeb3Interface();
-    process.env.CHAIN_IDS!.split(",").map(idStr => Number.parseInt(idStr.trim()) ).forEach(async chainId => {
+    process.env.CHAIN_IDS!.split(",").map(idStr => Number.parseInt(idStr.trim())).forEach(async chainId => {
       this.node.handle([`${NEGOTIATION_SIGNATURE_STREAM}-${chainId}`], async ({ stream }) => {
         _handleNegotiationSignatureStream((await web3Interface).getNetworkContext(chainId as SarcoSupportedNetwork), { stream });
       });

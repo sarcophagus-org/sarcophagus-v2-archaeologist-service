@@ -58,9 +58,17 @@ export function validateEnvVars() {
   _tryReadEnv("CHAIN_IDS", process.env.CHAIN_IDS, {
     required: true,
     callback: envVar => {
+      const parsedIds = envVar.split(",");
       if (envVar.split(",").length === 0) {
         throw new Error("CHAIN_IDS must be a comma separated list of chain ids");
       }
+
+      parsedIds.forEach(parsedId => {
+        const chainId = Number.parseInt(parsedId.trim());
+        if (isNaN(chainId)) {
+          throw new Error(`Invalid chain id: ${parsedId}`);
+        }
+      });
     },
   });
 
