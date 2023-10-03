@@ -289,12 +289,5 @@ export class Archaeologist {
           );
         });
       });
-
-    // Backwards compatibility for old nodes on mainnet
-    this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
-      _handleNegotiationSignatureStream((await web3Interface).getNetworkContext(MAINNET_CHAIN_ID), {
-        stream,
-      });
-    });
   }
 }
