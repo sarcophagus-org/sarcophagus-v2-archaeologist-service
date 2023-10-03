@@ -80,6 +80,8 @@ export async function fetchProfileAndSchedulePublish(networkContext: NetworkCont
   networkProfile.profile = await getOnchainProfile(networkContext);
   networkProfile.sarcophagi = await fetchSarcophagiAndSchedulePublish(networkContext);
 
+  console.log(`Set ${networkContext.networkName} profile maximumResurrectionTime to ${networkProfile.profile.maximumResurrectionTime}`);
+  
   inMemoryStore.set(networkContext.chainId, networkProfile);
 }
 

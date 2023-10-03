@@ -141,6 +141,7 @@ export class Archaeologist {
               }: SarcophagusNegotiationParams = JSON.parse(
                 new TextDecoder().decode(data.subarray())
               );
+              console.log(`Negotiating on ${networkContext.networkName} (${networkContext.chainId})`);
 
               const maximumRewrapIntervalBN = BigNumber.from(maxRewrapInterval);
               const maximumResurrectionTimeBN = BigNumber.from(maximumResurrectionTime);
