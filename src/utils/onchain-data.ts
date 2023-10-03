@@ -1,7 +1,7 @@
 import { BigNumber } from "ethers";
-import { getWeb3Interface } from "../scripts/web3-interface";
 import { fetchSarcophagiAndSchedulePublish } from "./blockchain/refresh-data";
 import { SubgraphData } from "./graphql";
+import { NetworkContext } from "../network-config";
 
 export interface OnchainProfile {
   exists: boolean;
@@ -65,25 +65,33 @@ interface InMemoryStore {
   gracePeriod?: BigNumber;
 }
 
-export const inMemoryStore: InMemoryStore = {
-  sarcophagi: [],
-  deadSarcophagusIds: [],
-  sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
-};
+export const inMemoryStore: Map<number, InMemoryStore> = new Map([]);
 
-export async function fetchProfileAndSchedulePublish() {
-  inMemoryStore.profile = await getOnchainProfile();
-  inMemoryStore.sarcophagi = await fetchSarcophagiAndSchedulePublish();
+export async function fetchProfileAndSchedulePublish(networkContext: NetworkContext) {
+  let networkProfile = inMemoryStore.get(networkContext.chainId) || {
+    sarcophagi: [],
+    deadSarcophagusIds: [],
+    sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
+  };
+
+  if (!inMemoryStore.get(networkContext.chainId)?.gracePeriod) {
+    networkProfile.gracePeriod = await getGracePeriod(networkContext);
+  }
+  networkProfile.profile = await getOnchainProfile(networkContext);
+  networkProfile.sarcophagi = await fetchSarcophagiAndSchedulePublish(networkContext);
+
+  console.log(`Set ${networkContext.networkName} profile maximumResurrectionTime to ${networkProfile.profile.maximumResurrectionTime}`);
+  
+  inMemoryStore.set(networkContext.chainId, networkProfile);
 }
 
-export async function getOnchainProfile(): Promise<OnchainProfile> {
-  const web3Interface = await getWeb3Interface();
+export async function getOnchainProfile(networkContext: NetworkContext): Promise<OnchainProfile> {
+  const { viewStateFacet, ethWallet } = networkContext;
+
   try {
     return {
       exists: true,
-      ...(await web3Interface.viewStateFacet.getArchaeologistProfile(
-        web3Interface.ethWallet.address
-      )),
+      ...(await viewStateFacet.getArchaeologistProfile(ethWallet.address)),
     };
   } catch (e) {
     if (e.errorName === "ArchaeologistProfileExistsShouldBe" && e.errorArgs.includes(true)) {
@@ -92,43 +100,32 @@ export async function getOnchainProfile(): Promise<OnchainProfile> {
   }
 }
 
-export async function getRewards(): Promise<BigNumber> {
-  const web3Interface = await getWeb3Interface();
-  return web3Interface.viewStateFacet.getRewards(web3Interface.ethWallet.address);
+export async function getRewards(networkContext: NetworkContext): Promise<BigNumber> {
+  const { viewStateFacet, ethWallet } = networkContext;
+  return viewStateFacet.getRewards(ethWallet.address);
 }
 
-export async function getSarcoBalance(): Promise<BigNumber> {
-  const web3Interface = await getWeb3Interface();
-  return web3Interface.sarcoToken.balanceOf(web3Interface.ethWallet.address);
+export async function getSarcoBalance(networkContext: NetworkContext): Promise<BigNumber> {
+  const { sarcoToken, ethWallet } = networkContext;
+  return sarcoToken.balanceOf(ethWallet.address);
 }
 
-export async function getGracePeriod(): Promise<BigNumber> {
-  const web3Interface = await getWeb3Interface();
-  return web3Interface.viewStateFacet.getGracePeriod();
+export async function getGracePeriod(networkContext: NetworkContext): Promise<BigNumber> {
+  const { viewStateFacet } = networkContext;
+  return viewStateFacet.getGracePeriod();
 }
 
-export async function getEthBalance(): Promise<BigNumber> {
-  const web3Interface = await getWeb3Interface();
-  return web3Interface.ethWallet.getBalance();
+export async function getNetworkTokenBalance(networkContext: NetworkContext): Promise<BigNumber> {
+  const { ethWallet } = networkContext;
+  return ethWallet.getBalance();
 }
 
-export async function getFreeBondBalance(): Promise<BigNumber> {
-  const web3Interface = await getWeb3Interface();
-  return web3Interface.viewStateFacet.getFreeBond(web3Interface.ethWallet.address);
+export async function getFreeBondBalance(networkContext: NetworkContext): Promise<BigNumber> {
+  const { viewStateFacet, ethWallet } = networkContext;
+  return viewStateFacet.getFreeBond(ethWallet.address);
 }
 
-export async function getSarcophagiIds(): Promise<string[]> {
-  const web3Interface = await getWeb3Interface();
-  return SubgraphData.getSarcophagiIds(web3Interface.ethWallet.address.toLowerCase());
-}
-
-export enum SarcophagusState {
-  DoesNotExist,
-  Active,
-  Resurrecting,
-  Resurrected,
-  Buried,
-  Cleaned,
-  Accused,
-  Failed,
+export async function getSarcophagiIds(networkContext: NetworkContext): Promise<string[]> {
+  const { ethWallet } = networkContext;
+  return SubgraphData.getSarcophagiIds(ethWallet.address.toLowerCase(), networkContext);
 }

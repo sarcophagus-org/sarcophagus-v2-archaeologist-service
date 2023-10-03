@@ -1,13 +1,14 @@
 import { exit } from "process";
-import { destroyWeb3Interface, getWeb3Interface } from "../scripts/web3-interface";
+import { destroyWeb3Interface } from "../scripts/web3-interface";
 import { RPC_EXCEPTION } from "./exit-codes";
 import { inMemoryStore } from "./onchain-data";
 import { archLogger } from "../logger/chalk-theme";
 import { cancelSheduledPublish, schedulePublishPrivateKeyWithBuffer } from "./scheduler";
 import { getBlockTimestamp, getDateFromTimestamp } from "./blockchain/helpers";
 import { ethers } from "ethers";
+import { NetworkContext } from "../network-config";
 
-function getCreateSarcoHandler() {
+function getCreateSarcoHandler(networkContext: NetworkContext) {
   return async (
     sarcoId,
     sarcoName,
@@ -20,29 +21,30 @@ function getCreateSarcoHandler() {
     arweaveTxId,
     event
   ) => {
-    const web3Interface = await getWeb3Interface();
-    const archAddress = web3Interface.ethWallet.address;
+    const { viewStateFacet, ethWallet } = networkContext;
+    const archAddress = ethWallet.address;
 
     const isCursed = (cursedArchaeologists as string[]).includes(archAddress);
     if (!isCursed) return;
 
-    const currentBlockTimestampSec = await getBlockTimestamp();
+    const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
 
     const scheduledResurrectionTime = schedulePublishPrivateKeyWithBuffer(
       currentBlockTimestampSec,
       sarcoId,
-      resurrectionTime.toNumber()
+      resurrectionTime.toNumber(),
+      networkContext
     );
 
-    const archaeologist = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(
+    const archaeologist = await viewStateFacet.getSarcophagusArchaeologist(
       sarcoId,
-      web3Interface.ethWallet.address
+      ethWallet.address
     );
 
-    const block = await web3Interface.ethWallet.provider.getBlock(event.blockNumber);
+    const block = await ethWallet.provider.getBlock(event.blockNumber);
     const creationDate = getDateFromTimestamp(block.timestamp);
 
-    inMemoryStore.sarcophagi.push({
+    inMemoryStore.get(networkContext.chainId)!.sarcophagi.push({
       id: sarcoId,
       resurrectionTime: scheduledResurrectionTime,
       perSecondFee: archaeologist.diggingFeePerSecond,
@@ -52,97 +54,113 @@ function getCreateSarcoHandler() {
   };
 }
 
-function getRewrapHandler() {
+function getRewrapHandler(networkContext: NetworkContext) {
   return async (sarcoId: string, newResurrectionTime: number) => {
-    const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
+    const isCursed =
+      inMemoryStore.get(networkContext.chainId)!.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
-    const currentBlockTimestampSec = await getBlockTimestamp();
-    schedulePublishPrivateKeyWithBuffer(currentBlockTimestampSec, sarcoId, newResurrectionTime);
+    const currentBlockTimestampSec = await getBlockTimestamp(networkContext);
+    schedulePublishPrivateKeyWithBuffer(
+      currentBlockTimestampSec,
+      sarcoId,
+      newResurrectionTime,
+      networkContext
+    );
   };
 }
 
-function getCleanHandler() {
+function getCleanHandler(networkContext: NetworkContext) {
   return (sarcoId: string) => {
-    const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
+    const isCursed =
+      inMemoryStore.get(networkContext.chainId)!.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
     archLogger.info(`Sarcophagus cleaned: ${sarcoId}`);
-    inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
-    inMemoryStore.deadSarcophagusIds.push(sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.sarcophagi = inMemoryStore
+      .get(networkContext.chainId)!
+      .sarcophagi.filter(s => s.id !== sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.push(sarcoId);
   };
 }
 
-function getBuryHandler() {
+function getBuryHandler(networkContext: NetworkContext) {
   return (sarcoId: string) => {
-    const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
+    const isCursed =
+      inMemoryStore.get(networkContext.chainId)!.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
-    archLogger.info(`Sarcophagus buried: ${sarcoId}`);
-    inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
-    inMemoryStore.deadSarcophagusIds.push(sarcoId);
+    archLogger.info(`[${networkContext.networkName}] Sarcophagus buried: ${sarcoId}`);
+    inMemoryStore.get(networkContext.chainId)!.sarcophagi = inMemoryStore
+      .get(networkContext.chainId)!
+      .sarcophagi.filter(s => s.id !== sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.push(sarcoId);
   };
 }
 
-function getAccuseHandler() {
+function getAccuseHandler(networkContext: NetworkContext) {
   return async (sarcoId: string) => {
-    const isCursed = inMemoryStore.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
+    const isCursed =
+      inMemoryStore.get(networkContext.chainId)!.sarcophagi.findIndex(s => s.id === sarcoId) !== -1;
     if (!isCursed) return;
 
-    archLogger.info(`Sarcophagus accused: ${sarcoId}`);
+    archLogger.info(`[${networkContext.networkName}] Sarcophagus accused: ${sarcoId}`);
 
     // Check if sarcophagus is compromised, if so, remove from inMemoryStore
     // add to deadSarcophagusIds, and cancel scheduled publish
-    const web3Interface = await getWeb3Interface();
-    const sarcoFromContract = await web3Interface.viewStateFacet.getSarcophagus(sarcoId);
+    const { viewStateFacet } = networkContext;
+
+    const sarcoFromContract = await viewStateFacet.getSarcophagus(sarcoId);
     if (sarcoFromContract.isCompromised) {
-      inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
-      inMemoryStore.deadSarcophagusIds.push(sarcoId);
+      inMemoryStore.get(networkContext.chainId)!.sarcophagi = inMemoryStore
+        .get(networkContext.chainId)!
+        .sarcophagi.filter(s => s.id !== sarcoId);
+      inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.push(sarcoId);
       cancelSheduledPublish(sarcoId);
     }
   };
 }
 
-export async function setupEventListeners() {
+export async function setupEventListeners(networkContext: NetworkContext) {
   try {
-    const web3Interface = await getWeb3Interface();
-
+    const { embalmerFacet, thirdPartyFacet, ethWallet } = networkContext;
     const filters = {
-      createSarco: web3Interface.embalmerFacet.filters.CreateSarcophagus(),
-      rewrap: web3Interface.embalmerFacet.filters.RewrapSarcophagus(),
-      clean: web3Interface.thirdPartyFacet.filters.Clean(),
-      bury: web3Interface.embalmerFacet.filters.BurySarcophagus(),
-      accuse: web3Interface.thirdPartyFacet.filters.AccuseArchaeologist(),
+      createSarco: embalmerFacet.filters.CreateSarcophagus(),
+      rewrap: embalmerFacet.filters.RewrapSarcophagus(),
+      clean: thirdPartyFacet.filters.Clean(),
+      bury: embalmerFacet.filters.BurySarcophagus(),
+      accuse: thirdPartyFacet.filters.AccuseArchaeologist(),
     };
 
     const handlers = {
-      createSarco: getCreateSarcoHandler(),
-      rewrap: getRewrapHandler(),
-      clean: getCleanHandler(),
-      bury: getBuryHandler(),
-      accuse: getAccuseHandler(),
+      createSarco: getCreateSarcoHandler(networkContext),
+      rewrap: getRewrapHandler(networkContext),
+      clean: getCleanHandler(networkContext),
+      bury: getBuryHandler(networkContext),
+      accuse: getAccuseHandler(networkContext),
     };
 
-    web3Interface.embalmerFacet.on(filters.createSarco, handlers.createSarco);
-    web3Interface.embalmerFacet.on(filters.rewrap, handlers.rewrap);
-    web3Interface.embalmerFacet.on(filters.clean, handlers.clean);
-    web3Interface.embalmerFacet.on(filters.bury, handlers.bury);
-    web3Interface.embalmerFacet.on(filters.accuse, handlers.accuse);
+    embalmerFacet.on(filters.createSarco, handlers.createSarco);
+    embalmerFacet.on(filters.rewrap, handlers.rewrap);
+    embalmerFacet.on(filters.clean, handlers.clean);
+    embalmerFacet.on(filters.bury, handlers.bury);
+    embalmerFacet.on(filters.accuse, handlers.accuse);
 
-    web3Interface.ethWallet.provider.on("error", async e => {
-      archLogger.error(`Provider connection error: ${e}. Reconnecting...`);
+    ethWallet.provider.on("error", async e => {
+      archLogger.error(
+        `[${networkContext.networkName}] Provider connection error: ${e}. Reconnecting...`
+      );
       await destroyWeb3Interface();
-      setupEventListeners();
+      setupEventListeners(networkContext);
     });
 
-    (web3Interface.ethWallet.provider as ethers.providers.WebSocketProvider)._websocket.on(
-      "close",
-      async e => {
-        archLogger.info(`Provider WS connection closed: ${e}. Reconnecting...`);
-        await destroyWeb3Interface();
-        setupEventListeners();
-      }
-    );
+    (ethWallet.provider as ethers.providers.WebSocketProvider)._websocket.on("close", async e => {
+      archLogger.info(
+        `[${networkContext.networkName}] Provider WS connection closed: ${e}. Reconnecting...`
+      );
+      await destroyWeb3Interface();
+      setupEventListeners(networkContext);
+    });
   } catch (e) {
     console.error(e);
     exit(RPC_EXCEPTION);

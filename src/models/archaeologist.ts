@@ -7,12 +7,17 @@ import { PeerId } from "@libp2p/interfaces/dist/src/peer-id";
 import { archLogger } from "../logger/chalk-theme";
 import { BigNumber, ethers } from "ethers";
 import { getWeb3Interface } from "../scripts/web3-interface";
-import { NEGOTIATION_SIGNATURE_STREAM } from "./node-config";
 import { inMemoryStore } from "../utils/onchain-data";
 import { SarcophagusValidationError, StreamCommsError } from "../utils/error-codes";
 import type { Stream } from "@libp2p/interface-connection";
 import { signPacked } from "../utils/signature";
 import { getBlockTimestamp } from "../utils/blockchain/helpers";
+import { NetworkContext } from "../network-config";
+import {
+  MAINNET_CHAIN_ID,
+  SarcoSupportedNetwork,
+  NEGOTIATION_SIGNATURE_STREAM,
+} from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 // If current block timestamp is further than the creation time passed to the arch
 // by this amount, then the arch will throw an error
@@ -71,7 +76,6 @@ export class Archaeologist {
       const { signalServerList } = this.listenAddressesConfig!;
       this.listenAddresses = genListenAddresses(
         signalServerList,
-        (await getWeb3Interface()).networkConfig.chainId,
         this.peerId.toJSON().id,
         false,
         process.env.DOMAIN
@@ -116,10 +120,13 @@ export class Archaeologist {
     archLogger.error(`Error: ${error.message}`, { logTimestamp: true });
   }
 
-  async setupSarcophagusNegotiationStream() {
+  async setupSarcophagusNegotiationStreams() {
     const errorMessagePrefix = `Archaeologist ${this.peerId.toString()} declined to sign: `;
 
-    this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
+    const _handleNegotiationSignatureStream = async (
+      networkContext: NetworkContext,
+      { stream }: { stream: Stream }
+    ) => {
       try {
         await pipe(stream, async source => {
           for await (const data of source) {
@@ -134,6 +141,7 @@ export class Archaeologist {
               }: SarcophagusNegotiationParams = JSON.parse(
                 new TextDecoder().decode(data.subarray())
               );
+              console.log(`Negotiating on ${networkContext.networkName} (${networkContext.chainId})`);
 
               const maximumRewrapIntervalBN = BigNumber.from(maxRewrapInterval);
               const maximumResurrectionTimeBN = BigNumber.from(maximumResurrectionTime);
@@ -141,12 +149,18 @@ export class Archaeologist {
               /**
                * Validate maxRewrapInterval supplied is in line with our maxRewrapInterval
                */
-              if (maximumRewrapIntervalBN.gt(inMemoryStore.profile!.maximumRewrapInterval)) {
+              if (
+                maximumRewrapIntervalBN.gt(
+                  inMemoryStore.get(networkContext.chainId)!.profile!.maximumRewrapInterval
+                )
+              ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.MAX_REWRAP_INTERVAL_TOO_LARGE,
                   message: `${errorMessagePrefix} \n Maximum rewrap interval too large.  
                   \n Got: ${maximumRewrapIntervalBN.toString()}
-                  \n Maximum allowed: ${inMemoryStore.profile!.maximumRewrapInterval.toString()}`,
+                  \n Maximum allowed: ${inMemoryStore
+                    .get(networkContext.chainId)!
+                    .profile!.maximumRewrapInterval.toString()}`,
                 });
                 return;
               }
@@ -155,12 +169,18 @@ export class Archaeologist {
                * Validate maximumResurrectionTime supplied is within our maximumResurrectionTime
                */
 
-              if (maximumResurrectionTimeBN.gt(inMemoryStore.profile!.maximumResurrectionTime)) {
+              if (
+                maximumResurrectionTimeBN.gt(
+                  inMemoryStore.get(networkContext.chainId)!.profile!.maximumResurrectionTime
+                )
+              ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.MAX_RESURRECTION_TIME_TOO_LARGE,
                   message: `${errorMessagePrefix} \n Maximum resurrection time is too large.  
                   \n Got: ${maximumResurrectionTimeBN.toString()}
-                  \n Maximum allowed: ${inMemoryStore.profile!.maximumResurrectionTime.toString()}`,
+                  \n Maximum allowed: ${inMemoryStore
+                    .get(networkContext.chainId)!
+                    .profile!.maximumResurrectionTime.toString()}`,
                 });
                 return;
               }
@@ -171,13 +191,17 @@ export class Archaeologist {
               if (
                 ethers.utils
                   .parseEther(diggingFeePerSecond)
-                  .lt(inMemoryStore.profile!.minimumDiggingFeePerSecond)
+                  .lt(
+                    inMemoryStore.get(networkContext.chainId)!.profile!.minimumDiggingFeePerSecond
+                  )
               ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.DIGGING_FEE_TOO_LOW,
                   message: `${errorMessagePrefix} \n Digging fee per second sent is too low.  
                   \n Got: ${diggingFeePerSecond.toString()}
-                  \n Minimum needed: ${inMemoryStore.profile!.minimumDiggingFeePerSecond.toString()}`,
+                  \n Minimum needed: ${inMemoryStore
+                    .get(networkContext.chainId)!
+                    .profile!.minimumDiggingFeePerSecond.toString()}`,
                 });
                 return;
               }
@@ -185,12 +209,18 @@ export class Archaeologist {
               /**
                * Validate supplied curse fee matches archaeologist's required curse fee
                */
-              if (ethers.utils.parseEther(curseFee).lt(inMemoryStore.profile!.curseFee)) {
+              if (
+                ethers.utils
+                  .parseEther(curseFee)
+                  .lt(inMemoryStore.get(networkContext.chainId)!.profile!.curseFee)
+              ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.CURSE_FEE_TOO_LOW,
                   message: `${errorMessagePrefix} \n Curse fee sent is too low.  
                   \n Got: ${curseFee.toString()}
-                  \n Minimum needed: ${inMemoryStore.profile!.curseFee.toString()}`,
+                  \n Minimum needed: ${inMemoryStore
+                    .get(networkContext.chainId)!
+                    .profile!.curseFee.toString()}`,
                 });
                 return;
               }
@@ -200,24 +230,23 @@ export class Archaeologist {
                */
               if (
                 timestamp >
-                (await getBlockTimestamp()) * 1000 + CREATION_TIMESTAMP_DRIFT_ALLOWED_MS
+                (await getBlockTimestamp(networkContext)) * 1000 +
+                  CREATION_TIMESTAMP_DRIFT_ALLOWED_MS
               ) {
                 this.emitError(stream, {
                   code: SarcophagusValidationError.INVALID_TIMESTAMP,
                   message: `${errorMessagePrefix} \n Timestamp received is in the future.  
                   \n Got: ${timestamp}
-                  \n Latest block timestamp value: ${await getBlockTimestamp()}`,
+                  \n Latest block timestamp value: ${await getBlockTimestamp(networkContext)}`,
                 });
                 return;
               }
 
-              const web3Interface = await getWeb3Interface();
-
-              const publicKey = await web3Interface.keyFinder.getNextPublicKey();
+              const publicKey = await networkContext.keyFinder.getNextPublicKey();
 
               // sign sarcophagus parameters to demonstrate agreement
               const signature = await signPacked(
-                web3Interface.ethWallet,
+                networkContext.ethWallet,
                 ["bytes", "uint256", "uint256", "uint256", "uint256", "uint256"],
                 [
                   publicKey,
@@ -242,8 +271,30 @@ export class Archaeologist {
         await archLogger.error(`problem with pipe in archaeologist-negotiation-signature: ${err}`, {
           logTimestamp: true,
           sendNotification: true,
+          networkContext,
         });
       }
+    };
+
+    // Set up separate streams for each chain id
+    const web3Interface = getWeb3Interface();
+    process.env
+      .CHAIN_IDS!.split(",")
+      .map(idStr => Number.parseInt(idStr.trim()))
+      .forEach(async chainId => {
+        this.node.handle([`${NEGOTIATION_SIGNATURE_STREAM}-${chainId}`], async ({ stream }) => {
+          _handleNegotiationSignatureStream(
+            (await web3Interface).getNetworkContext(chainId as SarcoSupportedNetwork),
+            { stream }
+          );
+        });
+      });
+
+    // Backwards compatibility for old nodes on mainnet
+    this.node.handle([NEGOTIATION_SIGNATURE_STREAM], async ({ stream }) => {
+      _handleNegotiationSignatureStream((await web3Interface).getNetworkContext(MAINNET_CHAIN_ID), {
+        stream,
+      });
     });
   }
 }

@@ -1,0 +1,32 @@
+name: Build and Push Docker Image
+on:
+  push:
+    branches:
+      multi-net-rewrite
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  publish-hello-docker-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push docker image
+        run: |
+          docker build . --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:multi-net-rewrite
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:multi-net-rewrite

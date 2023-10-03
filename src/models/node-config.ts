@@ -1,11 +1,10 @@
-import { webRTCStar } from "@libp2p/webrtc-star";
-import wrtc from "wrtc";
 import { kadDHT } from "@libp2p/kad-dht";
 import { noise } from "@chainsafe/libp2p-noise";
 import { mplex } from "@libp2p/mplex";
 import { bootstrap } from "@libp2p/bootstrap";
 import { Libp2pOptions } from "libp2p";
 import { webSockets } from "@libp2p/websockets";
+import { DHT_PROTOCOL_PREFIX } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 interface NodeConfigParams {
   bootstrapList?: string[];
@@ -14,35 +13,25 @@ interface NodeConfigParams {
 }
 
 // protocol names used to set up communication with embalmer node nodes
-export const NEGOTIATION_SIGNATURE_STREAM = "/archaeologist-negotiation-signature";
 export const SIGNAL_SERVER_LIST = ["sig.encryptafile.com"];
-const DHT_PROTOCOL_PREFIX = "/archaeologist-service";
-const domain = process.env.DOMAIN;
 
 const dht = kadDHT({
   protocolPrefix: DHT_PROTOCOL_PREFIX,
   clientMode: false,
 });
 
-const webRtcStar = webRTCStar({ wrtc });
-
 export class NodeConfig {
   public configObj: Libp2pOptions = {
-    transports: [domain ? webSockets() : webRtcStar.transport],
+    transports: [webSockets()],
     connectionEncryption: [noise()],
     streamMuxers: [mplex()],
     dht,
-    peerDiscovery: [webRtcStar.discovery],
     connectionManager: {
       autoDial: false,
     },
   };
 
   constructor(options: NodeConfigParams = {}) {
-    if (!domain) {
-      this.configObj.peerDiscovery!.push(webRtcStar.discovery);
-    }
-
     if (options.bootstrapList) {
       this.configObj.peerDiscovery!.push(
         bootstrap({

@@ -25,11 +25,11 @@
     "@libp2p/bootstrap": "^5.0.0",
     "@libp2p/kad-dht": "^5.0.1",
     "@libp2p/mplex": "^7.0.0",
-    "@libp2p/webrtc-star": "^5.0.3",
     "@libp2p/webrtc-star-signalling-server": "^2.0.5",
     "@libp2p/websockets": "^5.0.1",
     "@mapbox/node-pre-gyp": "^1.0.10",
     "@sarcophagus-org/sarcophagus-v2-contracts": "^0.17.2",
+    "@sarcophagus-org/sarcophagus-v2-sdk": "^0.2.25",
     "@sendgrid/mail": "^7.7.0",
     "@types/node": "^18.0.0",
     "bip39": "^3.0.4",
@@ -46,8 +46,7 @@
     "libp2p": "^0.40.0",
     "node-fetch": "^3.3.1",
     "node-schedule": "^2.1.0",
-    "peer-id": "^0.16.0",
-    "wrtc": "^0.4.7"
+    "peer-id": "^0.16.0"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",

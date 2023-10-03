@@ -7,6 +7,7 @@ import { runApprove } from "../../utils/blockchain/approve";
 import { ONE_DAY_IN_SECONDS, ONE_MONTH_IN_SECONDS } from "../utils";
 import { getBlockTimestamp, getDateFromTimestamp } from "../../utils/blockchain/helpers";
 import { getSarcoBalance } from "../../utils/onchain-data";
+import { NetworkContext } from "../../network-config";
 
 const DEFAULT_DIGGING_FEES_MONTHLY = "10";
 const DEFAULT_CURSE_FEE = "300";
@@ -60,7 +61,6 @@ const diggingFeeQuestion = [
       `Enter SARCO Amount (per month):`,
     validate(value) {
       if (value) {
-        console.log("validating with", value);
         try {
           parseEther(value.toString());
         } catch (error) {
@@ -100,7 +100,6 @@ const curseFeeQuestion = [
       `Enter SARCO Amount:`,
     validate(value) {
       if (value) {
-        console.log("validating with", value);
         try {
           parseEther(value.toString());
         } catch (error) {
@@ -216,18 +215,21 @@ const maxResTimeMonthsQuestion = [
 //////////////////////////////////////////////////////////////
 const separator = () => console.log("\n\n");
 
-const approveAndRegister = async (profileParams: ProfileCliParams) => {
+const approveAndRegister = async (
+  profileParams: ProfileCliParams,
+  networkContext: NetworkContext
+) => {
   // Execute approval if necessary
-  const alreadyHasAllowance = await hasAllowance(profileParams.freeBond!);
+  const alreadyHasAllowance = await hasAllowance(profileParams.freeBond!, networkContext);
 
   if (!alreadyHasAllowance) {
-    await runApprove();
+    await runApprove(networkContext);
   }
 
   separator();
 
   // Register Profile
-  await profileSetup(profileParams, false, true, true);
+  await profileSetup(profileParams, networkContext, false, true, true);
 };
 
 const parseRewrapIntervalAnswer = (rewrapIntervalAnswer: string | number): number => {
@@ -275,7 +277,7 @@ const parseMaxResTimeAnswer = async (
 //
 // REGISTER PROMPT
 // ////////////////////
-export const registerPrompt = async (skipApproval?: boolean) => {
+export const registerPrompt = async (networkContext: NetworkContext, skipApproval?: boolean) => {
   let diggingFeePerMonth: string,
     rewrapInterval: string,
     maxResTime: string,
@@ -286,11 +288,11 @@ export const registerPrompt = async (skipApproval?: boolean) => {
    * Ask for approval
    */
   if (!skipApproval) {
-    await requestApproval();
+    await requestApproval(networkContext);
     separator();
   }
 
-  const blockTimestamp = await getBlockTimestamp();
+  const blockTimestamp = await getBlockTimestamp(networkContext);
 
   /**
    * Max Resurrection Time
@@ -349,7 +351,7 @@ export const registerPrompt = async (skipApproval?: boolean) => {
       diggingFeePerSecond: Number.parseFloat(diggingFeePerMonth) / ONE_MONTH_IN_SECONDS,
       curseFee: Number.parseFloat(curseFee),
       maxResTime: await parseMaxResTimeAnswer(maxResTime, blockTimestamp),
-      sarcoBalance: formatEther(await getSarcoBalance()),
+      sarcoBalance: formatEther(await getSarcoBalance(networkContext)),
     })
   );
   freeBond = freeBondAnswer.freeBond;
@@ -366,7 +368,7 @@ export const registerPrompt = async (skipApproval?: boolean) => {
   // If user doesn't confirm, then walk through the prompt again
   if (!confirmReviewAnswer.isConfirmed) {
     separator();
-    await registerPrompt(true);
+    await registerPrompt(networkContext, true);
   } else {
     const profileParams: ProfileCliParams = {
       // ie, Digging Fees Per Second
@@ -376,6 +378,6 @@ export const registerPrompt = async (skipApproval?: boolean) => {
       freeBond: parseEther(freeBond),
       curseFee: parseEther(curseFee),
     };
-    await approveAndRegister(profileParams);
+    await approveAndRegister(profileParams, networkContext);
   }
 };

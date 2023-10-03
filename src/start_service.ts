@@ -7,6 +7,7 @@ import { loadPeerIdFromFile } from "./utils";
 import { SIGNAL_SERVER_LIST } from "./models/node-config";
 import { archLogger } from "./logger/chalk-theme";
 import { setupEventListeners } from "./utils/contract-event-listeners";
+import { NetworkContext } from "./network-config";
 
 const RESTART_INTERVAL = 1_200_000; // 2O Minutes
 const CONTRACT_DATA_REFETCH_INTERVAL = process.env.REFETCH_INTERVAL
@@ -18,6 +19,7 @@ export async function startService(opts: {
   listenAddresses?: string[];
   peerId?: any;
   bootstrapList?: string[];
+  networkContexts: NetworkContext[];
   isTest?: boolean;
 }) {
   validateEnvVars();
@@ -38,24 +40,25 @@ export async function startService(opts: {
         : undefined,
   });
 
-  await healthCheck(peerId.toString());
-  fetchProfileAndSchedulePublish();
+  opts.networkContexts.forEach(async networkContext => {
+    await healthCheck(networkContext, peerId.toString());
 
-  // refetch every so often
-  // TODO: restore this. It's commented out for testing.
-  // setInterval(() => fetchProfileAndSchedulePublish(), CONTRACT_DATA_REFETCH_INTERVAL);
-  setupEventListeners();
+    // refetch every so often
+    // TODO: restore this. It's commented out for testing. (TODO TODO: Is this still a thing?)
+    // setInterval(() => fetchProfileAndSchedulePublish(), CONTRACT_DATA_REFETCH_INTERVAL);
 
-  // TODO -- delay starting the node until the creation window has passed
+    fetchProfileAndSchedulePublish(networkContext);
+    setupEventListeners(networkContext);
+    setInterval(async () => warnIfEthBalanceIsLow(networkContext), RESTART_INTERVAL);
+  });
+
+  // TODO -- delay starting the node until the creation window has passed?
   // Consider only doing this if arch as at least one sarcophagus
   await arch.initLibp2pNode();
-  arch.setupSarcophagusNegotiationStream();
+  arch.setupSarcophagusNegotiationStreams();
 
-  // Restart node on 20 min interval in attempt to avoid websocket / wrtc issues
-  setInterval(async () => {
-    arch.restartNode();
-    warnIfEthBalanceIsLow();
-  }, RESTART_INTERVAL);
+  // Restart node on 20 min interval in attempt to avoid websocket issues
+  setInterval(async () => arch.restartNode(), RESTART_INTERVAL);
 
   [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, async e => {

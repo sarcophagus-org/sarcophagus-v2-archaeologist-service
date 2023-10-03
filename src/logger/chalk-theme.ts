@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import { notifyUser } from "../utils/notification";
+import { NetworkContext } from "../network-config";
 
 export const logColors = {
   error: chalk.bold.red,
@@ -27,14 +28,14 @@ export const archLogger = {
     console.log(`${logTimestamp ? currentTimePrefix() : ""}${logColors.warning(msg)}`),
   error: async (
     msg,
-    opt: { sendNotification?: boolean; logTimestamp?: boolean } = {
+    opt: { sendNotification?: boolean; logTimestamp?: boolean; networkContext?: NetworkContext } = {
       sendNotification: false,
       logTimestamp: false,
     }
   ) => {
     console.log(`${opt.logTimestamp ? currentTimePrefix() : ""}${logColors.error(msg)}`);
     if (opt.sendNotification) {
-      await notifyUser(msg.toString());
+      await notifyUser(msg.toString(), opt.networkContext!);
     }
   },
 };
