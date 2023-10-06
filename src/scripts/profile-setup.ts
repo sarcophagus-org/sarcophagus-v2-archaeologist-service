@@ -1,6 +1,5 @@
 import "dotenv/config";
 
-import { getWeb3Interface } from "./web3-interface";
 import { validateEnvVars } from "../utils/validateEnv";
 import { exit } from "process";
 import { RPC_EXCEPTION, SUCCESS } from "../utils/exit-codes";
@@ -36,8 +35,6 @@ export interface ProfileCliParams {
   peerId?: string;
   curseFee?: BigNumber;
 }
-
-const web3Interface = await getWeb3Interface();
 
 export async function profileSetup(
   args: ProfileCliParams,
@@ -104,7 +101,17 @@ export async function profileSetup(
     archLogger.notice(isUpdate ? "PROFILE UPDATED!" : "\nPROFILE REGISTERED!");
 
     const profile = await getOnchainProfile(networkContext);
-    inMemoryStore.get(networkContext.chainId)!.profile = profile;
+
+    let networkProfile = inMemoryStore.get(networkContext.chainId) || {
+      sarcophagi: [],
+      deadSarcophagusIds: [],
+      sarcoIdsInProcessOfHavingPrivateKeyPublished: [],
+    };
+
+    networkProfile.profile = profile;
+
+    inMemoryStore.set(networkContext.chainId, networkProfile);
+    
     logProfile(networkName, profile);
 
     if (exitAfterTx) {
