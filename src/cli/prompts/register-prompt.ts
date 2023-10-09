@@ -117,11 +117,13 @@ const freeBondQuestion = (args: {
   maxResTime: number;
   sarcoBalance: string;
   curseFee: number;
+  blockTimestamp: number;
 }) => {
   const diggingFeePerMonth = args.diggingFeePerSecond * ONE_MONTH_IN_SECONDS;
   const maxResDateTime = getDateFromTimestamp(args.maxResTime).toISOString();
   const maxResDate = maxResDateTime.split("T")[0];
   const maxResTime = maxResDateTime.split("T")[1];
+  const maxResTimeInterval = args.maxResTime - args.blockTimestamp;
 
   return [
     {
@@ -132,7 +134,7 @@ const freeBondQuestion = (args: {
         `${logColors.muted(
           `Since you set your maximum resurrection time to ${maxResDate} at ${maxResTime}, your Digging Fee to ${diggingFeePerMonth} SARCO/month and your Curse Fee to ${args.curseFee} SARCO, ` +
             `you may need a minimum of ${Math.ceil(
-              args.diggingFeePerSecond * args.maxResTime + args.curseFee
+              args.diggingFeePerSecond * maxResTimeInterval + args.curseFee
             )} SARCO to accept one job for the full term of your maximum resurrection time.\n\n` +
             `When a customer chooses you as one of their archaeologist nodes, your free bond will be locked until the ` +
             `sarcophagus is successfully resurrected or buried by the user. It will then be released and available for ` +
@@ -352,6 +354,7 @@ export const registerPrompt = async (networkContext: NetworkContext, skipApprova
       curseFee: Number.parseFloat(curseFee),
       maxResTime: await parseMaxResTimeAnswer(maxResTime, blockTimestamp),
       sarcoBalance: formatEther(await getSarcoBalance(networkContext)),
+      blockTimestamp,
     })
   );
   freeBond = freeBondAnswer.freeBond;

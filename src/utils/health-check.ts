@@ -95,8 +95,8 @@ export async function healthCheck(networkContext: NetworkContext, peerId?: strin
       );
       warnIfFreeBondIsLessThanMinDiggingFee(
         freeBondBalance,
-        profile.minimumDiggingFeePerSecond,
         profile.curseFee,
+        profile.minimumDiggingFeePerSecond,
         networkContext
       );
     });
