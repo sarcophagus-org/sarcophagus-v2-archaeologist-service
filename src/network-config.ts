@@ -16,6 +16,7 @@ import {
   mainnetNetworkConfig,
   baseGoerliNetworkConfig,
   polygonMumbaiNetworkConfig,
+  polygonMainnetNetworkConfig,
 } from "@sarcophagus-org/sarcophagus-v2-sdk";
 import {
   BASE_GOERLI_CHAIN_ID,
@@ -23,6 +24,7 @@ import {
   HARDHAT_CHAIN_ID,
   MAINNET_CHAIN_ID,
   POLYGON_MUMBAI_CHAIN_ID,
+  POLYGON_MAINNET_CHAIN_ID,
   SEPOLIA_CHAIN_ID,
   hardhatNetworkConfig,
 } from "@sarcophagus-org/sarcophagus-v2-sdk";
@@ -50,6 +52,7 @@ const chainIdsToNetworkConfigReturningFunction = new Map<number, NetworkConfigRe
   [GOERLI_CHAIN_ID, providerUrl => goerliNetworkConfig(providerUrl)],
   [SEPOLIA_CHAIN_ID, providerUrl => sepoliaNetworkConfig(providerUrl)],
   [POLYGON_MUMBAI_CHAIN_ID, providerUrl => polygonMumbaiNetworkConfig(providerUrl)],
+  [POLYGON_MAINNET_CHAIN_ID, providerUrl => polygonMainnetNetworkConfig(providerUrl)],
   [BASE_GOERLI_CHAIN_ID, providerUrl => baseGoerliNetworkConfig(providerUrl)],
   [HARDHAT_CHAIN_ID, _ => hardhatNetworkConfig()],
 ]);
@@ -65,6 +68,7 @@ const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkCo
     [SEPOLIA_CHAIN_ID, process.env.SEPOLIA_PROVIDER_URL],
     [BASE_GOERLI_CHAIN_ID, process.env.BASE_GOERLI_PROVIDER_URL],
     [POLYGON_MUMBAI_CHAIN_ID, process.env.POLYGON_MUMBAI_PROVIDER_URL],
+    [POLYGON_MAINNET_CHAIN_ID, process.env.POLYGON_MAINNET_PROVIDER_URL],
     [HARDHAT_CHAIN_ID, process.env.HARDHAT_PROVIDER_URL],
   ]);
   const providerUrl: string | undefined = chainIdsToProviderUrl.get(chainId);
@@ -108,6 +112,7 @@ const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkCo
     [SEPOLIA_CHAIN_ID, process.env.SEPOLIA_ENCRYPTION_MNEMONIC],
     [BASE_GOERLI_CHAIN_ID, process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC],
     [POLYGON_MUMBAI_CHAIN_ID, process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC],
+    [POLYGON_MAINNET_CHAIN_ID, process.env.POLYGON_MAINNET_ENCRYPTION_MNEMONIC],
     [HARDHAT_CHAIN_ID, process.env.HARDHAT_ENCRYPTION_MNEMONIC],
   ]);
   const encryptionMnemonic: string | undefined = chainIdsToEncryptionMnemonic.get(chainId);
