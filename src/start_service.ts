@@ -43,9 +43,14 @@ export async function startService(opts: {
   opts.networkContexts.forEach(async networkContext => {
     await healthCheck(networkContext, peerId.toString());
 
-    // refetch every so often
-    // TODO: restore this. It's commented out for testing. (TODO TODO: Is this still a thing?)
-    // setInterval(() => fetchProfileAndSchedulePublish(), CONTRACT_DATA_REFETCH_INTERVAL);
+    // The archaeologist service is currently setup to listen to contract events and automatically
+    // schedule a profile publish when the relevant event is received. This should always work, but
+    // if it does not for some crazy reason, the following code can be enabled to fetch directly from the contracts
+    // to schedule a publish every so often.
+    // Only thing needed to enable this is to have problem archaeologist nodes set their env var REFETCH_CONTRACT_DATA=true
+    if (process.env.REFETCH_CONTRACT_DATA) {
+      setInterval(() => fetchProfileAndSchedulePublish(networkContext), CONTRACT_DATA_REFETCH_INTERVAL);
+    }
 
     fetchProfileAndSchedulePublish(networkContext);
     setupEventListeners(networkContext);
