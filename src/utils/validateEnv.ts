@@ -91,6 +91,10 @@ export function validateEnvVars() {
     required: false,
     callback: envVar => _validateProviderUrl(envVar, "baseGoerli"),
   });
+  _tryReadEnv("POLYGON_MAINNET_PROVIDER_URL", process.env.POLYGON_MAINNET_PROVIDER_URL, {
+    required: false,
+    callback: envVar => _validateProviderUrl(envVar, "polygonMainnet"),
+  });
   _tryReadEnv("POLYGON_MUMBAI_PROVIDER_URL", process.env.POLYGON_MUMBAI_PROVIDER_URL, {
     required: false,
     callback: envVar => _validateProviderUrl(envVar, "polygonMumbai"),
@@ -113,6 +117,14 @@ export function validateEnvVars() {
     callback: envVar => _validateEncryptionMnemonic(envVar, "baseGoerli"),
   });
   _tryReadEnv(
+    "POLYGON_MAINNET_ENCRYPTION_MNEMONIC",
+    process.env.POLYGON_MAINNET_ENCRYPTION_MNEMONIC,
+    {
+      required: false,
+      callback: envVar => _validateEncryptionMnemonic(envVar, "polygonMainnet"),
+    }
+  );
+  _tryReadEnv(
     "POLYGON_MUMBAI_ENCRYPTION_MNEMONIC",
     process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC,
     {
@@ -130,6 +142,7 @@ export function validateEnvVars() {
     process.env.SEPOLIA_ENCRYPTION_MNEMONIC,
     process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC,
     process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC,
+    process.env.POLYGON_MAINNET_ENCRYPTION_MNEMONIC,
   ].filter(mnemonic => !!mnemonic);
 
   const hasDuplicates = mnemonics.some((val, i) => mnemonics.indexOf(val) !== i);
