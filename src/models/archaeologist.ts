@@ -13,11 +13,7 @@ import type { Stream } from "@libp2p/interface-connection";
 import { signPacked } from "../utils/signature";
 import { getBlockTimestamp } from "../utils/blockchain/helpers";
 import { NetworkContext } from "../network-config";
-import {
-  MAINNET_CHAIN_ID,
-  SarcoSupportedNetwork,
-  NEGOTIATION_SIGNATURE_STREAM,
-} from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { NEGOTIATION_SIGNATURE_STREAM } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 // If current block timestamp is further than the creation time passed to the arch
 // by this amount, then the arch will throw an error
@@ -284,7 +280,7 @@ export class Archaeologist {
       .forEach(async chainId => {
         this.node.handle([`${NEGOTIATION_SIGNATURE_STREAM}-${chainId}`], async ({ stream }) => {
           _handleNegotiationSignatureStream(
-            (await web3Interface).getNetworkContext(chainId as SarcoSupportedNetwork),
+            (await web3Interface).getNetworkContext(chainId),
             { stream }
           );
         });

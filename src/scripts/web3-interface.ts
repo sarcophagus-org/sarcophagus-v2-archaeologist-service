@@ -3,11 +3,11 @@ import { exit } from "process";
 import { archLogger } from "../logger/chalk-theme";
 import { BAD_ENV } from "../utils/exit-codes";
 import { NetworkContext, getNetworkContextsByChainIds } from "../network-config";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
+import { SARCO_SUPPORTED_NETWORKS } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 export interface Web3Interface {
   networkContexts: NetworkContext[];
-  getNetworkContext: (network: SarcoSupportedNetwork | undefined) => NetworkContext;
+  getNetworkContext: (networkOrChainId: number | string | undefined) => NetworkContext;
 }
 
 let web3Interface: Web3Interface | undefined;
@@ -38,15 +38,25 @@ export const getWeb3Interface = async (isTest: boolean = false): Promise<Web3Int
     web3Interface = {
       networkContexts,
       getNetworkContext: networkOrChainId => {
-        const networkContext =
-          networkOrChainId === undefined
-            ? web3Interface?.networkContexts[0]
-            : web3Interface!.networkContexts.find(
-                n =>
-                  (typeof networkOrChainId === "number" && n.chainId === networkOrChainId) ||
-                  (typeof networkOrChainId === "string" &&
-                    n.networkName.toLowerCase() === networkOrChainId.toLowerCase())
-              );
+        let networkContext: NetworkContext | undefined; 
+
+        if (networkOrChainId === undefined) {
+          return networkContexts[0];
+        }
+
+        if (typeof networkOrChainId === "string") {
+          const networkNames = Array.from(SARCO_SUPPORTED_NETWORKS.values());
+          networkContext = networkNames.includes(networkOrChainId) ? 
+            web3Interface!.networkContexts.find(n => n.networkName.toLowerCase() === networkOrChainId.toLowerCase()) : 
+            undefined;
+        }
+
+        if (typeof networkOrChainId === "number") {
+          const chainIds = Array.from(SARCO_SUPPORTED_NETWORKS.keys());
+          networkContext = chainIds.includes(networkOrChainId) ? 
+            web3Interface!.networkContexts.find(n => n.chainId === networkOrChainId) : 
+            undefined;
+        }
 
         if (!networkContext) {
           throw Error(`No Network Context found for Chain ID or Network Name: ${networkOrChainId}`);
