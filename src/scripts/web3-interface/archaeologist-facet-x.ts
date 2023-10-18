@@ -2,7 +2,6 @@ import { ArchaeologistFacet } from "@sarcophagus-org/sarcophagus-v2-contracts";
 import { BytesLike, ethers } from "ethers";
 import { handleRpcError } from "../../utils/rpc-error-handler";
 import { getWeb3Interface } from "../../scripts/web3-interface";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 export class ArchaeologistFacetX {
   archaeologistFacet: ArchaeologistFacet;
@@ -114,7 +113,7 @@ export class ArchaeologistFacetX {
     } catch (e) {
       // Only processes error, does not terminate process
       const web3interface = await getWeb3Interface();
-      const networkContext = web3interface.getNetworkContext(this.chainId as SarcoSupportedNetwork);
+      const networkContext = web3interface.getNetworkContext(this.chainId);
       handleRpcError(e, networkContext);
     }
 

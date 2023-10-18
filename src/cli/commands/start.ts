@@ -1,6 +1,6 @@
 import { Command, CommandOptions } from "./command";
 import { getOnchainProfile } from "../../utils/onchain-data";
-import { ONE_MONTH_IN_SECONDS, logValidationErrorAndExit } from "../utils";
+import { ONE_MONTH_IN_SECONDS } from "../utils";
 import { ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { parseEther } from "ethers/lib/utils";
 import { startOptionDefinitions } from "../config/start-args";
@@ -8,7 +8,6 @@ import { randomTestArchVals } from "../../utils/random-arch-gen";
 import { startService } from "../../start_service";
 import { NetworkContext } from "../../network-config";
 import { getWeb3Interface } from "../../scripts/web3-interface";
-import { SarcoSupportedNetwork } from "@sarcophagus-org/sarcophagus-v2-sdk";
 import { archLogger } from "../../logger/chalk-theme";
 
 export class Start implements Command {
@@ -63,7 +62,7 @@ export class Start implements Command {
       // The user either has only one configured network, or has selected to run on all networks
       const chainIds = process.env
         .CHAIN_IDS!.split(",")
-        .map(idStr => Number(idStr.trim())) as SarcoSupportedNetwork[];
+        .map(idStr => Number(idStr.trim()));
       chainIds.forEach(async chainId => {
         networkContexts.push((await getWeb3Interface()).getNetworkContext(chainId));
       });

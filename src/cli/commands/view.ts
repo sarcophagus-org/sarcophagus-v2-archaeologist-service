@@ -21,6 +21,7 @@ import { validateEnvVars } from "../../utils/validateEnv";
 import { exit } from "process";
 import { SUCCESS } from "../../utils/exit-codes";
 import { NetworkContext } from "../../network-config";
+import { SARCO_SUPPORTED_NETWORKS } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 export class View implements Command {
   name = "view";
