@@ -48,12 +48,12 @@ export interface NetworkContext {
 
 type NetworkConfigReturningFunction = (providerUrl: string) => SarcoNetworkConfig;
 const chainIdsToNetworkConfigReturningFunction = new Map<number, NetworkConfigReturningFunction>([
-  [MAINNET_CHAIN_ID, providerUrl => mainnetNetworkConfig(providerUrl)],
-  [GOERLI_CHAIN_ID, providerUrl => goerliNetworkConfig(providerUrl)],
-  [SEPOLIA_CHAIN_ID, providerUrl => sepoliaNetworkConfig(providerUrl)],
-  [POLYGON_MUMBAI_CHAIN_ID, providerUrl => polygonMumbaiNetworkConfig(providerUrl)],
-  [POLYGON_MAINNET_CHAIN_ID, providerUrl => polygonMainnetNetworkConfig(providerUrl)],
-  [BASE_GOERLI_CHAIN_ID, providerUrl => baseGoerliNetworkConfig(providerUrl)],
+  [MAINNET_CHAIN_ID, () => mainnetNetworkConfig()],
+  [GOERLI_CHAIN_ID, () => goerliNetworkConfig()],
+  [SEPOLIA_CHAIN_ID, () => sepoliaNetworkConfig()],
+  [POLYGON_MUMBAI_CHAIN_ID, () => polygonMumbaiNetworkConfig()],
+  [POLYGON_MAINNET_CHAIN_ID, () => polygonMainnetNetworkConfig()],
+  [BASE_GOERLI_CHAIN_ID, () => baseGoerliNetworkConfig()],
   [HARDHAT_CHAIN_ID, _ => hardhatNetworkConfig()],
 ]);
 
