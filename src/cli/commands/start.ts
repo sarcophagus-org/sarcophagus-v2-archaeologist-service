@@ -58,11 +58,13 @@ export class Start implements Command {
   async run(options: CommandOptions): Promise<void> {
     const networkContexts: NetworkContext[] = [];
 
+    // TODO -- need option to run on subset of networks
     if (!options.network || options.network === "all") {
       // The user either has only one configured network, or has selected to run on all networks
       const chainIds = process.env
         .CHAIN_IDS!.split(",")
         .map(idStr => Number(idStr.trim()));
+
       chainIds.forEach(async chainId => {
         networkContexts.push((await getWeb3Interface()).getNetworkContext(chainId));
       });
