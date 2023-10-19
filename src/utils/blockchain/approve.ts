@@ -24,8 +24,13 @@ export const runApprove = async (networkContext: NetworkContext) => {
 
   const interval = setInterval(() => process.stdout.write("."), 1000);
 
+  const gasPrice = await networkContext.ethWallet.getGasPrice();
+  const gasMultiplier = ethers.BigNumber.from(process.env.GAS_MULTIPLIER || "1")
+  const txOverrides = {
+    gasPrice: gasPrice.mul(gasMultiplier)
+  }
   const approveFn = () =>
-    sarcoToken.approve(networkConfig.diamondDeployAddress, ethers.constants.MaxUint256);
+    sarcoToken.approve(networkConfig.diamondDeployAddress, ethers.constants.MaxUint256, txOverrides);
 
   try {
     const tx = await retryFn(approveFn);
