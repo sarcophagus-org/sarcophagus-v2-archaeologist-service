@@ -10,22 +10,27 @@ export async function publishPrivateKey(sarcoId: string, networkContext: Network
   const { viewStateFacet, ethWallet, archaeologistFacet, keyFinder } = networkContext;
 
   archLogger.notice(`[${networkContext.networkName}] Unwrapping sarcophagus ${sarcoId}`, true);
-  inMemoryStore
-    .get(networkContext.chainId)!
-    .sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
 
   try {
+
+    inMemoryStore
+      .get(networkContext.chainId)!
+      .sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
+
+    archLogger.notice('Retrieving Public Key');
     const myCursedArch = await viewStateFacet.getSarcophagusArchaeologist(
       sarcoId,
       ethWallet.address
     );
-
+    archLogger.notice(`Public Key Found: ${myCursedArch.publicKey}`);
     const privateKey = keyFinder.derivePrivateKeyFromPublicKey(myCursedArch.publicKey);
 
+    archLogger.notice(`Private Key Derived Key Found: ${privateKey}`);
     const callPublishPrivateKeyOnArchFacet = (): Promise<any> => {
       return archaeologistFacet.publishPrivateKey(sarcoId, privateKey);
     };
 
+    archLogger.notice(`Publishing Private Key on-chain`);
     const tx = await retryFn(callPublishPrivateKeyOnArchFacet, 0, true, `$unwrap ${sarcoId}`);
     const receipt = await tx.wait();
 
