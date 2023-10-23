@@ -68,6 +68,7 @@ export const getWeb3Interface = async (isTest: boolean = false): Promise<Web3Int
 
     return web3Interface;
   } catch (e) {
+    archLogger.info("failed on web3 interface create")
     await archLogger.error(e, { logTimestamp: true, sendNotification: true });
     exit(BAD_ENV);
   }

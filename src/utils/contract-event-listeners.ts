@@ -123,6 +123,7 @@ function getAccuseHandler(networkContext: NetworkContext) {
 
 export async function setupEventListeners(networkContext: NetworkContext) {
   try {
+    archLogger.info("setting up event listeners")
     const { embalmerFacet, thirdPartyFacet, ethWallet } = networkContext;
     const filters = {
       createSarco: embalmerFacet.filters.CreateSarcophagus(),
@@ -131,7 +132,7 @@ export async function setupEventListeners(networkContext: NetworkContext) {
       bury: embalmerFacet.filters.BurySarcophagus(),
       accuse: thirdPartyFacet.filters.AccuseArchaeologist(),
     };
-
+    archLogger.info("setting up event listeners2")
     const handlers = {
       createSarco: getCreateSarcoHandler(networkContext),
       rewrap: getRewrapHandler(networkContext),
@@ -139,18 +140,24 @@ export async function setupEventListeners(networkContext: NetworkContext) {
       bury: getBuryHandler(networkContext),
       accuse: getAccuseHandler(networkContext),
     };
-
+    archLogger.info("setting up event listeners3")
     embalmerFacet.on(filters.createSarco, handlers.createSarco);
     embalmerFacet.on(filters.rewrap, handlers.rewrap);
     embalmerFacet.on(filters.clean, handlers.clean);
     embalmerFacet.on(filters.bury, handlers.bury);
     embalmerFacet.on(filters.accuse, handlers.accuse);
-
+    archLogger.info("setting up event listeners5")
     ethWallet.provider.on("error", async e => {
       archLogger.error(
         `[${networkContext.networkName}] Provider connection error: ${e}. Reconnecting...`
       );
+      archLogger.info("test6")
       await destroyWeb3Interface();
+      archLogger.info("test7")
+      await getWeb3Interface()
+      archLogger.info("test8")
+      networkContext = (await getWeb3Interface()).getNetworkContext(networkContext.chainId)
+      archLogger.info("test9")
       setupEventListeners(networkContext);
     });
 
@@ -158,9 +165,14 @@ export async function setupEventListeners(networkContext: NetworkContext) {
       archLogger.info(
         `[${networkContext.networkName}] Provider WS connection closed: ${e}. Reconnecting...`
       );
+      archLogger.info("test1")
       await destroyWeb3Interface();
+      archLogger.info("test2")
       await getWeb3Interface()
-      setupEventListeners((await getWeb3Interface()).getNetworkContext(networkContext.chainId));
+      archLogger.info("test3")
+      networkContext = (await getWeb3Interface()).getNetworkContext(networkContext.chainId)
+      archLogger.info("test4")
+      setupEventListeners(networkContext);
     });
   } catch (e) {
     console.error(e);
