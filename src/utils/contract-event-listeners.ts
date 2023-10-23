@@ -1,5 +1,5 @@
 import { exit } from "process";
-import { destroyWeb3Interface } from "../scripts/web3-interface";
+import { destroyWeb3Interface, getWeb3Interface } from "../scripts/web3-interface";
 import { RPC_EXCEPTION } from "./exit-codes";
 import { inMemoryStore } from "./onchain-data";
 import { archLogger } from "../logger/chalk-theme";
@@ -159,7 +159,8 @@ export async function setupEventListeners(networkContext: NetworkContext) {
         `[${networkContext.networkName}] Provider WS connection closed: ${e}. Reconnecting...`
       );
       await destroyWeb3Interface();
-      setupEventListeners(networkContext);
+      await getWeb3Interface()
+      setupEventListeners((await getWeb3Interface()).getNetworkContext(networkContext.chainId));
     });
   } catch (e) {
     console.error(e);

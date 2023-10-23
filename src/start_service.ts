@@ -8,6 +8,7 @@ import { SIGNAL_SERVER_LIST } from "./models/node-config";
 import { archLogger } from "./logger/chalk-theme";
 import { setupEventListeners } from "./utils/contract-event-listeners";
 import { NetworkContext } from "./network-config";
+import { ethers } from "ethers";
 
 const RESTART_INTERVAL = 1_200_000; // 2O Minutes
 const CONTRACT_DATA_REFETCH_INTERVAL = process.env.REFETCH_INTERVAL
@@ -56,6 +57,16 @@ export async function startService(opts: {
     setupEventListeners(networkContext);
     setInterval(async () => warnIfEthBalanceIsLow(networkContext), RESTART_INTERVAL);
   });
+
+  // temp manually force websockets close
+  setTimeout(async () => {
+    opts.networkContexts.forEach(async networkContext => {
+      const wsProvider = networkContext.ethWallet.provider as ethers.providers.WebSocketProvider
+      if (wsProvider._websocket) {
+        wsProvider._websocket.close();
+      }
+    })
+  }, 10000)
 
   await arch.initLibp2pNode();
   arch.setupSarcophagusNegotiationStreams();
