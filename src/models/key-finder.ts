@@ -42,8 +42,10 @@ export class KeyFinder {
     archLogger.debug(`current sarcophagi count: ${mySarcoIds.length}`);
     archLogger.debug(`current sarcophagi IDs: ${mySarcoIds}`);
     const privateKey = this.getHdNodeAtIndex(mySarcoIds.length + 1).privateKey;
+    const publicKey = ethers.utils.computePublicKey(privateKey);
 
-    return ethers.utils.computePublicKey(privateKey);
+    archLogger.debug(`using public key: ${publicKey}`)
+    return publicKey;
   }
 
   getHdNodeAtIndex(index: number): ethers.utils.HDNode {
