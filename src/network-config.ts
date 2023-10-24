@@ -57,7 +57,7 @@ const chainIdsToNetworkConfigReturningFunction = new Map<number, NetworkConfigRe
   [HARDHAT_CHAIN_ID, _ => hardhatNetworkConfig()],
 ]);
 
-const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkContext => {
+export const getNetworkContextByChainId = (chainId: number, isTest: boolean = false): NetworkContext => {
   if (!chainIdsToNetworkConfigReturningFunction.has(chainId)) {
     throw Error(`Unsupported Chain ID: ${chainId}`);
   }
@@ -142,13 +142,13 @@ const getNetworkContextByChainId = (chainId: number, isTest: boolean): NetworkCo
 export const getNetworkContextsByChainIds = (
   chainIds: number[],
   isTest: boolean
-): NetworkContext[] => {
+): Set<NetworkContext> => {
   if (!chainIds.length) {
     throw Error("No chain IDs provided");
   }
 
-  const networkContexts: NetworkContext[] = [];
-  chainIds.forEach(chainId => networkContexts.push(getNetworkContextByChainId(chainId, isTest)));
+  const networkContexts: Set<NetworkContext> = new Set();
+  chainIds.forEach(chainId => networkContexts.add(getNetworkContextByChainId(chainId, isTest)));
 
   return networkContexts;
 };

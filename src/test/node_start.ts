@@ -39,7 +39,7 @@ export async function runTests() {
    *
    **/
   const web3Interface = await getWeb3Interface(true);
-  const networkContext = web3Interface.networkContexts[0];
+  const networkContext = [...web3Interface.networkContexts][0];
 
   // Remove ETH from account
   const bal = await networkContext.ethWallet.getBalance();

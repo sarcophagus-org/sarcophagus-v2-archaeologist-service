@@ -6,7 +6,7 @@ import { NetworkContext, getNetworkContextsByChainIds } from "../network-config"
 import { SARCO_SUPPORTED_NETWORKS } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 export interface Web3Interface {
-  networkContexts: NetworkContext[];
+  networkContexts: Set<NetworkContext>;
   getNetworkContext: (networkOrChainId: number | string | undefined) => NetworkContext;
 }
 
@@ -14,7 +14,7 @@ let web3Interface: Web3Interface | undefined;
 
 export const destroyWeb3Interface = async (): Promise<void> => {
   if (!!web3Interface) {
-    web3Interface.networkContexts.forEach(networkContext => {
+    [...web3Interface.networkContexts].forEach(networkContext => {
       networkContext.ethWallet.provider.removeAllListeners();
       (
         networkContext.ethWallet.provider as ethers.providers.WebSocketProvider
@@ -47,14 +47,14 @@ export const getWeb3Interface = async (isTest: boolean = false): Promise<Web3Int
         if (typeof networkOrChainId === "string") {
           const networkNames = Array.from(SARCO_SUPPORTED_NETWORKS.values());
           networkContext = networkNames.includes(networkOrChainId) ? 
-            web3Interface!.networkContexts.find(n => n.networkName.toLowerCase() === networkOrChainId.toLowerCase()) : 
+            [...web3Interface!.networkContexts].find(n => n.networkName.toLowerCase() === networkOrChainId.toLowerCase()) :
             undefined;
         }
 
         if (typeof networkOrChainId === "number") {
           const chainIds = Array.from(SARCO_SUPPORTED_NETWORKS.keys());
           networkContext = chainIds.includes(networkOrChainId) ? 
-            web3Interface!.networkContexts.find(n => n.chainId === networkOrChainId) : 
+            [...web3Interface!.networkContexts].find(n => n.chainId === networkOrChainId) :
             undefined;
         }
 
