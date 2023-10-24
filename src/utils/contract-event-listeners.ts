@@ -41,15 +41,20 @@ function getCreateSarcoHandler(networkContext: NetworkContext) {
       ethWallet.address
     );
 
-    const block = await ethWallet.provider.getBlock(event.blockNumber);
-    const creationDate = getDateFromTimestamp(block.timestamp);
+    let creationDate;
+    try {
+      const block = await ethWallet.provider.getBlock(event.blockNumber);
+      creationDate = getDateFromTimestamp(block.timestamp);
+    } catch (error) {
+      archLogger.warn(`unable to get block timestamp: ${error}`)
+    }
 
     inMemoryStore.get(networkContext.chainId)!.sarcophagi.push({
       id: sarcoId,
       resurrectionTime: scheduledResurrectionTime,
       perSecondFee: archaeologist.diggingFeePerSecond,
       cursedAmount: archaeologist.curseFee,
-      creationDate,
+      creationDate: creationDate || Date.now(),
     });
   };
 }
