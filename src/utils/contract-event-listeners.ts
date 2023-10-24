@@ -159,7 +159,7 @@ export async function setupEventListeners(networkContext: NetworkContext) {
         `[${networkContext.networkName}] Provider WS connection closed: ${e}. Reconnecting...`
       );
 
-      const newNetworkContext: NetworkContext = getNetworkContextByChainId(4);
+      const newNetworkContext: NetworkContext = getNetworkContextByChainId(networkContext.chainId);
       (await getWeb3Interface()).networkContexts.delete(networkContext);
       (await getWeb3Interface()).networkContexts.add(newNetworkContext);
 
