@@ -58,16 +58,6 @@ export async function startService(opts: {
     setInterval(async () => warnIfEthBalanceIsLow(networkContext), RESTART_INTERVAL);
   });
 
-  // temp manually force websockets close
-  setTimeout(async () => {
-    opts.networkContexts.forEach(async networkContext => {
-      const wsProvider = networkContext.ethWallet.provider as ethers.providers.WebSocketProvider
-      if (wsProvider._websocket) {
-        wsProvider._websocket.close();
-      }
-    })
-  }, 10000)
-
   await arch.initLibp2pNode();
   arch.setupSarcophagusNegotiationStreams();
 
