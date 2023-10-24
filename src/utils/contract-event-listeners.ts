@@ -1,12 +1,12 @@
 import { exit } from "process";
-import { destroyWeb3Interface } from "../scripts/web3-interface";
+import { getWeb3Interface } from "../scripts/web3-interface";
 import { RPC_EXCEPTION } from "./exit-codes";
 import { inMemoryStore } from "./onchain-data";
 import { archLogger } from "../logger/chalk-theme";
 import { cancelSheduledPublish, schedulePublishPrivateKeyWithBuffer } from "./scheduler";
 import { getBlockTimestamp, getDateFromTimestamp } from "./blockchain/helpers";
 import { ethers } from "ethers";
-import { NetworkContext } from "../network-config";
+import { getNetworkContextByChainId, NetworkContext } from "../network-config";
 
 function getCreateSarcoHandler(networkContext: NetworkContext) {
   return async (
@@ -41,15 +41,20 @@ function getCreateSarcoHandler(networkContext: NetworkContext) {
       ethWallet.address
     );
 
-    const block = await ethWallet.provider.getBlock(event.blockNumber);
-    const creationDate = getDateFromTimestamp(block.timestamp);
+    let creationDate;
+    try {
+      const block = await ethWallet.provider.getBlock(event.blockNumber);
+      creationDate = getDateFromTimestamp(block.timestamp);
+    } catch (error) {
+      archLogger.warn(`unable to get block timestamp: ${error}`)
+    }
 
     inMemoryStore.get(networkContext.chainId)!.sarcophagi.push({
       id: sarcoId,
       resurrectionTime: scheduledResurrectionTime,
       perSecondFee: archaeologist.diggingFeePerSecond,
       cursedAmount: archaeologist.curseFee,
-      creationDate,
+      creationDate: creationDate || Date.now(),
     });
   };
 }
@@ -121,6 +126,15 @@ function getAccuseHandler(networkContext: NetworkContext) {
   };
 }
 
+const resetNetworkContext = async (networkContext: NetworkContext): Promise<void> => {
+  // Replace the old network context with a new one with a fresh websockets provider
+  const newNetworkContext: NetworkContext = getNetworkContextByChainId(networkContext.chainId);
+  (await getWeb3Interface()).networkContexts.delete(networkContext);
+  (await getWeb3Interface()).networkContexts.add(newNetworkContext);
+
+  setupEventListeners(newNetworkContext);
+}
+
 export async function setupEventListeners(networkContext: NetworkContext) {
   try {
     const { embalmerFacet, thirdPartyFacet, ethWallet } = networkContext;
@@ -150,16 +164,16 @@ export async function setupEventListeners(networkContext: NetworkContext) {
       archLogger.error(
         `[${networkContext.networkName}] Provider connection error: ${e}. Reconnecting...`
       );
-      await destroyWeb3Interface();
-      setupEventListeners(networkContext);
+
+      await resetNetworkContext(networkContext);
     });
 
     (ethWallet.provider as ethers.providers.WebSocketProvider)._websocket.on("close", async e => {
       archLogger.info(
         `[${networkContext.networkName}] Provider WS connection closed: ${e}. Reconnecting...`
       );
-      await destroyWeb3Interface();
-      setupEventListeners(networkContext);
+
+      await resetNetworkContext(networkContext);
     });
   } catch (e) {
     console.error(e);
