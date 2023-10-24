@@ -12,18 +12,6 @@ export interface Web3Interface {
 
 let web3Interface: Web3Interface | undefined;
 
-export const destroyWeb3Interface = async (): Promise<void> => {
-  if (!!web3Interface) {
-    [...web3Interface.networkContexts].forEach(networkContext => {
-      networkContext.ethWallet.provider.removeAllListeners();
-      (
-        networkContext.ethWallet.provider as ethers.providers.WebSocketProvider
-      )._websocket.terminate();
-    });
-    web3Interface = undefined;
-  }
-};
-
 export const getWeb3Interface = async (isTest: boolean = false): Promise<Web3Interface> => {
   if (!!web3Interface) {
     return web3Interface;
