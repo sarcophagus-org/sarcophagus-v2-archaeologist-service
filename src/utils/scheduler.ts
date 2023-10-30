@@ -83,7 +83,7 @@ export function schedulePublishPrivateKeyWithBuffer(
   } else {
     // schedule resurrection time, taking into account system clock differential + buffer
     scheduledResurrectionTime = new Date(
-      (resurrectionTimeSec + systemClockDifferenceSecs) * 1000 + 15_000
+      (Number(resurrectionTimeSec) + Number(systemClockDifferenceSecs)) * 1000 + 15_000
     );
   }
 
