@@ -46,15 +46,17 @@ export const handleCommandArgs = (
  * Logs archaeologist on-chain profile
  * @param profile
  */
-export const logProfile = (profile: OnchainProfile): {} => {
+export const logProfile = (networkName: string, profile: OnchainProfile): {} => {
   const formattedProfile = {};
 
   logCallout(() => {
     if (!profile.exists) {
-      archLogger.error("This archaeologist is not yet registered, please run: \n");
+      archLogger.error(
+        `This archaeologist is not yet registered on ${networkName}, please run: \n`
+      );
       archLogger.error("cli help register");
     } else {
-      console.log("ARCHAEOLOGIST PROFILE: \n");
+      console.log(`ARCHAEOLOGIST PROFILE (${networkName.toUpperCase()}): \n`);
 
       // Remove any entries where keys are numeric
       for (let [key, value] of Object.entries(profile)) {
@@ -107,11 +109,13 @@ export const logValidationErrorAndExit = (message: string): void => {
 };
 
 export const logBalances = (
+  networkName: string,
+  networkTokenSymbol: string,
   sarcoBalance: BigNumber,
   ethBalance: BigNumber,
   address: string
 ): void => {
-  archLogger.info(`YOUR BALANCES (${address}):\n`);
+  archLogger.info(`YOUR ${networkName.toUpperCase()} BALANCES (${address}):\n`);
 
   const balances = [
     {
@@ -124,19 +128,19 @@ export const logBalances = (
     },
     {
       balance: ` > ${formatEther(ethBalance)}`,
-      ticker: "ETH",
+      ticker: networkTokenSymbol,
     },
   ];
 
   archLogger.notice(columnify(balances, { minWidth: 30 }));
 };
 
-export function logNotRegistered() {
-  archLogger.warn("\n\nARCHAEOLOGIST NOT REGISTERED:\n");
+export function logNotRegistered(networkName: string) {
+  archLogger.warn(`\n\nARCHAEOLOGIST NOT REGISTERED ON ${networkName.toUpperCase()}:\n`);
   archLogger.warn(
     `\nYou can use a guided walk through to register a profile by running the command:`
   );
-  archLogger.info(`\ncli register --guided`);
+  archLogger.info(`\ncli register --guided --network ${networkName}\n`);
 }
 
 export const randomIntFromInterval = (min, max) => {
@@ -154,7 +158,7 @@ export async function loadPeerIdJsonFromFileOrExit(): Promise<Record<string, str
   try {
     return jsonfile.readFile(peerIdFile);
   } catch (e) {
-    archLogger.error(`Error reading file: ${e}`, true);
+    archLogger.error(`Error reading file: ${e}`, { logTimestamp: true });
     exit(FILE_READ_EXCEPTION);
   }
 }

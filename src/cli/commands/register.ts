@@ -1,11 +1,10 @@
 import { Command, CommandOptions } from "./command";
 import { profileOptionDefinitions } from "../config/profile-args";
 import { getOnchainProfile } from "../../utils/onchain-data";
-import { logProfile, logValidationErrorAndExit } from "../utils";
+import { logValidationErrorAndExit } from "../utils";
 import { validateEnvVars } from "../../utils/validateEnv";
 import { ProfileOptionNames, ProfileCliParams, profileSetup } from "../../scripts/profile-setup";
 import { archLogger } from "../../logger/chalk-theme";
-import { Web3Interface } from "../../scripts/web3-interface";
 import { exit } from "process";
 import {
   isFreeBondProvidedAndZero,
@@ -13,16 +12,19 @@ import {
   validateRewrapInterval,
 } from "../shared/profile-validations";
 import { registerPrompt } from "../prompts/register-prompt";
+import { NetworkContext } from "../../network-config";
+import { getWeb3Interface } from "../../scripts/web3-interface";
 
 export class Register implements Command {
   name = "register";
   aliases = ["r"];
   description =
     "Registers your archaeologist on-chain. You cannot accept curses without first being registered.";
-  args = profileOptionDefinitions;
+  args = profileOptionDefinitions.filter(obj => obj.alias !== "u");
+  networkContext: NetworkContext;
 
   async exitIfArchaeologistProfileExists() {
-    const profile = await getOnchainProfile();
+    const profile = await getOnchainProfile(this.networkContext);
 
     if (profile.exists) {
       archLogger.notice("Already registered!");
@@ -35,10 +37,17 @@ export class Register implements Command {
     await this.exitIfArchaeologistProfileExists();
 
     archLogger.notice("Registering your Archaeologist profile...");
-    await profileSetup(registerArgs);
+    await profileSetup(registerArgs, this.networkContext);
   }
 
   validateArgs(options: CommandOptions) {
+    const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
+    if (multipleChains && !options.network) {
+      logValidationErrorAndExit(
+        "Missing network option. Use --network to specify a network to run this command on."
+      );
+    }
+
     if (options.view || options.guided) {
       return;
     }
@@ -68,13 +77,11 @@ export class Register implements Command {
   }
 
   async run(options: CommandOptions): Promise<void> {
-    if (options.view) {
-      // output profile
-      const profile = await getOnchainProfile();
-      logProfile(profile);
-    } else if (options.guided) {
+    this.networkContext = (await getWeb3Interface()).getNetworkContext(options.network);
+
+    if (options.guided) {
       // Begin guided flow for registering archaeologist
-      await registerPrompt();
+      await registerPrompt(this.networkContext);
     } else {
       await this.registerArchaeologist(options as ProfileCliParams);
     }

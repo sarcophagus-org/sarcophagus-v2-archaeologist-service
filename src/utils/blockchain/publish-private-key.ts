@@ -1,30 +1,36 @@
-import { getWeb3Interface } from "../../scripts/web3-interface";
 import { archLogger } from "../../logger/chalk-theme";
 import { handleRpcError } from "../rpc-error-handler";
 import { inMemoryStore } from "../onchain-data";
 import { retryFn } from "./helpers";
 import { warnIfEthBalanceIsLow } from "../health-check";
 import { ethers } from "ethers";
+import { NetworkContext } from "../../network-config";
 
-export async function publishPrivateKey(sarcoId: string) {
-  const web3Interface = await getWeb3Interface();
-  archLogger.notice(`Unwrapping sarcophagus ${sarcoId}`, true);
-  inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
+export async function publishPrivateKey(sarcoId: string, networkContext: NetworkContext) {
+  const { viewStateFacet, ethWallet, archaeologistFacet, keyFinder } = networkContext;
+
+  archLogger.notice(`[${networkContext.networkName}] Unwrapping sarcophagus ${sarcoId}`, true);
 
   try {
-    const myCursedArch = await web3Interface.viewStateFacet.getSarcophagusArchaeologist(
+
+    inMemoryStore
+      .get(networkContext.chainId)!
+      .sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
+
+    archLogger.notice('Retrieving Public Key');
+    const myCursedArch = await viewStateFacet.getSarcophagusArchaeologist(
       sarcoId,
-      web3Interface.ethWallet.address
+      ethWallet.address
     );
+    archLogger.notice(`Public Key Found: ${myCursedArch.publicKey}`);
+    const privateKey = keyFinder.derivePrivateKeyFromPublicKey(myCursedArch.publicKey);
 
-    const privateKey = web3Interface.keyFinder.derivePrivateKeyFromPublicKey(
-      myCursedArch.publicKey
-    );
-
+    archLogger.notice(`Private Key Derived Key Found: ${privateKey}`);
     const callPublishPrivateKeyOnArchFacet = (): Promise<any> => {
-      return web3Interface.archaeologistFacet.publishPrivateKey(sarcoId, privateKey);
+      return archaeologistFacet.publishPrivateKey(sarcoId, privateKey);
     };
 
+    archLogger.notice(`Publishing Private Key on-chain`);
     const tx = await retryFn(callPublishPrivateKeyOnArchFacet, 0, true, `$unwrap ${sarcoId}`);
     const receipt = await tx.wait();
 
@@ -33,18 +39,29 @@ export async function publishPrivateKey(sarcoId: string) {
       receipt.effectiveGasPrice.mul(receipt.cumulativeGasUsed)
     );
 
-    inMemoryStore.sarcophagi = inMemoryStore.sarcophagi.filter(s => s.id !== sarcoId);
-    inMemoryStore.deadSarcophagusIds.push(sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.sarcophagi = inMemoryStore
+      .get(networkContext.chainId)!
+      .sarcophagi.filter(s => s.id !== sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.deadSarcophagusIds.push(sarcoId);
 
-    archLogger.notice(`Unwrapped ${sarcoId} successfully!`, true);
-    archLogger.debug(`Gas used: ${gasUsed.toString()} ETH`);
-    archLogger.debug(`Cumulative Gas used: ${cummulativeGasUsed.toString()} ETH`);
+    archLogger.notice(`[${networkContext.networkName}] Unwrapped ${sarcoId} successfully!`, true);
+    archLogger.debug(`[${networkContext.networkName}] Gas used: ${gasUsed.toString()} ETH`);
+    archLogger.debug(
+      `[${networkContext.networkName}] Cumulative Gas used: ${cummulativeGasUsed.toString()} ETH`
+    );
   } catch (e) {
-    archLogger.error(`Unwrap failed: ${e}`, true);
-    await warnIfEthBalanceIsLow();
-    handleRpcError(e);
+    await archLogger.error(`[${networkContext.networkName}] Unwrap failed: ${e}`, {
+      sendNotification: true,
+      logTimestamp: true,
+      networkContext,
+    });
+    handleRpcError(e, networkContext);
   } finally {
-    inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished =
-      inMemoryStore.sarcoIdsInProcessOfHavingPrivateKeyPublished.filter(id => id !== sarcoId);
+    inMemoryStore.get(networkContext.chainId)!.sarcoIdsInProcessOfHavingPrivateKeyPublished =
+      inMemoryStore
+        .get(networkContext.chainId)!
+        .sarcoIdsInProcessOfHavingPrivateKeyPublished.filter(id => id !== sarcoId);
+
+    await warnIfEthBalanceIsLow(networkContext, true);
   }
 }

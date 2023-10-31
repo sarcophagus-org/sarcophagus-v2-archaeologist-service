@@ -39,11 +39,12 @@ export async function runTests() {
    *
    **/
   const web3Interface = await getWeb3Interface(true);
+  const networkContext = [...web3Interface.networkContexts][0];
 
   // Remove ETH from account
-  const bal = await web3Interface.ethWallet.getBalance();
-  await web3Interface.ethWallet.sendTransaction({
-    to: web3Interface.encryptionHdWallet.address,
+  const bal = await networkContext.ethWallet.getBalance();
+  await networkContext.ethWallet.sendTransaction({
+    to: networkContext.encryptionHdWallet.address,
     value: bal.sub(ethers.utils.parseEther("0.0005")),
   });
 
@@ -82,16 +83,16 @@ export async function runTests() {
   archLogger.warn("\nRegistering archaeologist");
   const deployerWallet = new Wallet(
     process.env.TEST_DEPLOYER_PRIVATE_KEY!,
-    web3Interface.ethWallet.provider
+    networkContext.ethWallet.provider
   );
-  await web3Interface.sarcoToken
+  await networkContext.sarcoToken
     .connect(deployerWallet)
-    .transfer(web3Interface.ethWallet.address, ethers.utils.parseEther("1000"));
-  await web3Interface.sarcoToken.approve(
-    web3Interface.archaeologistFacet.contract.address,
+    .transfer(networkContext.ethWallet.address, ethers.utils.parseEther("1000"));
+  await networkContext.sarcoToken.approve(
+    networkContext.archaeologistFacet.contract.address,
     ethers.constants.MaxUint256
   );
-  await web3Interface.archaeologistFacet.registerArchaeologist(
+  await networkContext.archaeologistFacet.registerArchaeologist(
     "peerId",
     ethers.utils.parseEther("100"),
     1000,
@@ -118,8 +119,10 @@ export async function runTests() {
    **/
 
   // Withdraw all free bond
-  const freeBond = await web3Interface.viewStateFacet.getFreeBond(web3Interface.ethWallet.address);
-  await web3Interface.archaeologistFacet.withdrawFreeBond(freeBond);
+  const freeBond = await networkContext.viewStateFacet.getFreeBond(
+    networkContext.ethWallet.address
+  );
+  await networkContext.archaeologistFacet.withdrawFreeBond(freeBond);
   archLogger.warn("\n\n Shows notice if there's no free bond");
   await testSuite.expectOutput(noFreeBondNotice, opts);
 

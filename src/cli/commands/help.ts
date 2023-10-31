@@ -1,5 +1,7 @@
+import { exit } from "process";
 import { Command, CommandOptions } from "./command";
 import commandLineUsage from "command-line-usage";
+import { SUCCESS } from "../../utils/exit-codes";
 
 export class Help implements Command {
   name = "help";
@@ -56,15 +58,16 @@ export class Help implements Command {
     const commandName: string = options["command"];
     if (!commandName) {
       console.log(this.generateGeneralUsage());
-      return;
+      exit(SUCCESS);
     }
 
     const command = this.commands.get(commandName);
     if (!command) {
       console.log(this.generateGeneralUsage());
-      return;
+      exit(SUCCESS);
     }
 
     console.log(this.generateCommandUsage(command));
+    exit(SUCCESS);
   }
 }

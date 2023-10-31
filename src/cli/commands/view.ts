@@ -1,7 +1,7 @@
 import { Command, CommandOptions } from "./command";
 import {
   CursedArchaeologist,
-  getEthBalance,
+  getNetworkTokenBalance,
   getOnchainProfile,
   getRewards,
   getSarcoBalance,
@@ -18,12 +18,17 @@ import { ethers } from "ethers";
 import fs from "fs/promises";
 import { SubgraphData } from "../../utils/graphql";
 import { validateEnvVars } from "../../utils/validateEnv";
+import { exit } from "process";
+import { SUCCESS } from "../../utils/exit-codes";
+import { NetworkContext } from "../../network-config";
+import { SARCO_SUPPORTED_NETWORKS } from "@sarcophagus-org/sarcophagus-v2-sdk";
 
 export class View implements Command {
   name = "view";
   aliases = [];
   description = "View archaeologist data";
   args = viewOptionDefinitions;
+  networkContext: NetworkContext | undefined;
 
   async exportToCsv(name: string, content: any) {
     try {
@@ -31,8 +36,18 @@ export class View implements Command {
       await fs.writeFile(filename, content, { flag: "w+" });
       archLogger.info(`Exported output to file: ${filename}`);
     } catch (err) {
-      archLogger.error("Failed to export csv", true);
-      archLogger.error(err, true);
+      archLogger.error("Failed to export csv", { logTimestamp: true });
+      archLogger.error(err, { logTimestamp: true });
+    }
+  }
+
+  validateArgs(options: CommandOptions) {
+    const multipleChains = process.env.CHAIN_IDS!.split(",").length > 1;
+    if (multipleChains && !options.network) {
+      archLogger.warn(
+        "Missing network option. Use --network to specify a network to run this command on."
+      );
+      return;
     }
   }
 
@@ -44,10 +59,13 @@ export class View implements Command {
       return;
     }
 
+    this.networkContext = (await getWeb3Interface()).getNetworkContext(options.network);
+
     if (options.sarcophagusDetails) {
-      const { viewStateFacet, ethWallet } = await getWeb3Interface();
+      const { viewStateFacet, ethWallet } = this.networkContext;
+
       const sarcoId = options.sarcophagusDetails;
-      const subgraphSarco = await SubgraphData.getSarcophagus(sarcoId);
+      const subgraphSarco = await SubgraphData.getSarcophagus(sarcoId, this.networkContext);
 
       const sarco: SarcophagusContract = await viewStateFacet.getSarcophagus(sarcoId);
       const cursedArchData: CursedArchaeologist = await viewStateFacet.getSarcophagusArchaeologist(
@@ -90,16 +108,19 @@ export class View implements Command {
       };
 
       if (options.inactiveCurses) {
-        logSarcos("Past Sarcophagi", await SubgraphData.getPastSarcophagi());
+        logSarcos("Past Sarcophagi", await SubgraphData.getPastSarcophagi(this.networkContext));
       }
 
       if (options.activeCurses) {
-        logSarcos("Current Sarcophagi", await SubgraphData.getActiveSarcophagi());
+        logSarcos(
+          "Current Sarcophagi",
+          await SubgraphData.getActiveSarcophagi(this.networkContext)
+        );
       }
 
       if (options.inactiveCurses || options.activeCurses) return;
 
-      const subgraphSarcos = await SubgraphData.getSarcophagi();
+      const subgraphSarcos = await SubgraphData.getSarcophagi(this.networkContext);
       logSarcos("Your Sarcophagi", subgraphSarcos);
 
       if (options.export) {
@@ -113,7 +134,7 @@ export class View implements Command {
     }
 
     if (options.stats) {
-      const stats = await SubgraphData.getArchStats();
+      const stats = await SubgraphData.getArchStats(this.networkContext);
 
       logCallout(() => {
         archLogger.notice("Your Stats:\n\n");
@@ -124,8 +145,8 @@ export class View implements Command {
     }
 
     if (options.profile) {
-      const profile = await getOnchainProfile();
-      const formattedProfile = logProfile(profile);
+      const profile = await getOnchainProfile(this.networkContext);
+      const formattedProfile = logProfile(this.networkContext.networkName, profile);
 
       if (options.export) {
         this.exportToCsv(
@@ -138,11 +159,17 @@ export class View implements Command {
     }
 
     if (options.balance) {
-      const sarcoBalance = await getSarcoBalance();
-      const ethBalance = await getEthBalance();
-      const web3Interface = await getWeb3Interface();
+      const sarcoBalance = await getSarcoBalance(this.networkContext);
+      const ethBalance = await getNetworkTokenBalance(this.networkContext);
+      const { ethWallet, networkName, networkConfig } = this.networkContext;
       logCallout(() => {
-        logBalances(sarcoBalance, ethBalance, web3Interface.ethWallet.address);
+        logBalances(
+          networkName,
+          networkConfig.tokenSymbol,
+          sarcoBalance,
+          ethBalance,
+          ethWallet.address
+        );
       });
 
       if (options.export) {
@@ -154,7 +181,7 @@ export class View implements Command {
     }
 
     if (options.freeBond) {
-      const profile = await getOnchainProfile();
+      const profile = await getOnchainProfile(this.networkContext);
       logCallout(() => {
         archLogger.info("Your free bond:");
         archLogger.notice(ethers.utils.formatEther(profile.freeBond) + " SARCO");
@@ -162,7 +189,7 @@ export class View implements Command {
     }
 
     if (options.cursedBond) {
-      const profile = await getOnchainProfile();
+      const profile = await getOnchainProfile(this.networkContext);
       logCallout(() => {
         archLogger.info("Your cursed bond:");
         archLogger.notice(ethers.utils.formatEther(profile.cursedBond) + " SARCO");
@@ -170,7 +197,7 @@ export class View implements Command {
     }
 
     if (options.rewards) {
-      const rewards = await getRewards();
+      const rewards = await getRewards(this.networkContext);
       logCallout(() => {
         archLogger.info("Rewards available:");
         archLogger.notice(ethers.utils.formatEther(rewards) + " SARCO");
@@ -180,5 +207,7 @@ export class View implements Command {
         this.exportToCsv("rewards", `${rewards.toString()}`);
       }
     }
+
+    exit(SUCCESS);
   }
 }

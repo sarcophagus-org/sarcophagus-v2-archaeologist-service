@@ -6,6 +6,9 @@ import { healthCheck, warnIfEthBalanceIsLow } from "./utils/health-check";
 import { loadPeerIdFromFile } from "./utils";
 import { SIGNAL_SERVER_LIST } from "./models/node-config";
 import { archLogger } from "./logger/chalk-theme";
+import { setupEventListeners } from "./utils/contract-event-listeners";
+import { NetworkContext } from "./network-config";
+import { ethers } from "ethers";
 
 const RESTART_INTERVAL = 1_200_000; // 2O Minutes
 const CONTRACT_DATA_REFETCH_INTERVAL = process.env.REFETCH_INTERVAL
@@ -17,6 +20,7 @@ export async function startService(opts: {
   listenAddresses?: string[];
   peerId?: any;
   bootstrapList?: string[];
+  networkContexts: NetworkContext[];
   isTest?: boolean;
 }) {
   validateEnvVars();
@@ -37,22 +41,28 @@ export async function startService(opts: {
         : undefined,
   });
 
-  await healthCheck(peerId.toString());
-  fetchProfileAndSchedulePublish();
+  opts.networkContexts.forEach(async networkContext => {
+    await healthCheck(networkContext, peerId.toString());
 
-  // refetch every so often
-  setInterval(() => fetchProfileAndSchedulePublish(), CONTRACT_DATA_REFETCH_INTERVAL);
+    // The archaeologist service is currently setup to listen to contract events and automatically
+    // schedule a profile publish when the relevant event is received. This should always work, but
+    // if it does not for some crazy reason, the following code can be enabled to fetch directly from the contracts
+    // to schedule a publish every so often.
+    // Only thing needed to enable this is to have problem archaeologist nodes set their env var REFETCH_CONTRACT_DATA=true
+    if (process.env.REFETCH_CONTRACT_DATA) {
+      setInterval(() => fetchProfileAndSchedulePublish(networkContext), CONTRACT_DATA_REFETCH_INTERVAL);
+    }
 
-  // TODO -- delay starting the node until the creation window has passed
-  // Consider only doing this if arch as at least one sarcophagus
+    fetchProfileAndSchedulePublish(networkContext);
+    setupEventListeners(networkContext);
+    setInterval(async () => warnIfEthBalanceIsLow(networkContext), RESTART_INTERVAL);
+  });
+
   await arch.initLibp2pNode();
-  arch.setupSarcophagusNegotiationStream();
+  arch.setupSarcophagusNegotiationStreams();
 
-  // Restart node on 20 min interval in attempt to avoid websocket / wrtc issues
-  setInterval(async () => {
-    arch.restartNode();
-    warnIfEthBalanceIsLow();
-  }, RESTART_INTERVAL);
+  // Restart node on 20 min interval in attempt to avoid websocket issues
+  setInterval(async () => arch.restartNode(), RESTART_INTERVAL);
 
   [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, async e => {

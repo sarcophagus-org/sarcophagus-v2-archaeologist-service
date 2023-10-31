@@ -1,18 +1,18 @@
 import "dotenv/config";
 import inquirer from "inquirer";
-import { getWeb3Interface } from "./web3-interface";
 import { BigNumber } from "ethers";
 import { archLogger } from "../logger/chalk-theme";
 import { runApprove } from "../utils/blockchain/approve";
 import { DENIED_APPROVAL } from "../utils/exit-codes";
 import { exit } from "process";
+import { NetworkContext } from "../network-config";
 
-export const hasAllowance = async (amt: BigNumber) => {
-  const web3Interface = await getWeb3Interface();
+export const hasAllowance = async (amt: BigNumber, networkContext: NetworkContext) => {
+  const { sarcoToken, ethWallet, networkConfig } = networkContext;
 
-  const allowance = await web3Interface.sarcoToken.allowance(
-    web3Interface.ethWallet.address,
-    web3Interface.networkConfig.diamondDeployAddress
+  const allowance = await sarcoToken.allowance(
+    ethWallet.address,
+    networkConfig.diamondDeployAddress
   );
 
   return allowance.gte(amt);
@@ -21,7 +21,7 @@ export const hasAllowance = async (amt: BigNumber) => {
 /**
  * Request approval from user to spend SARCO. Will terminate the process if the user rejects the request.
  */
-export const requestApproval = async () => {
+export const requestApproval = async (networkContext: NetworkContext) => {
   const approvalAnswer = await inquirer.prompt([
     {
       type: "confirm",
@@ -38,5 +38,5 @@ export const requestApproval = async () => {
     exit(DENIED_APPROVAL);
   }
 
-  await runApprove();
+  await runApprove(networkContext);
 };
