@@ -10,10 +10,10 @@ import { setupEventListeners } from "./utils/contract-event-listeners";
 import { NetworkContext } from "./network-config";
 import { ethers } from "ethers";
 
-const RESTART_INTERVAL = 1_200_000; // 2O Minutes
+const RESTART_INTERVAL = 21_600_000; // 6 Hours
 const CONTRACT_DATA_REFETCH_INTERVAL = process.env.REFETCH_INTERVAL
   ? Number(process.env.REFETCH_INTERVAL)
-  : 600_000; // (default is 10 mins)
+  : 86_645_000; // (default is ~24 Hours)
 
 export async function startService(opts: {
   nodeName: string;
@@ -61,7 +61,7 @@ export async function startService(opts: {
   await arch.initLibp2pNode();
   arch.setupSarcophagusNegotiationStreams();
 
-  // Restart node on 20 min interval in attempt to avoid websocket issues
+  // Restart node on 6 hour intervals in attempt to avoid websocket issues
   setInterval(async () => arch.restartNode(), RESTART_INTERVAL);
 
   [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
