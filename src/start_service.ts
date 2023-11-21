@@ -8,7 +8,6 @@ import { SIGNAL_SERVER_LIST } from "./models/node-config";
 import { archLogger } from "./logger/chalk-theme";
 import { setupEventListeners } from "./utils/contract-event-listeners";
 import { NetworkContext } from "./network-config";
-import { ethers } from "ethers";
 
 const RESTART_INTERVAL = 21_600_000; // 6 Hours
 const CONTRACT_DATA_REFETCH_INTERVAL = process.env.REFETCH_INTERVAL
