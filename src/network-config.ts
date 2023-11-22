@@ -11,21 +11,19 @@ import {
 } from "@sarcophagus-org/sarcophagus-v2-contracts";
 import {
   SarcoNetworkConfig,
-  goerliNetworkConfig,
   sepoliaNetworkConfig,
   mainnetNetworkConfig,
-  baseGoerliNetworkConfig,
   polygonMumbaiNetworkConfig,
   polygonMainnetNetworkConfig,
+  arbitrumNetworkConfig,
 } from "@sarcophagus-org/sarcophagus-v2-sdk";
 import {
-  BASE_GOERLI_CHAIN_ID,
-  GOERLI_CHAIN_ID,
   HARDHAT_CHAIN_ID,
   MAINNET_CHAIN_ID,
   POLYGON_MUMBAI_CHAIN_ID,
   POLYGON_MAINNET_CHAIN_ID,
   SEPOLIA_CHAIN_ID,
+  ARBITRUM_CHAIN_ID,
   hardhatNetworkConfig,
 } from "@sarcophagus-org/sarcophagus-v2-sdk";
 import { ethers } from "ethers";
@@ -49,11 +47,10 @@ export interface NetworkContext {
 type NetworkConfigReturningFunction = (providerUrl: string) => SarcoNetworkConfig;
 const chainIdsToNetworkConfigReturningFunction = new Map<number, NetworkConfigReturningFunction>([
   [MAINNET_CHAIN_ID, () => mainnetNetworkConfig()],
-  [GOERLI_CHAIN_ID, () => goerliNetworkConfig()],
   [SEPOLIA_CHAIN_ID, () => sepoliaNetworkConfig()],
   [POLYGON_MUMBAI_CHAIN_ID, () => polygonMumbaiNetworkConfig()],
   [POLYGON_MAINNET_CHAIN_ID, () => polygonMainnetNetworkConfig()],
-  [BASE_GOERLI_CHAIN_ID, () => baseGoerliNetworkConfig()],
+  [ARBITRUM_CHAIN_ID, () => arbitrumNetworkConfig()],
   [HARDHAT_CHAIN_ID, _ => hardhatNetworkConfig()],
 ]);
 
@@ -64,9 +61,8 @@ export const getNetworkContextByChainId = (chainId: number, isTest: boolean = fa
 
   const chainIdsToProviderUrl = new Map([
     [MAINNET_CHAIN_ID, process.env.MAINNET_PROVIDER_URL],
-    [GOERLI_CHAIN_ID, process.env.GOERLI_PROVIDER_URL],
     [SEPOLIA_CHAIN_ID, process.env.SEPOLIA_PROVIDER_URL],
-    [BASE_GOERLI_CHAIN_ID, process.env.BASE_GOERLI_PROVIDER_URL],
+    [ARBITRUM_CHAIN_ID, process.env.ARBITRUM_PROVIDER_URL],
     [POLYGON_MUMBAI_CHAIN_ID, process.env.POLYGON_MUMBAI_PROVIDER_URL],
     [POLYGON_MAINNET_CHAIN_ID, process.env.POLYGON_MAINNET_PROVIDER_URL],
     [HARDHAT_CHAIN_ID, process.env.HARDHAT_PROVIDER_URL],
@@ -108,9 +104,8 @@ export const getNetworkContextByChainId = (chainId: number, isTest: boolean = fa
 
   const chainIdsToEncryptionMnemonic = new Map([
     [MAINNET_CHAIN_ID, process.env.MAINNET_ENCRYPTION_MNEMONIC],
-    [GOERLI_CHAIN_ID, process.env.GOERLI_ENCRYPTION_MNEMONIC],
     [SEPOLIA_CHAIN_ID, process.env.SEPOLIA_ENCRYPTION_MNEMONIC],
-    [BASE_GOERLI_CHAIN_ID, process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC],
+    [ARBITRUM_CHAIN_ID, process.env.ARBITRUM_ENCRYPTION_MNEMONIC],
     [POLYGON_MUMBAI_CHAIN_ID, process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC],
     [POLYGON_MAINNET_CHAIN_ID, process.env.POLYGON_MAINNET_ENCRYPTION_MNEMONIC],
     [HARDHAT_CHAIN_ID, process.env.HARDHAT_ENCRYPTION_MNEMONIC],

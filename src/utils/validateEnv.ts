@@ -79,17 +79,13 @@ export function validateEnvVars() {
     required: false,
     callback: envVar => _validateProviderUrl(envVar, "mainnet"),
   });
-  _tryReadEnv("GOERLI_PROVIDER_URL", process.env.GOERLI_PROVIDER_URL, {
-    required: false,
-    callback: envVar => _validateProviderUrl(envVar, "goerli"),
-  });
   _tryReadEnv("SEPOLIA_PROVIDER_URL", process.env.SEPOLIA_PROVIDER_URL, {
     required: false,
     callback: envVar => _validateProviderUrl(envVar, "sepolia"),
   });
-  _tryReadEnv("BASE_GOERLI_PROVIDER_URL", process.env.BASE_GOERLI_PROVIDER_URL, {
+  _tryReadEnv("ARBITRUM_PROVIDER_URL", process.env.ARBITRUM_PROVIDER_URL, {
     required: false,
-    callback: envVar => _validateProviderUrl(envVar, "baseGoerli"),
+    callback: envVar => _validateProviderUrl(envVar, "arbitrum"),
   });
   _tryReadEnv("POLYGON_MAINNET_PROVIDER_URL", process.env.POLYGON_MAINNET_PROVIDER_URL, {
     required: false,
@@ -104,17 +100,13 @@ export function validateEnvVars() {
     required: false,
     callback: envVar => _validateEncryptionMnemonic(envVar, "mainnet"),
   });
-  _tryReadEnv("GOERLI_ENCRYPTION_MNEMONIC", process.env.GOERLI_ENCRYPTION_MNEMONIC, {
+  _tryReadEnv("ARBITRUM_ENCRYPTION_MNEMONIC", process.env.ARBITRUM_ENCRYPTION_MNEMONIC, {
     required: false,
-    callback: envVar => _validateEncryptionMnemonic(envVar, "goerli"),
+    callback: envVar => _validateEncryptionMnemonic(envVar, "arbitrum"),
   });
   _tryReadEnv("SEPOLIA_ENCRYPTION_MNEMONIC", process.env.SEPOLIA_ENCRYPTION_MNEMONIC, {
     required: false,
     callback: envVar => _validateEncryptionMnemonic(envVar, "sepolia"),
-  });
-  _tryReadEnv("BASE_GOERLI_ENCRYPTION_MNEMONIC", process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC, {
-    required: false,
-    callback: envVar => _validateEncryptionMnemonic(envVar, "baseGoerli"),
   });
   _tryReadEnv(
     "POLYGON_MAINNET_ENCRYPTION_MNEMONIC",
@@ -138,9 +130,8 @@ export function validateEnvVars() {
   // Make sure there are no duplicate mnemonics in the .env file
   const mnemonics = [
     process.env.MAINNET_ENCRYPTION_MNEMONIC,
-    process.env.GOERLI_ENCRYPTION_MNEMONIC,
     process.env.SEPOLIA_ENCRYPTION_MNEMONIC,
-    process.env.BASE_GOERLI_ENCRYPTION_MNEMONIC,
+    process.env.ARBITRUM_ENCRYPTION_MNEMONIC,
     process.env.POLYGON_MUMBAI_ENCRYPTION_MNEMONIC,
     process.env.POLYGON_MAINNET_ENCRYPTION_MNEMONIC,
   ].filter(mnemonic => !!mnemonic);
