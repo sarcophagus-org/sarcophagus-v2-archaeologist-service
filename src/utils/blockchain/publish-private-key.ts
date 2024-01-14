@@ -5,6 +5,7 @@ import { retryFn } from "./helpers";
 import { warnIfEthBalanceIsLow } from "../health-check";
 import { ethers } from "ethers";
 import { NetworkContext } from "../../network-config";
+import { rpcCallWithTimeout } from "../rpc-helpers";
 
 export async function publishPrivateKey(sarcoId: string, networkContext: NetworkContext) {
   const { viewStateFacet, ethWallet, archaeologistFacet, keyFinder } = networkContext;
@@ -18,10 +19,12 @@ export async function publishPrivateKey(sarcoId: string, networkContext: Network
       .sarcoIdsInProcessOfHavingPrivateKeyPublished.push(sarcoId);
 
     archLogger.notice('Retrieving Public Key');
-    const myCursedArch = await viewStateFacet.getSarcophagusArchaeologist(
-      sarcoId,
-      ethWallet.address
+    const myCursedArch = await rpcCallWithTimeout(
+      viewStateFacet.getSarcophagusArchaeologist,
+      [sarcoId, ethWallet.address],
+      { timeout: 5000, retries: 5 }
     );
+
     archLogger.notice(`Public Key Found: ${myCursedArch.publicKey}`);
     const privateKey = keyFinder.derivePrivateKeyFromPublicKey(myCursedArch.publicKey);
 
