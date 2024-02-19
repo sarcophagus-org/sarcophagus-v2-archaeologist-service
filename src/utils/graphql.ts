@@ -15,8 +15,11 @@ const getArchStatsQuery = (archAddress: string) => `query {
 
 const getArchSarcosQuery = (
   archAddress: string,
-  opts?: { activeTimeThreshold: number; limitToActiveForArch: boolean }
+  opts?: { activeTimeThreshold: number; limitToActiveForArch: boolean; },
+  first: number = 100,
+  skip: number = 0
 ) => {
+
   return `query {
     sarcophagusDatas (
         where: {
@@ -32,7 +35,9 @@ const getArchSarcosQuery = (
             }
         }
         orderBy: resurrectionTime,
-        orderDirection: desc
+        orderDirection: desc,
+        first: ${first},
+        skip: ${skip}
     ) {
         sarcoId
         resurrectionTime
@@ -160,21 +165,35 @@ export class SubgraphData {
    */
   static getSarcophagiIds = async (
     archAddress: string,
-    networkContext: NetworkContext
+    networkContext: NetworkContext,
+    first = 100,
+    skip = 0
   ): Promise<string[]> => {
-    try {
-      const { sarcophagusDatas } = (await this.queryGraphQl(
-        getArchSarcosQuery(archAddress),
-        networkContext
-      )) as {
-        sarcophagusDatas: SarcoDataSubgraph[];
-      };
+    let hasMore = true;
+    let allSarcophagiIds: string[] = [];
 
-      return sarcophagusDatas.map(s => s.sarcoId);
-    } catch (e) {
-      console.error(e);
-      return [];
+    while (hasMore) {
+      try {
+        const { sarcophagusDatas } = (await this.queryGraphQl(
+          getArchSarcosQuery(archAddress,  undefined, first, skip),
+          networkContext
+        )) as {
+          sarcophagusDatas: SarcoDataSubgraph[];
+        };
+
+        allSarcophagiIds = [...allSarcophagiIds, ...sarcophagusDatas.map(s => s.sarcoId)];
+
+        if (sarcophagusDatas.length < first) {
+          hasMore = false; // Break the loop if we fetched fewer items than requested
+        } else {
+          skip += first; // Prepare `skip` for the next iteration
+        }
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
     }
+    return allSarcophagiIds;
   };
 
   /**
